@@ -1,6 +1,7 @@
 import {
   api, toast, confirm, openModal, closeModal,
   escapeHtml, statusBadge, setupImagePreview, imagePreview,
+  prepareImageFiles, renderUploadProgress, clearUploadProgress,
   iconBtn, addBtn
 } from '../admin.js';
 
@@ -153,7 +154,8 @@ function showForm(item, container) {
           </div>
           <div class="form-group form-group--full">
             <label>Photo</label>
-            <input class="form-control" type="file" name="photo" accept="image/*">
+            <input class="form-control" type="file" name="photo" accept="image/jpeg,image/png,image/webp,image/gif">
+            <p class="form-hint">Max 5MB · Cloudinary URL stored in Sheets</p>
             <div id="testimonialPreview">${item?.photo ? imagePreview(item.photo, true) : ''}</div>
           </div>
         </div>
@@ -181,15 +183,28 @@ function showForm(item, container) {
 
     const btn = document.getElementById('saveTestimonial');
     btn.disabled = true;
+    const progressEl = document.getElementById('uploadProgressSlot') || document.getElementById('testimonialPreview');
 
     try {
+      const fileInput = form.querySelector('[name="photo"]');
+      if (fileInput?.files?.[0]) {
+        const [compressed] = await prepareImageFiles(fileInput.files, { maxWidth: 800, maxHeight: 800 });
+        fd.set('photo', compressed, compressed.name);
+      }
+
+      const opts = {
+        method: isEdit ? 'PUT' : 'POST',
+        formData: fd,
+        onProgress: (pct) => renderUploadProgress(progressEl, pct)
+      };
       if (isEdit) {
-        await api(`/admin/testimonials/${item.id}`, { method: 'PUT', formData: fd });
+        await api(`/admin/testimonials/${item.id}`, opts);
         toast('Testimonial updated', 'success');
       } else {
-        await api('/admin/testimonials', { method: 'POST', formData: fd });
+        await api('/admin/testimonials', opts);
         toast('Testimonial created', 'success');
       }
+      clearUploadProgress(progressEl);
       closeModal();
       await loadTestimonials(container);
     } catch (err) {

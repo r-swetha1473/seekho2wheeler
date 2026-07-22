@@ -1,6 +1,7 @@
 import {
   api, toast, confirm, openModal, closeModal,
   escapeHtml, statusBadge, setupImagePreview, setupMultiImagePreview, imagePreview,
+  prepareImageFiles, renderUploadProgress, clearUploadProgress,
   iconBtn, addBtn
 } from '../admin.js';
 
@@ -151,8 +152,8 @@ function showUploadForm() {
         </div>
         <div class="form-group">
           <label>Images <span class="required">*</span></label>
-          <input class="form-control" type="file" name="images" accept="image/*" multiple required>
-          <p class="form-hint">Select up to 20 images at once</p>
+          <input class="form-control" type="file" name="images" accept="image/jpeg,image/png,image/webp,image/gif" multiple required>
+          <p class="form-hint">Select up to 20 images · max 5MB each · compressed then uploaded to Cloudinary</p>
           <div class="image-preview-grid" id="multiPreview"></div>
         </div>
       </form>
@@ -174,16 +175,23 @@ function showUploadForm() {
       return;
     }
 
-    const fd = new FormData();
-    fd.append('category', form.category.value);
-    fd.append('title', form.title.value);
-    Array.from(fileInput.files).forEach((f) => fd.append('images', f));
-
     const btn = document.getElementById('doUpload');
     btn.disabled = true;
+    const progressEl = document.getElementById('uploadProgressSlot') || document.getElementById('multiPreview');
 
     try {
-      const res = await api('/admin/gallery', { method: 'POST', formData: fd });
+      const compressed = await prepareImageFiles(fileInput.files, { maxWidth: 1600, maxHeight: 1600 });
+      const fd = new FormData();
+      fd.append('category', form.category.value);
+      fd.append('title', form.title.value);
+      compressed.forEach((f) => fd.append('images', f, f.name));
+
+      const res = await api('/admin/gallery', {
+        method: 'POST',
+        formData: fd,
+        onProgress: (pct) => renderUploadProgress(progressEl, pct)
+      });
+      clearUploadProgress(progressEl);
       toast(res.message || 'Images uploaded', 'success');
       closeModal();
       await loadGallery(document.getElementById('adminContent'));
@@ -219,7 +227,8 @@ function showEditForm(item, container) {
         </div>
         <div class="form-group">
           <label>Replace Image</label>
-          <input class="form-control" type="file" name="image" accept="image/*">
+          <input class="form-control" type="file" name="image" accept="image/jpeg,image/png,image/webp,image/gif">
+          <p class="form-hint">Max 5MB · Cloudinary URL stored in Sheets</p>
           <div id="editPreview">${item.image ? imagePreview(item.image) : ''}</div>
         </div>
       </form>
@@ -237,15 +246,30 @@ function showEditForm(item, container) {
     const form = document.getElementById('editGalleryForm');
     const fd = new FormData(form);
     fd.set('active', form.querySelector('[name="active"]').checked ? 'true' : 'false');
+    const progressEl = document.getElementById('uploadProgressSlot') || document.getElementById('editPreview');
+    const saveBtn = document.getElementById('saveEdit');
+    saveBtn.disabled = true;
 
     try {
-      await api(`/admin/gallery/${item.id}`, { method: 'PUT', formData: fd });
+      const fileInput = form.querySelector('[name="image"]');
+      if (fileInput?.files?.[0]) {
+        const [compressed] = await prepareImageFiles(fileInput.files, { maxWidth: 1600, maxHeight: 1600 });
+        fd.set('image', compressed, compressed.name);
+      }
+      await api(`/admin/gallery/${item.id}`, {
+        method: 'PUT',
+        formData: fd,
+        onProgress: (pct) => renderUploadProgress(progressEl, pct)
+      });
+      clearUploadProgress(progressEl);
       toast('Gallery item updated', 'success');
       closeModal();
       const cat = document.getElementById('categoryFilter')?.value || 'all';
       await loadGallery(container, cat);
     } catch (err) {
       toast(err.message, 'error');
+    } finally {
+      saveBtn.disabled = false;
     }
   });
 }

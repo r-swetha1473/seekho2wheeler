@@ -57,6 +57,8 @@ app.get('/api/health', (req, res) => {
     sheetsReady: config.sheets.ready,
     sheetsMissing: creds.missing,
     sheetsHint: config.sheets.ready ? 'ok' : creds.hint,
+    cloudinaryReady: config.cloudinary.ready,
+    mediaStorage: config.cloudinary.ready ? 'cloudinary' : (process.env.VERCEL ? 'none (configure Cloudinary)' : 'local-uploads (dev)'),
     time: new Date().toISOString()
   });
 });

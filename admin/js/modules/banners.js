@@ -1,6 +1,7 @@
 import {
   api, toast, confirm, openModal, closeModal,
   escapeHtml, statusBadge, setupImagePreview, imagePreview,
+  prepareImageFiles, renderUploadProgress, clearUploadProgress,
   iconBtn, addBtn
 } from '../admin.js';
 
@@ -174,7 +175,8 @@ function showForm(banner = null) {
           </div>
           <div class="form-group form-group--full">
             <label>Image ${isEdit ? '' : '<span class="required">*</span>'}</label>
-            <input class="form-control" type="file" name="image" accept="image/*" ${isEdit ? '' : 'required'}>
+            <input class="form-control" type="file" name="image" accept="image/jpeg,image/png,image/webp,image/gif" ${isEdit ? '' : 'required'}>
+            <p class="form-hint">Max 5MB · large images are compressed before upload · stored on Cloudinary</p>
             <div id="bannerPreview">${banner?.image ? imagePreview(banner.image) : ''}</div>
           </div>
         </div>
@@ -193,20 +195,34 @@ function showForm(banner = null) {
     const form = document.getElementById('bannerForm');
     if (!form.checkValidity()) { form.reportValidity(); return; }
 
-    const fd = new FormData(form);
-    fd.set('active', form.querySelector('[name="active"]').checked ? 'true' : 'false');
-
     const saveBtn = document.getElementById('saveBanner');
     saveBtn.disabled = true;
+    const progressEl = document.getElementById('uploadProgressSlot') || document.getElementById('bannerPreview');
 
     try {
+      const fd = new FormData(form);
+      fd.set('active', form.querySelector('[name="active"]').checked ? 'true' : 'false');
+
+      const fileInput = form.querySelector('[name="image"]');
+      if (fileInput?.files?.[0]) {
+        const [compressed] = await prepareImageFiles(fileInput.files, { maxWidth: 1920, maxHeight: 1080 });
+        fd.set('image', compressed, compressed.name);
+      }
+
+      const opts = {
+        method: isEdit ? 'PUT' : 'POST',
+        formData: fd,
+        onProgress: (pct) => renderUploadProgress(progressEl, pct)
+      };
+
       if (isEdit) {
-        await api(`/admin/banners/${banner.id}`, { method: 'PUT', formData: fd });
+        await api(`/admin/banners/${banner.id}`, opts);
         toast('Banner updated', 'success');
       } else {
-        await api('/admin/banners', { method: 'POST', formData: fd });
+        await api('/admin/banners', opts);
         toast('Banner created', 'success');
       }
+      clearUploadProgress(progressEl);
       closeModal();
       const container = document.getElementById('adminContent');
       await loadBanners(container);

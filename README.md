@@ -8,7 +8,7 @@ Premium scooty & bike training academy website with a full admin panel.
 - **Backend:** Node.js + Express
 - **Database:** Google Sheets API (optional) with local JSON fallback
 - **Auth:** JWT + bcrypt
-- **Images:** Multer + Sharp → WebP in `/public/uploads`
+- **Images:** Cloudinary (primary) — Google Sheets stores HTTPS URLs only
 
 ## Quick Start
 
@@ -42,7 +42,8 @@ npm run dev     # start with --watch
 │   ├── css/main.css
 │   ├── js/                # app.js, layout.js, home.js, pages/*
 │   ├── pages/             # Inner pages
-│   └── uploads/           # Optimized WebP uploads
+│   └── images/            # Static seed/placeholder assets only
+│       (admin uploads go to Cloudinary — not stored in git)
 ├── server/
 │   ├── controllers/       # API controllers
 │   ├── routes/api.js
@@ -123,6 +124,27 @@ npm run print-vercel-sheets-env
 Paste the printed `GOOGLE_SERVICE_ACCOUNT_JSON` (plus `GOOGLE_SHEETS_ENABLED` / `GOOGLE_SHEETS_ID`) into Vercel → Environment Variables, then **Redeploy**.  
 Verify `/api/health` shows `"storage":"google-sheets (primary)"` and `"sheetsReady":true`.
 
+## Cloudinary (Primary Media Storage)
+
+Admin uploads (banners, gallery, blogs, branches, testimonials) go to **Cloudinary**.  
+Google Sheets stores **only the HTTPS URL** — never image binary data.
+
+1. Create a Cloudinary account and copy API credentials
+2. Add to `.env` / Vercel:
+
+```
+CLOUDINARY_CLOUD_NAME=...
+CLOUDINARY_API_KEY=...
+CLOUDINARY_API_SECRET=...
+CLOUDINARY_FOLDER=seekho
+```
+
+3. Admin flow: select image → client preview + 5MB validation + compress → upload with progress → Cloudinary URL saved to Sheets
+4. Deleting a record also deletes the Cloudinary asset
+5. Public pages use responsive Cloudinary `srcset` (`f_auto,q_auto,w_*`)
+
+`/public/uploads` is gitignored (legacy local-dev fallback only). Do not commit uploaded images.
+
 ## Email Notifications
 
 Configure SMTP in `.env` to receive booking/enquiry emails.
@@ -146,6 +168,12 @@ NODE_ENV=production
 JWT_SECRET=<long-random-secret>
 ADMIN_EMAIL=admin@seekhoacademy.com
 ADMIN_PASSWORD=<secure-password>
+GOOGLE_SHEETS_ENABLED=true
+GOOGLE_SHEETS_ID=...
+GOOGLE_SERVICE_ACCOUNT_JSON=...
+CLOUDINARY_CLOUD_NAME=...
+CLOUDINARY_API_KEY=...
+CLOUDINARY_API_SECRET=...
 ```
 
 5. Redeploy after setting env vars.

@@ -1,6 +1,7 @@
 import {
   api, toast, confirm, openModal, closeModal,
   escapeHtml, statusBadge, setupImagePreview, imagePreview,
+  prepareImageFiles, renderUploadProgress, clearUploadProgress,
   iconBtn, addBtn
 } from '../admin.js';
 
@@ -151,7 +152,8 @@ function showForm(branch, container) {
           </div>
           <div class="form-group form-group--full">
             <label>Branch Image</label>
-            <input class="form-control" type="file" name="image" accept="image/*">
+            <input class="form-control" type="file" name="image" accept="image/jpeg,image/png,image/webp,image/gif">
+            <p class="form-hint">Max 5MB · Cloudinary URL stored in Sheets</p>
             <div id="branchPreview">${branch?.image ? imagePreview(branch.image) : ''}</div>
           </div>
         </div>
@@ -181,15 +183,28 @@ function showForm(branch, container) {
 
     const btn = document.getElementById('saveBranch');
     btn.disabled = true;
+    const progressEl = document.getElementById('uploadProgressSlot') || document.getElementById('branchPreview');
 
     try {
+      const fileInput = form.querySelector('[name="image"]');
+      if (fileInput?.files?.[0]) {
+        const [compressed] = await prepareImageFiles(fileInput.files, { maxWidth: 1200, maxHeight: 900 });
+        fd.set('image', compressed, compressed.name);
+      }
+
+      const opts = {
+        method: isEdit ? 'PUT' : 'POST',
+        formData: fd,
+        onProgress: (pct) => renderUploadProgress(progressEl, pct)
+      };
       if (isEdit) {
-        await api(`/admin/branches/${branch.id}`, { method: 'PUT', formData: fd });
+        await api(`/admin/branches/${branch.id}`, opts);
         toast('Branch updated', 'success');
       } else {
-        await api('/admin/branches', { method: 'POST', formData: fd });
+        await api('/admin/branches', opts);
         toast('Branch created', 'success');
       }
+      clearUploadProgress(progressEl);
       closeModal();
       await loadBranches(container);
     } catch (err) {

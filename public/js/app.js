@@ -164,6 +164,31 @@ const Seekho = (() => {
 
   const PLACEHOLDER = '/images/placeholder.webp';
 
+  function isCloudinaryUrl(src) {
+    return typeof src === 'string' && src.includes('res.cloudinary.com');
+  }
+
+  /** Insert Cloudinary transform after /upload/ */
+  function cloudinaryTransform(src, transform) {
+    if (!isCloudinaryUrl(src)) return src;
+    const marker = '/upload/';
+    const idx = src.indexOf(marker);
+    if (idx < 0) return src;
+    // Avoid stacking if already has our responsive prefix
+    const after = src.slice(idx + marker.length);
+    if (after.startsWith('f_auto,q_auto')) {
+      return src.replace(/\/upload\/[^/]+\//, `/upload/${transform}/`);
+    }
+    return `${src.slice(0, idx + marker.length)}${transform}/${after}`;
+  }
+
+  function responsiveSrcSet(src, widths = [400, 800, 1200, 1600]) {
+    if (!isCloudinaryUrl(src)) return '';
+    return widths
+      .map((w) => `${cloudinaryTransform(src, `f_auto,q_auto,c_limit,w_${w}`)} ${w}w`)
+      .join(', ');
+  }
+
   function bindImageFallbacks(root = document) {
     qsa('img', root).forEach((img) => {
       if (img.dataset.fallbackBound) return;
@@ -171,6 +196,7 @@ const Seekho = (() => {
       img.addEventListener('error', () => {
         if (img.dataset.fallbackApplied) return;
         img.dataset.fallbackApplied = '1';
+        img.removeAttribute('srcset');
         img.src = PLACEHOLDER;
         img.classList.add('img-fallback');
       });
@@ -183,11 +209,17 @@ const Seekho = (() => {
       h = 600,
       className = 'img-cover',
       lazy = true,
-      priority = false
+      priority = false,
+      sizes = '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px'
     } = opts;
     const url = src || PLACEHOLDER;
     const loading = priority || !lazy ? '' : 'loading="lazy"';
-    return `<img src="${url}" alt="${String(alt || '').replace(/"/g, '&quot;')}" width="${w}" height="${h}" ${loading} decoding="async" class="${className}" data-fallback="${PLACEHOLDER}">`;
+    const displaySrc = isCloudinaryUrl(url)
+      ? cloudinaryTransform(url, `f_auto,q_auto,c_limit,w_${Math.min(w, 1600)}`)
+      : url;
+    const srcset = responsiveSrcSet(url);
+    const srcsetAttr = srcset ? `srcset="${srcset}" sizes="${sizes}"` : '';
+    return `<img src="${displaySrc}" ${srcsetAttr} alt="${String(alt || '').replace(/"/g, '&quot;')}" width="${w}" height="${h}" ${loading} decoding="async" class="${className}" data-fallback="${PLACEHOLDER}">`;
   }
 
   function openLightbox(src, alt = '') {

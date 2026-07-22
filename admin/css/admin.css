@@ -1355,3 +1355,39 @@ textarea.form-control--lg { min-height: 200px; }
 .gallery-admin-item {
   overflow: hidden;
 }
+
+.upload-progress {
+  position: relative;
+  margin-top: 0.75rem;
+  height: 1.75rem;
+  border-radius: 999px;
+  background: #ececec;
+  overflow: hidden;
+}
+
+.upload-progress__bar {
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, #f5b700, #e0a800);
+  transition: width 0.15s ease;
+}
+
+.upload-progress__label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #222;
+}
+
+.form-hint--preview {
+  margin-top: 0.4rem;
+  color: #666;
+}
+
+.upload-progress-slot:empty {
+  display: none;
+}

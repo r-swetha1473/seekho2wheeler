@@ -42,10 +42,20 @@ export function logout() {
 }
 
 export async function api(path, options = {}) {
-  const { method = 'GET', body, json, formData, headers = {} } = options;
+  const { method = 'GET', body, json, formData, headers = {}, onProgress } = options;
   const token = getToken();
-  const opts = { method, headers: { ...headers } };
 
+  const base = (typeof window !== 'undefined' && window.SEEKHO_CONFIG && window.SEEKHO_CONFIG.API_BASE_URL)
+    ? String(window.SEEKHO_CONFIG.API_BASE_URL).replace(/\/$/, '')
+    : '';
+  const url = `${base}/api${path}`;
+
+  // XHR path when upload progress is needed
+  if (formData && typeof onProgress === 'function') {
+    return apiUploadXhr(url, { method, formData, token, onProgress });
+  }
+
+  const opts = { method, headers: { ...headers } };
   if (token) opts.headers.Authorization = `Bearer ${token}`;
 
   if (formData) {
@@ -57,10 +67,7 @@ export async function api(path, options = {}) {
     opts.body = body;
   }
 
-  const base = (typeof window !== 'undefined' && window.SEEKHO_CONFIG && window.SEEKHO_CONFIG.API_BASE_URL)
-    ? String(window.SEEKHO_CONFIG.API_BASE_URL).replace(/\/$/, '')
-    : '';
-  const res = await fetch(`${base}/api${path}`, opts);
+  const res = await fetch(url, opts);
   let data;
   try {
     data = await res.json();
@@ -78,6 +85,125 @@ export async function api(path, options = {}) {
   }
 
   return data;
+}
+
+function apiUploadXhr(url, { method = 'POST', formData, token, onProgress }) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open(method, url);
+    if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+
+    xhr.upload.onprogress = (e) => {
+      if (!e.lengthComputable) return;
+      const pct = Math.round((e.loaded / e.total) * 100);
+      onProgress(pct, e.loaded, e.total);
+    };
+
+    xhr.onload = () => {
+      let data;
+      try {
+        data = JSON.parse(xhr.responseText || '{}');
+      } catch {
+        data = { success: false, message: 'Invalid server response' };
+      }
+      if (xhr.status === 401) {
+        logout();
+        reject(new Error('Session expired'));
+        return;
+      }
+      if (xhr.status >= 400 || data.success === false) {
+        reject(new Error(data.message || `Request failed (${xhr.status})`));
+        return;
+      }
+      resolve(data);
+    };
+
+    xhr.onerror = () => reject(new Error('Network error during upload'));
+    xhr.send(formData);
+  });
+}
+
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+
+/** Validate a File is an image ≤ 5MB. Throws Error. */
+export function validateImageFile(file, { maxBytes = MAX_IMAGE_BYTES } = {}) {
+  if (!file) throw new Error('No image selected');
+  if (!file.type.startsWith('image/')) throw new Error('Only image files are allowed');
+  if (file.size > maxBytes) {
+    throw new Error('Image must be 5MB or smaller');
+  }
+  return true;
+}
+
+/**
+ * Compress large images in the browser (canvas → JPEG/WebP).
+ * Skips tiny files. Returns a File ready for FormData.
+ */
+export async function compressImageFile(file, opts = {}) {
+  const {
+    maxWidth = 1920,
+    maxHeight = 1920,
+    quality = 0.82,
+    minBytesToCompress = 700 * 1024
+  } = opts;
+
+  validateImageFile(file);
+  if (file.size < minBytesToCompress) return file;
+
+  const bitmap = await createImageBitmap(file);
+  let { width, height } = bitmap;
+  const scale = Math.min(1, maxWidth / width, maxHeight / height);
+  width = Math.round(width * scale);
+  height = Math.round(height * scale);
+
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(bitmap, 0, 0, width, height);
+  bitmap.close?.();
+
+  const blob = await new Promise((resolve) => {
+    canvas.toBlob(
+      (b) => {
+        if (b) resolve(b);
+        else canvas.toBlob((b2) => resolve(b2), 'image/jpeg', quality);
+      },
+      'image/webp',
+      quality
+    );
+  });
+
+  if (!blob) return file;
+  if (blob.size >= file.size) return file;
+
+  const ext = blob.type === 'image/webp' ? 'webp' : 'jpg';
+  const name = file.name.replace(/\.[^.]+$/, '') + `.${ext}`;
+  return new File([blob], name, { type: blob.type, lastModified: Date.now() });
+}
+
+export async function prepareImageFiles(fileList, compressOpts) {
+  const files = Array.from(fileList || []);
+  const out = [];
+  for (const f of files) {
+    validateImageFile(f);
+    out.push(await compressImageFile(f, compressOpts));
+  }
+  return out;
+}
+
+export function renderUploadProgress(container, pct, label = 'Uploading') {
+  if (!container) return;
+  const safe = Math.max(0, Math.min(100, Number(pct) || 0));
+  container.innerHTML = `
+    <div class="upload-progress" role="progressbar" aria-valuenow="${safe}" aria-valuemin="0" aria-valuemax="100">
+      <div class="upload-progress__bar" style="width:${safe}%"></div>
+      <span class="upload-progress__label">${label}… ${safe}%</span>
+    </div>`;
+}
+
+export function clearUploadProgress(container) {
+  if (container) container.innerHTML = '';
 }
 
 /* ========== UTILITIES ========== */
@@ -118,22 +244,49 @@ export function imagePreview(src, square) {
 }
 
 export function setupImagePreview(input, container, opts = {}) {
-  input.addEventListener('change', () => {
+  input.addEventListener('change', async () => {
     const file = input.files?.[0];
     if (!file) return;
+    try {
+      validateImageFile(file);
+    } catch (err) {
+      toast(err.message, 'error');
+      input.value = '';
+      return;
+    }
     const url = URL.createObjectURL(file);
     const extra = opts.square ? ' image-preview--square' : opts.ratio === '43' ? ' image-preview--43' : opts.ratio === 'blog' ? ' image-preview--blog' : '';
-    container.innerHTML = `<div class="image-preview${extra}"><img src="${url}" alt="Preview"></div>`;
+    const sizeKb = Math.round(file.size / 1024);
+    container.innerHTML = `
+      <div class="image-preview${extra}"><img src="${url}" alt="Preview"></div>
+      <p class="form-hint form-hint--preview">${escapeHtml(file.name)} · ${sizeKb} KB (max 5MB)</p>
+      <div class="upload-progress-slot" id="${opts.progressId || 'uploadProgressSlot'}"></div>`;
   });
 }
 
 export function setupMultiImagePreview(input, container) {
   input.addEventListener('change', () => {
     container.innerHTML = '';
-    Array.from(input.files || []).forEach((file) => {
+    const files = Array.from(input.files || []);
+    for (const file of files) {
+      try {
+        validateImageFile(file);
+      } catch (err) {
+        toast(err.message, 'error');
+        input.value = '';
+        container.innerHTML = '';
+        return;
+      }
+    }
+    files.forEach((file) => {
       const url = URL.createObjectURL(file);
       container.innerHTML += `<div class="image-preview image-preview--square"><img src="${url}" alt="Preview"></div>`;
     });
+    container.insertAdjacentHTML(
+      'beforeend',
+      `<p class="form-hint form-hint--preview">${files.length} image(s) selected · max 5MB each</p>
+       <div class="upload-progress-slot" id="uploadProgressSlot"></div>`
+    );
   });
 }
 
@@ -344,6 +497,8 @@ window.AdminApp = {
   api, toast, confirm, openModal, closeModal,
   escapeHtml, formatDate, formatCurrency, statusBadge,
   imagePreview, setupImagePreview, setupMultiImagePreview,
+  validateImageFile, compressImageFile, prepareImageFiles,
+  renderUploadProgress, clearUploadProgress,
   iconBtn, addBtn, ICONS,
   getToken, logout, loadNotifications
 };
