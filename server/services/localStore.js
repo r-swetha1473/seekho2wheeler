@@ -76,6 +76,11 @@ function readSheet(name) {
 }
 
 function writeSheet(name, data) {
+  // Guard: never persist production bookings/enquiries via local JSON when Sheets is intended
+  const config = require('../config');
+  if (config.sheets.enabled && config.sheets.ready && (name === 'bookings' || name === 'enquiries')) {
+    throw new Error('Refusing to write bookings/enquiries to local JSON while Google Sheets is primary.');
+  }
   ensureDataFiles();
   const file = path.join(DATA_DIR, `${name}.json`);
   fs.writeFileSync(file, JSON.stringify(data, null, 2));

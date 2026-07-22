@@ -44,10 +44,15 @@ app.use('/api/auth/login', rateLimit({ windowMs: 15 * 60 * 1000, max: 20 }));
 
 /* Health check for Vercel / uptime monitors */
 app.get('/api/health', (req, res) => {
+  const config = require('./config');
+  const db = require('./services/db');
   res.json({
     success: true,
     message: 'Seekho API is online',
     env: process.env.VERCEL ? 'vercel' : config.nodeEnv,
+    storage: db.useLocalStore() ? 'local-json (development)' : 'google-sheets (primary)',
+    sheetsEnabled: config.sheets.enabled,
+    sheetsReady: config.sheets.ready,
     time: new Date().toISOString()
   });
 });

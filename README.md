@@ -67,21 +67,44 @@ npm run dev     # start with --watch
 | Testimonials | Photo + video reviews |
 | Settings | Social links, phones, ratings, password |
 
-## Google Sheets (Optional)
+## Google Sheets (Primary Database)
 
-1. Create a Google Cloud service account and a spreadsheet.
-2. Share the sheet with the service account email.
-3. Create tabs named: `banners`, `gallery`, `blogs`, `branches`, `pricing`, `bookings`, `enquiries`, `faqs`, `testimonials`, `settings`, `visits`, `admins`, `notifications`.
-4. Set in `.env`:
+When `GOOGLE_SHEETS_ENABLED=true` **and** credentials are set, Google Sheets is the **only** database.
+
+| Tab | Purpose |
+|-----|---------|
+| `bookings` | Training bookings (permanent) |
+| `enquiries` | Contact form submissions (permanent) |
+| `branches` | Branch locator |
+| `pricing` | Course pricing |
+| `blogs` | Blog posts |
+| `testimonials` | Reviews |
+| `banners`, `gallery`, `faqs`, `settings`, … | Site content |
+
+**Local JSON is development-only** (`GOOGLE_SHEETS_ENABLED=false`).  
+Production bookings are **never** written to local JSON or `/tmp`.
+
+### Setup
+
+1. Google Cloud → create service account → enable **Google Sheets API**
+2. Create a spreadsheet (or use yours) and **share it with the service account email** (Editor)
+3. Set env vars:
 
 ```
 GOOGLE_SHEETS_ENABLED=true
-GOOGLE_SHEETS_ID=your_spreadsheet_id
-GOOGLE_SERVICE_ACCOUNT_EMAIL=...
+GOOGLE_SHEETS_ID=1muxLXxr3iCNtj5-phkJjma1v8ymng7Bw9lHrTlx5kCk
+GOOGLE_SERVICE_ACCOUNT_EMAIL=...@....iam.gserviceaccount.com
 GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
 ```
 
-When Sheets is disabled or unavailable, the app uses `server/data/*.json`.
+4. Create tabs + headers (and optional content seed):
+
+```bash
+npm run init-sheets
+npm run init-sheets -- --seed
+```
+
+5. On Vercel, add the same env vars and redeploy. Verify `/api/health` shows `"storage":"google-sheets (primary)"`.
 
 ## Email Notifications
 
