@@ -86,9 +86,17 @@ Production bookings are **never** written to local JSON or `/tmp`.
 
 ### Setup
 
-1. Google Cloud → create service account → enable **Google Sheets API**
+1. Google Cloud → create service account → enable **Google Sheets API** (+ Drive API optional)
 2. Create a spreadsheet (or use yours) and **share it with the service account email** (Editor)
-3. Set env vars:
+3. Auth — pick **one** mode:
+
+**Mode B (recommended on Windows / Node 22):** download the JSON key and save as:
+
+```
+credentials/service-account.json
+```
+
+**Mode A (env vars):** set email + PEM key (easy to break with escaping on Windows):
 
 ```
 GOOGLE_SHEETS_ENABLED=true
@@ -97,6 +105,8 @@ GOOGLE_SERVICE_ACCOUNT_EMAIL=...@....iam.gserviceaccount.com
 GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
 ```
 
+If Mode A fails with `error:1E08010C:DECODER routines::unsupported`, use Mode B.
+
 4. Create tabs + headers (and optional content seed):
 
 ```bash
@@ -104,7 +114,7 @@ npm run init-sheets
 npm run init-sheets -- --seed
 ```
 
-5. On Vercel, add the same env vars and redeploy. Verify `/api/health` shows `"storage":"google-sheets (primary)"`.
+5. On Vercel, either upload env Mode A vars **or** set `GOOGLE_APPLICATION_CREDENTIALS` / paste the JSON fields. Verify `/api/health` shows `"storage":"google-sheets (primary)"`.
 
 ## Email Notifications
 

@@ -9,8 +9,11 @@ const { google } = require('googleapis');
 const { v4: uuidv4 } = require('uuid');
 const config = require('../config');
 const local = require('./localStore');
+const { createGoogleAuth } = require('./googleAuth');
 
 let sheetsClient = null;
+let sheetsAuthMeta = null;
+let sheetsInitPromise = null;
 const readCache = new Map();
 const CACHE_TTL = 30 * 1000;
 
@@ -118,23 +121,25 @@ function useLocalStore() {
   return !sheetsConfigured();
 }
 
-function getAuth() {
-  if (!sheetsConfigured()) return null;
-  return new google.auth.JWT(
-    config.sheets.clientEmail,
-    null,
-    config.sheets.privateKey,
-    ['https://www.googleapis.com/auth/spreadsheets']
-  );
-}
-
 async function getSheetsApi() {
   if (!sheetsConfigured()) return null;
   if (sheetsClient) return sheetsClient;
-  const auth = getAuth();
-  if (!auth) return null;
-  sheetsClient = google.sheets({ version: 'v4', auth });
-  return sheetsClient;
+  if (!sheetsInitPromise) {
+    sheetsInitPromise = (async () => {
+      const result = await createGoogleAuth({ debug: false });
+      sheetsAuthMeta = result;
+      sheetsClient = google.sheets({ version: 'v4', auth: result.auth });
+      return sheetsClient;
+    })().catch((err) => {
+      sheetsInitPromise = null;
+      throw err;
+    });
+  }
+  return sheetsInitPromise;
+}
+
+function getSheetsAuthMeta() {
+  return sheetsAuthMeta;
 }
 
 function rowsFromValues(sheet, values) {
@@ -344,3 +349,4 @@ module.exports.parseSpreadsheetId = parseSpreadsheetId;
 module.exports.SHEET_HEADERS = SHEET_HEADERS;
 module.exports.sheetsConfigured = sheetsConfigured;
 module.exports.useLocalStore = useLocalStore;
+module.exports.getSheetsAuthMeta = getSheetsAuthMeta;

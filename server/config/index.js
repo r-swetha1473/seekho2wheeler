@@ -1,7 +1,7 @@
 require('dotenv').config();
 
 const path = require('path');
-const fs = require('fs');
+const { normalizePrivateKey, credentialsAvailable, findKeyFile } = require('../services/googleAuth');
 
 /**
  * Normalize spreadsheet ID from URL or raw ID.
@@ -18,12 +18,16 @@ function parseSpreadsheetId(raw) {
 const sheetsEnabled = process.env.GOOGLE_SHEETS_ENABLED === 'true';
 const spreadsheetId = parseSpreadsheetId(process.env.GOOGLE_SHEETS_ID);
 const clientEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || '';
-const privateKey = (process.env.GOOGLE_PRIVATE_KEY || '').replace(/\\n/g, '\n');
+const privateKey = normalizePrivateKey(process.env.GOOGLE_PRIVATE_KEY || '');
+const keyFile = findKeyFile();
+const hasCreds = credentialsAvailable();
 
-if (sheetsEnabled && (!spreadsheetId || !clientEmail || !privateKey)) {
+if (sheetsEnabled && (!spreadsheetId || !hasCreds)) {
   console.warn(
-    '[config] GOOGLE_SHEETS_ENABLED=true but credentials are incomplete. ' +
-      'Set GOOGLE_SHEETS_ID, GOOGLE_SERVICE_ACCOUNT_EMAIL, and GOOGLE_PRIVATE_KEY.'
+    '[config] GOOGLE_SHEETS_ENABLED=true but credentials are incomplete.\n' +
+      '  Need GOOGLE_SHEETS_ID plus either:\n' +
+      '  A) credentials/service-account.json  (recommended on Windows / Node 22)\n' +
+      '  B) GOOGLE_SERVICE_ACCOUNT_EMAIL + real GOOGLE_PRIVATE_KEY (not a placeholder)'
   );
 }
 
@@ -44,8 +48,9 @@ module.exports = {
     spreadsheetId,
     clientEmail,
     privateKey,
+    keyFile,
     /** True when Sheets is fully usable as primary DB */
-    ready: Boolean(sheetsEnabled && spreadsheetId && clientEmail && privateKey)
+    ready: Boolean(sheetsEnabled && spreadsheetId && hasCreds)
   },
   smtp: {
     host: process.env.SMTP_HOST || '',
