@@ -93,6 +93,28 @@ Configure SMTP in `.env` to receive booking/enquiry emails.
 - JSON-LD LocalBusiness + FAQ schema
 - `/sitemap.xml` and `/robots.txt`
 
+## Vercel Deployment
+
+1. Import repo **https://github.com/r-swetha1473/seekho2wheeler**
+2. Set **Root Directory** to repository root (`.`), **not** `public`
+3. Framework Preset: Other
+4. Environment variables:
+
+```
+BASE_URL=https://seekho2wheeler.vercel.app
+NODE_ENV=production
+JWT_SECRET=<long-random-secret>
+ADMIN_EMAIL=admin@seekhoacademy.com
+ADMIN_PASSWORD=<secure-password>
+```
+
+5. Redeploy after setting env vars.
+6. Verify: `https://seekho2wheeler.vercel.app/api/health` returns JSON.
+
+Frontend uses same-origin `/api` via `public/js/config.js` (`API_BASE_URL: ''`).
+Seed defaults ship in `server/seed-defaults/` for cold starts.
+For durable bookings/enquiries, enable Google Sheets (`GOOGLE_SHEETS_ENABLED=true`).
+
 ## Brand
 
 - Primary: `#F5B700`

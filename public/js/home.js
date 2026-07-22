@@ -55,7 +55,28 @@
         navigation: { nextEl: '.hero .swiper-button-next', prevEl: '.hero .swiper-button-prev' }
       });
     } catch (err) {
-      console.error(err);
+      console.error('[home] banners', err);
+      wrap.innerHTML = `
+        <div class="swiper-slide">
+          <div class="hero__slide">
+            <div class="hero__media media-frame media-frame--banner">
+              ${safeImg('/images/banners/seekho-01.webp', 'Seekho Academy', { w: 1920, h: 1080, priority: true })}
+            </div>
+            <div class="hero__overlay"></div>
+            <div class="hero__content">
+              <div class="hero__brand">Seekho Two Wheeler Academy</div>
+              <h1 class="hero__title">Learn To Ride. Build Confidence. Live Independently.</h1>
+              <p class="hero__subtitle">Women-focused scooty & bike training across Kolkata.</p>
+              <div class="hero__actions">
+                <a href="/pages/booking.html" class="btn btn--primary btn--lg">Book Training</a>
+                <button type="button" class="btn btn--outline-white btn--lg" id="retryBanners">Retry Load</button>
+              </div>
+            </div>
+          </div>
+        </div>`;
+      new Swiper('.hero-swiper', { effect: 'fade', fadeEffect: { crossFade: true } });
+      const retry = qs('#retryBanners');
+      if (retry) retry.onclick = () => renderBanners();
     }
   }
 
@@ -81,8 +102,9 @@
             <a href="/pages/booking.html?course=${encodeURIComponent(c.courseName)}" class="btn btn--primary btn--block">Book Now</a>
           </div>
         </article>`).join('');
-    } catch {
-      wrap.innerHTML = '<p class="empty-state">Unable to load courses.</p>';
+    } catch (err) {
+      console.error('[home] courses', err);
+      Seekho.sectionError(wrap, 'Unable to load courses right now. Please try again.', renderCourses);
     }
   }
 
@@ -93,8 +115,9 @@
     let items = [];
     try {
       items = (await api('/gallery')).data;
-    } catch {
-      grid.innerHTML = '<p class="empty-state">Gallery unavailable.</p>';
+    } catch (err) {
+      console.error('[home] gallery', err);
+      Seekho.sectionError(grid, 'Gallery is temporarily unavailable.', () => renderGallery());
       return;
     }
 

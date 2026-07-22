@@ -1,0 +1,26 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/index.js",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": [
+          "server/**",
+          "scripts/seed.js"
+        ]
+      }
+    },
+    { "src": "public/**", "use": "@vercel/static" },
+    { "src": "admin/**", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/index.js" },
+    { "src": "/sitemap.xml", "dest": "/api/index.js" },
+    { "src": "/robots.txt", "dest": "/api/index.js" },
+    { "src": "/blog/(.*)", "dest": "/api/index.js" },
+    { "src": "/admin", "dest": "/admin/index.html" },
+    { "src": "/admin/(.*)", "dest": "/admin/$1" },
+    { "src": "/(.*)", "dest": "/public/$1" }
+  ]
+}

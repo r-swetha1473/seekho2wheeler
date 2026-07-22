@@ -1,0 +1,44 @@
+[
+  {
+    "id": "blog-1",
+    "title": "How to Learn Scooty Without Knowing Cycle",
+    "slug": "how-to-learn-scooty-without-knowing-cycle",
+    "featuredImage": "/images/blogs/seekho-01.webp",
+    "metaTitle": "Learn Scooty Without Cycle | Seekho Academy Kolkata",
+    "metaDescription": "Non-cyclists can learn scooty riding safely. Step-by-step tips from Seekho Two Wheeler Academy trainers in Kolkata.",
+    "content": "<p>Many students believe they must know cycling before learning scooty. At Seekho, that is not true.</p><p>Our trainers start with balance drills, slow control, and gradual traffic exposure — designed especially for non-cyclists and women beginners.</p>",
+    "status": "published",
+    "scheduledAt": null,
+    "publishedAt": "2026-07-22T08:32:31.249Z",
+    "createdAt": "2026-07-22T08:32:31.249Z",
+    "updatedAt": "2026-07-22T08:32:31.249Z"
+  },
+  {
+    "id": "blog-2",
+    "title": "How to Learn Scooty Fast",
+    "slug": "how-to-learn-scooty-fast",
+    "featuredImage": "/images/blogs/seekho-02.webp",
+    "metaTitle": "How to Learn Scooty Fast | Seekho Two Wheeler Academy",
+    "metaDescription": "Practical tips to learn scooty riding faster with professional training in Kolkata.",
+    "content": "<p>Consistency beats intensity. Short, focused sessions with a professional trainer help you progress faster.</p>",
+    "status": "published",
+    "scheduledAt": null,
+    "publishedAt": "2026-07-22T08:32:31.249Z",
+    "createdAt": "2026-07-22T08:32:31.249Z",
+    "updatedAt": "2026-07-22T08:32:31.249Z"
+  },
+  {
+    "id": "blog-3",
+    "title": "Why Women Should Learn Two Wheeler Riding",
+    "slug": "why-women-should-learn-two-wheeler-riding",
+    "featuredImage": "/images/blogs/seekho-07.webp",
+    "metaTitle": "Women Two Wheeler Training Kolkata | Seekho Academy",
+    "metaDescription": "Riding builds independence, confidence and freedom. Discover why women across Kolkata choose Seekho.",
+    "content": "<p>Learning to ride is more than a skill — it is independence. Seekho provides a female-friendly environment so every woman can ride without fear.</p>",
+    "status": "published",
+    "scheduledAt": null,
+    "publishedAt": "2026-07-22T08:32:31.249Z",
+    "createdAt": "2026-07-22T08:32:31.249Z",
+    "updatedAt": "2026-07-22T08:32:31.249Z"
+  }
+]

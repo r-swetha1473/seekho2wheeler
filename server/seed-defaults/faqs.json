@@ -1,0 +1,56 @@
+[
+  {
+    "id": "faq-1",
+    "question": "আমি সাইকেল চালাতে পারি না — স্কুটি শিখতে পারবো?",
+    "answer": "হ্যাঁ! Seekho-তে non-cyclists-দের জন্য বিশেষ ট্রেনিং আছে। হাজারো শিক্ষার্থী সাইকেল না জেনেই স্কুটি ও বাইক শিখেছেন।",
+    "displayOrder": 1,
+    "active": true,
+    "createdAt": "2026-07-22T08:32:31.249Z",
+    "updatedAt": "2026-07-22T08:32:31.249Z"
+  },
+  {
+    "id": "faq-2",
+    "question": "Can women learn in a safe environment?",
+    "answer": "Absolutely. We offer female-friendly batches, patient trainers, and a supportive atmosphere focused on confidence and safety.",
+    "displayOrder": 2,
+    "active": true,
+    "createdAt": "2026-07-22T08:32:31.249Z",
+    "updatedAt": "2026-07-22T08:32:31.249Z"
+  },
+  {
+    "id": "faq-3",
+    "question": "What is the course duration and timing?",
+    "answer": "Duration depends on your progress. We offer flexible morning and evening slots across multiple Kolkata branches.",
+    "displayOrder": 3,
+    "active": true,
+    "createdAt": "2026-07-22T08:32:31.249Z",
+    "updatedAt": "2026-07-22T08:32:31.249Z"
+  },
+  {
+    "id": "faq-4",
+    "question": "Do you provide vehicles for training?",
+    "answer": "Yes. Multiple scooties and bikes are available at each branch so you can practice on academy vehicles.",
+    "displayOrder": 4,
+    "active": true,
+    "createdAt": "2026-07-22T08:32:31.249Z",
+    "updatedAt": "2026-07-22T08:32:31.249Z"
+  },
+  {
+    "id": "faq-5",
+    "question": "Is road / traffic practice included?",
+    "answer": "Yes. After basic control, trainers take students for guided real-traffic practice so you become road-ready.",
+    "displayOrder": 5,
+    "active": true,
+    "createdAt": "2026-07-22T08:32:31.249Z",
+    "updatedAt": "2026-07-22T08:32:31.249Z"
+  },
+  {
+    "id": "faq-6",
+    "question": "How do I book a training slot?",
+    "answer": "Use the Register & Book form on our website, call us, or WhatsApp 9748481630. Choose course, branch, date and time.",
+    "displayOrder": 6,
+    "active": true,
+    "createdAt": "2026-07-22T08:32:31.249Z",
+    "updatedAt": "2026-07-22T08:32:31.249Z"
+  }
+]

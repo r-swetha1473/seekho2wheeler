@@ -1,0 +1,72 @@
+[
+  {
+    "id": "gal-1",
+    "title": "Training moment 1",
+    "category": "Scooty Training",
+    "image": "/images/gallery/seekho-01.webp",
+    "displayOrder": 1,
+    "active": true,
+    "createdAt": "2026-07-22T08:32:31.249Z",
+    "updatedAt": "2026-07-22T08:32:31.249Z"
+  },
+  {
+    "id": "gal-2",
+    "title": "Training moment 2",
+    "category": "Women Riders",
+    "image": "/images/gallery/seekho-02.webp",
+    "displayOrder": 2,
+    "active": true,
+    "createdAt": "2026-07-22T08:32:31.249Z",
+    "updatedAt": "2026-07-22T08:32:31.249Z"
+  },
+  {
+    "id": "gal-3",
+    "title": "Training moment 3",
+    "category": "Bike Training",
+    "image": "/images/gallery/seekho-03.webp",
+    "displayOrder": 3,
+    "active": true,
+    "createdAt": "2026-07-22T08:32:31.249Z",
+    "updatedAt": "2026-07-22T08:32:31.249Z"
+  },
+  {
+    "id": "gal-4",
+    "title": "Training moment 4",
+    "category": "Student Success",
+    "image": "/images/gallery/seekho-04.webp",
+    "displayOrder": 4,
+    "active": true,
+    "createdAt": "2026-07-22T08:32:31.249Z",
+    "updatedAt": "2026-07-22T08:32:31.249Z"
+  },
+  {
+    "id": "gal-5",
+    "title": "Training moment 5",
+    "category": "Road Practice",
+    "image": "/images/gallery/seekho-05.webp",
+    "displayOrder": 5,
+    "active": true,
+    "createdAt": "2026-07-22T08:32:31.249Z",
+    "updatedAt": "2026-07-22T08:32:31.249Z"
+  },
+  {
+    "id": "gal-6",
+    "title": "Training moment 6",
+    "category": "Branch Activities",
+    "image": "/images/gallery/seekho-06.webp",
+    "displayOrder": 6,
+    "active": true,
+    "createdAt": "2026-07-22T08:32:31.249Z",
+    "updatedAt": "2026-07-22T08:32:31.249Z"
+  },
+  {
+    "id": "gal-7",
+    "title": "Training moment 7",
+    "category": "Women Riders",
+    "image": "/images/gallery/seekho-07.webp",
+    "displayOrder": 7,
+    "active": true,
+    "createdAt": "2026-07-22T08:32:31.249Z",
+    "updatedAt": "2026-07-22T08:32:31.249Z"
+  }
+]

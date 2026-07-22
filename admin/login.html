@@ -39,6 +39,7 @@
     </div>
   </div>
 
+  <script src="/js/config.js"></script>
   <script>
     const TOKEN_KEY = 'seekho_admin_token';
 
@@ -67,7 +68,10 @@
       loginBtn.textContent = 'Signing in…';
 
       try {
-        const res = await fetch('/api/auth/login', {
+        const base = (window.SEEKHO_CONFIG && window.SEEKHO_CONFIG.API_BASE_URL)
+          ? String(window.SEEKHO_CONFIG.API_BASE_URL).replace(/\/$/, '')
+          : '';
+        const res = await fetch(`${base}/api/auth/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password })

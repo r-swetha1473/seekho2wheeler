@@ -57,7 +57,10 @@ export async function api(path, options = {}) {
     opts.body = body;
   }
 
-  const res = await fetch(`/api${path}`, opts);
+  const base = (typeof window !== 'undefined' && window.SEEKHO_CONFIG && window.SEEKHO_CONFIG.API_BASE_URL)
+    ? String(window.SEEKHO_CONFIG.API_BASE_URL).replace(/\/$/, '')
+    : '';
+  const res = await fetch(`${base}/api${path}`, opts);
   let data;
   try {
     data = await res.json();

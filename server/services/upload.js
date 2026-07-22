@@ -1,11 +1,13 @@
 const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
-const sharp = require('sharp');
 const { v4: uuidv4 } = require('uuid');
 const config = require('../config');
 
-const UPLOAD_ROOT = path.join(__dirname, '../../public/uploads');
+const IS_VERCEL = Boolean(process.env.VERCEL);
+const UPLOAD_ROOT = IS_VERCEL
+  ? path.join('/tmp', 'seekho-uploads')
+  : path.join(__dirname, '../../public/uploads');
 
 const FOLDERS = {
   banners: 'banners',
@@ -50,26 +52,32 @@ async function processAndSave(file, category = 'general') {
   const folder = FOLDERS[category] || FOLDERS.general;
   const preset = SIZE_PRESETS[category] || SIZE_PRESETS.general;
   const filename = `${uuidv4()}.webp`;
-  const dest = path.join(UPLOAD_ROOT, folder, filename);
+  const destDir = path.join(UPLOAD_ROOT, folder);
+  if (!fs.existsSync(destDir)) fs.mkdirSync(destDir, { recursive: true });
+  const dest = path.join(destDir, filename);
 
-  await sharp(file.buffer)
-    .resize(preset.width, preset.height, {
-      fit: 'cover',
-      position: 'centre',
-      withoutEnlargement: true
-    })
-    .webp({ quality: 82 })
-    .toFile(dest);
+  try {
+    const sharp = require('sharp');
+    await sharp(file.buffer)
+      .resize(preset.width, preset.height, {
+        fit: 'cover',
+        position: 'centre',
+        withoutEnlargement: true
+      })
+      .webp({ quality: 82 })
+      .toFile(dest);
+  } catch (err) {
+    console.warn('[upload] sharp failed, saving raw buffer:', err.message);
+    fs.writeFileSync(dest, file.buffer);
+  }
 
   return `/uploads/${folder}/${filename}`;
 }
 
 async function deleteUpload(urlPath) {
   if (!urlPath || !urlPath.startsWith('/uploads/')) return;
-  const full = path.join(__dirname, '../../public', urlPath);
-  if (fs.existsSync(full)) {
-    fs.unlinkSync(full);
-  }
+  const full = path.join(UPLOAD_ROOT, urlPath.replace(/^\/uploads\//, ''));
+  if (fs.existsSync(full)) fs.unlinkSync(full);
 }
 
 module.exports = {
@@ -77,5 +85,6 @@ module.exports = {
   processAndSave,
   deleteUpload,
   FOLDERS,
-  SIZE_PRESETS
+  SIZE_PRESETS,
+  UPLOAD_ROOT
 };

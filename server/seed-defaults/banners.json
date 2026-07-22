@@ -1,0 +1,62 @@
+[
+  {
+    "id": "banner-1",
+    "title": "Learn To Ride. Build Confidence. Live Independently.",
+    "subtitle": "Premium scooty & bike training for women and beginners across Kolkata.",
+    "ctaText": "Book Training",
+    "ctaLink": "/pages/booking.html",
+    "image": "/images/banners/seekho-01.webp",
+    "displayOrder": 1,
+    "active": true,
+    "createdAt": "2026-07-22T08:32:31.249Z",
+    "updatedAt": "2026-07-22T08:32:31.249Z"
+  },
+  {
+    "id": "banner-2",
+    "title": "Women Empowerment Starts Here.",
+    "subtitle": "Every woman deserves freedom, safety and the confidence to ride alone.",
+    "ctaText": "Start Learning",
+    "ctaLink": "/pages/booking.html",
+    "image": "/images/banners/seekho-07.webp",
+    "displayOrder": 2,
+    "active": true,
+    "createdAt": "2026-07-22T08:32:31.249Z",
+    "updatedAt": "2026-07-22T08:32:31.249Z"
+  },
+  {
+    "id": "banner-3",
+    "title": "Ride Without Fear.",
+    "subtitle": "Patient trainers. Real road practice. Confidence from your first lesson.",
+    "ctaText": "Get Started",
+    "ctaLink": "/pages/booking.html",
+    "image": "/images/banners/seekho-02.webp",
+    "displayOrder": 3,
+    "active": true,
+    "createdAt": "2026-07-22T08:32:31.249Z",
+    "updatedAt": "2026-07-22T08:32:31.249Z"
+  },
+  {
+    "id": "banner-4",
+    "title": "From Beginner To Confident Rider.",
+    "subtitle": "Expert guidance that takes you from zero experience to road-ready.",
+    "ctaText": "Explore Courses",
+    "ctaLink": "/pages/courses.html",
+    "image": "/images/banners/seekho-03.webp",
+    "displayOrder": 4,
+    "active": true,
+    "createdAt": "2026-07-22T08:32:31.249Z",
+    "updatedAt": "2026-07-22T08:32:31.249Z"
+  },
+  {
+    "id": "banner-5",
+    "title": "Thousands Trained Successfully.",
+    "subtitle": "Join Kolkata's trusted two-wheeler academy since 2018.",
+    "ctaText": "Join Today",
+    "ctaLink": "/pages/booking.html",
+    "image": "/images/banners/seekho-05.webp",
+    "displayOrder": 5,
+    "active": true,
+    "createdAt": "2026-07-22T08:32:31.249Z",
+    "updatedAt": "2026-07-22T08:32:31.249Z"
+  }
+]

@@ -1,0 +1,58 @@
+[
+  {
+    "id": "rev-1",
+    "name": "Priya Banerjee",
+    "headline": "Non-Cyclist to Confident Rider",
+    "review": "I never rode a cycle, yet within weeks I was riding scooty alone to work. Trainers were so patient.",
+    "rating": 5,
+    "photo": "/images/testimonials-safe/seekho-01.webp",
+    "videoUrl": "",
+    "type": "text",
+    "displayOrder": 1,
+    "active": true,
+    "createdAt": "2026-07-22T08:32:31.249Z",
+    "updatedAt": "2026-07-22T08:32:31.249Z"
+  },
+  {
+    "id": "rev-2",
+    "name": "Ananya Das",
+    "headline": "Housewife to Independent Rider",
+    "review": "Seekho gave me freedom. Now I drop my kids to school myself. Best decision for my confidence.",
+    "rating": 5,
+    "photo": "/images/testimonials-safe/seekho-07.webp",
+    "videoUrl": "",
+    "type": "video",
+    "displayOrder": 2,
+    "active": true,
+    "createdAt": "2026-07-22T08:32:31.249Z",
+    "updatedAt": "2026-07-22T08:32:31.249Z"
+  },
+  {
+    "id": "rev-3",
+    "name": "Riya Chatterjee",
+    "headline": "From Fear to Freedom",
+    "review": "Ladies batch felt safe and supportive. Road practice built real confidence in Kolkata traffic.",
+    "rating": 5,
+    "photo": "/images/testimonials-safe/seekho-02.webp",
+    "videoUrl": "",
+    "type": "text",
+    "displayOrder": 3,
+    "active": true,
+    "createdAt": "2026-07-22T08:32:31.249Z",
+    "updatedAt": "2026-07-22T08:32:31.249Z"
+  },
+  {
+    "id": "rev-4",
+    "name": "Sourav Ghosh",
+    "headline": "Bike Training Done Right",
+    "review": "Clutch and gear control were taught step by step. Highly recommend for absolute beginners.",
+    "rating": 5,
+    "photo": "/images/testimonials-safe/seekho-03.webp",
+    "videoUrl": "",
+    "type": "text",
+    "displayOrder": 4,
+    "active": true,
+    "createdAt": "2026-07-22T08:32:31.249Z",
+    "updatedAt": "2026-07-22T08:32:31.249Z"
+  }
+]

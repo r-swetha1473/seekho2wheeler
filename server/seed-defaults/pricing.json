@@ -1,0 +1,110 @@
+[
+  {
+    "id": "price-1",
+    "courseName": "Scooty Training",
+    "price": 2500,
+    "duration": "10–15 Days",
+    "description": "Perfect for beginners — balance, control, traffic basics and confident city riding.",
+    "image": "/images/courses/seekho-01.webp",
+    "features": [
+      "Non-cyclists welcome",
+      "Female-friendly trainers",
+      "Flexible timing",
+      "Certificate guidance"
+    ],
+    "displayOrder": 1,
+    "active": true,
+    "createdAt": "2026-07-22T08:32:31.249Z",
+    "updatedAt": "2026-07-22T08:32:31.249Z"
+  },
+  {
+    "id": "price-2",
+    "courseName": "Bike Training",
+    "price": 3000,
+    "duration": "12–18 Days",
+    "description": "Gear shifting, clutch control, balance and real-road motorcycle practice.",
+    "image": "/images/courses/seekho-03.webp",
+    "features": [
+      "Clutch mastery",
+      "Gear practice",
+      "Road confidence",
+      "Patient trainers"
+    ],
+    "displayOrder": 2,
+    "active": true,
+    "createdAt": "2026-07-22T08:32:31.249Z",
+    "updatedAt": "2026-07-22T08:32:31.249Z"
+  },
+  {
+    "id": "price-3",
+    "courseName": "Ladies Training",
+    "price": 2500,
+    "duration": "10–15 Days",
+    "description": "Specially designed sessions for women — safe, supportive and empowering.",
+    "image": "/images/courses/seekho-07.webp",
+    "features": [
+      "Women-first batches",
+      "Safe environment",
+      "Confidence building",
+      "Scooty & bike options"
+    ],
+    "displayOrder": 3,
+    "active": true,
+    "createdAt": "2026-07-22T08:32:31.249Z",
+    "updatedAt": "2026-07-22T08:32:31.249Z"
+  },
+  {
+    "id": "price-4",
+    "courseName": "Electric Vehicle Training",
+    "price": 2800,
+    "duration": "8–12 Days",
+    "description": "Learn to ride electric scooties with modern controls and city practice.",
+    "image": "/images/courses/seekho-04.webp",
+    "features": [
+      "EV basics",
+      "Throttle control",
+      "Battery awareness",
+      "City routes"
+    ],
+    "displayOrder": 4,
+    "active": true,
+    "createdAt": "2026-07-22T08:32:31.249Z",
+    "updatedAt": "2026-07-22T08:32:31.249Z"
+  },
+  {
+    "id": "price-5",
+    "courseName": "Road Practice",
+    "price": 2000,
+    "duration": "5–8 Days",
+    "description": "Real traffic exposure with trainer guidance for everyday independence.",
+    "image": "/images/courses/seekho-05.webp",
+    "features": [
+      "Live traffic",
+      "Signal practice",
+      "Lane discipline",
+      "Defensive riding"
+    ],
+    "displayOrder": 5,
+    "active": true,
+    "createdAt": "2026-07-22T08:32:31.249Z",
+    "updatedAt": "2026-07-22T08:32:31.249Z"
+  },
+  {
+    "id": "price-6",
+    "courseName": "RTO Practice",
+    "price": 1500,
+    "duration": "3–5 Days",
+    "description": "Focused practice for RTO driving test routes and requirements.",
+    "image": "/images/courses/seekho-06.webp",
+    "features": [
+      "Test track drills",
+      "Figure-8 practice",
+      "Document guidance",
+      "Mock tests"
+    ],
+    "displayOrder": 6,
+    "active": true,
+    "createdAt": "2026-07-22T08:32:31.249Z",
+    "updatedAt": "2026-07-22T08:32:31.249Z"
+  }
+]

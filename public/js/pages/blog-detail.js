@@ -24,11 +24,11 @@
     setMeta('meta[name="description"]', desc);
     setMeta('meta[property="og:title"]', blog.title);
     setMeta('meta[property="og:description"]', desc);
-    setMeta('meta[property="og:url"]', `http://localhost:3000/blog/${blog.slug}`);
+    setMeta('meta[property="og:url"]', `${Seekho.siteUrl()}/blog/${blog.slug}`);
     setMeta('meta[name="twitter:title"]', blog.title);
     setMeta('meta[name="twitter:description"]', desc);
     const canonical = document.querySelector('link[rel="canonical"]');
-    if (canonical) canonical.href = `http://localhost:3000/blog/${blog.slug}`;
+    if (canonical) canonical.href = `${Seekho.siteUrl()}/blog/${blog.slug}`;
     const ld = document.getElementById('blogJsonLd');
     if (ld) {
       ld.textContent = JSON.stringify({

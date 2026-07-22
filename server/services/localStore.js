@@ -2,7 +2,12 @@ const path = require('path');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 
-const DATA_DIR = path.join(__dirname, '../data');
+const IS_VERCEL = Boolean(process.env.VERCEL);
+const SEED_DIR = path.join(__dirname, '../seed-defaults');
+const DATA_DIR = IS_VERCEL
+  ? path.join('/tmp', 'seekho-data')
+  : path.join(__dirname, '../data');
+
 const SHEETS = [
   'banners',
   'gallery',
@@ -19,12 +24,43 @@ const SHEETS = [
   'notifications'
 ];
 
+const CONTENT_SHEETS = [
+  'banners',
+  'gallery',
+  'blogs',
+  'branches',
+  'pricing',
+  'faqs',
+  'testimonials',
+  'settings'
+];
+
+function copySeedIfNeeded(name) {
+  const dest = path.join(DATA_DIR, `${name}.json`);
+  if (fs.existsSync(dest)) {
+    try {
+      const existing = JSON.parse(fs.readFileSync(dest, 'utf8'));
+      if (Array.isArray(existing) && existing.length > 0) return;
+    } catch { /* recreate */ }
+  }
+  const seedFile = path.join(SEED_DIR, `${name}.json`);
+  if (fs.existsSync(seedFile)) {
+    fs.copyFileSync(seedFile, dest);
+  } else if (!fs.existsSync(dest)) {
+    fs.writeFileSync(dest, JSON.stringify([], null, 2));
+  }
+}
+
 function ensureDataFiles() {
   if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
   SHEETS.forEach((name) => {
-    const file = path.join(DATA_DIR, `${name}.json`);
-    if (!fs.existsSync(file)) {
-      fs.writeFileSync(file, JSON.stringify([], null, 2));
+    if (CONTENT_SHEETS.includes(name)) {
+      copySeedIfNeeded(name);
+    } else {
+      const file = path.join(DATA_DIR, `${name}.json`);
+      if (!fs.existsSync(file)) {
+        fs.writeFileSync(file, JSON.stringify([], null, 2));
+      }
     }
   });
 }
@@ -97,6 +133,7 @@ async function replaceAll(sheet, rows) {
 
 module.exports = {
   SHEETS,
+  DATA_DIR,
   ensureDataFiles,
   getAll,
   getById,

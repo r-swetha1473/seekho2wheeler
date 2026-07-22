@@ -1,8 +1,11 @@
-/* Seekho — shared frontend utilities */
+/* Seekho — shared frontend utilities (production-ready API layer) */
 const Seekho = (() => {
-  const API = '/api';
+  const cfg = window.SEEKHO_CONFIG || {};
+  const API_BASE = String(cfg.API_BASE_URL || cfg.API_BASE || '').replace(/\/$/, '');
+  const API = `${API_BASE}/api`;
   const cache = new Map();
   const CACHE_TTL = 60 * 1000;
+  const MAX_RETRIES = 2;
 
   function toast(message, type = 'success', title = '') {
     let wrap = document.querySelector('.toast-wrap');
@@ -54,9 +57,14 @@ const Seekho = (() => {
     if (cancelBtn) cancelBtn.onclick = () => overlay.classList.remove('open');
   }
 
+  function sleep(ms) {
+    return new Promise((r) => setTimeout(r, ms));
+  }
+
   async function api(path, options = {}) {
     const method = (options.method || 'GET').toUpperCase();
     const cacheKey = method === 'GET' ? path : null;
+    const retries = options.retries ?? (method === 'GET' ? MAX_RETRIES : 0);
 
     if (cacheKey && cache.has(cacheKey) && !options.nocache) {
       const hit = cache.get(cacheKey);
@@ -68,29 +76,54 @@ const Seekho = (() => {
       headers['Content-Type'] = headers['Content-Type'] || 'application/json';
     }
 
-    const res = await fetch(`${API}${path}`, {
-      ...options,
-      headers,
-      body: options.body instanceof FormData || typeof options.body === 'string'
-        ? options.body
-        : options.body
-          ? JSON.stringify(options.body)
-          : undefined
-    });
+    const url = `${API}${path}`;
+    let lastError;
 
-    let data;
-    try {
-      data = await res.json();
-    } catch {
-      throw new Error('Unable to reach server. Please try again.');
+    for (let attempt = 0; attempt <= retries; attempt += 1) {
+      try {
+        if (attempt > 0) {
+          console.warn(`[Seekho API] retry ${attempt}/${retries}`, url);
+          await sleep(400 * attempt);
+        }
+
+        const res = await fetch(url, {
+          ...options,
+          headers,
+          body: options.body instanceof FormData || typeof options.body === 'string'
+            ? options.body
+            : options.body
+              ? JSON.stringify(options.body)
+              : undefined
+        });
+
+        const contentType = res.headers.get('content-type') || '';
+        let data;
+        if (contentType.includes('application/json')) {
+          data = await res.json();
+        } else {
+          const text = await res.text();
+          console.error('[Seekho API] Non-JSON response', { url, status: res.status, preview: text.slice(0, 180) });
+          throw new Error(
+            res.status === 404
+              ? 'API endpoint not found. Deployment may be missing the server.'
+              : 'Unable to reach server. Please try again.'
+          );
+        }
+
+        if (!res.ok || data.success === false) {
+          throw new Error(data.message || `Request failed (${res.status})`);
+        }
+
+        if (cacheKey) cache.set(cacheKey, { time: Date.now(), data });
+        return data;
+      } catch (err) {
+        lastError = err;
+        console.error('[Seekho API]', { url, attempt, message: err.message });
+        if (attempt === retries) break;
+      }
     }
 
-    if (!res.ok || data.success === false) {
-      throw new Error(data.message || 'Something went wrong. Please try again.');
-    }
-
-    if (cacheKey) cache.set(cacheKey, { time: Date.now(), data });
-    return data;
+    throw lastError || new Error('Unable to reach server. Please try again.');
   }
 
   function clearCache(prefix = '') {
@@ -114,6 +147,10 @@ const Seekho = (() => {
 
   function stars(n = 5) {
     return '★'.repeat(Math.round(n)) + '☆'.repeat(5 - Math.round(n));
+  }
+
+  function siteUrl() {
+    return (cfg.SITE_URL || window.location.origin || '').replace(/\/$/, '');
   }
 
   function lazyImages(root = document) {
@@ -196,7 +233,6 @@ const Seekho = (() => {
 
     if (topBtn) topBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
-    // Active nav
     const path = location.pathname.replace(/\/$/, '') || '/';
     qsa('.nav a').forEach((a) => {
       const href = a.getAttribute('href');
@@ -222,7 +258,7 @@ const Seekho = (() => {
   async function trackVisit() {
     try {
       if (sessionStorage.getItem('seekho_visited')) return;
-      await api('/visits', { method: 'POST', body: {} });
+      await api('/visits', { method: 'POST', body: {}, retries: 0 });
       sessionStorage.setItem('seekho_visited', '1');
     } catch { /* silent */ }
   }
@@ -233,7 +269,8 @@ const Seekho = (() => {
       window.SEEKHO_SETTINGS = res.data;
       applySettings(res.data);
       return res.data;
-    } catch {
+    } catch (err) {
+      console.error('[Seekho] settings failed', err.message);
       return null;
     }
   }
@@ -281,6 +318,17 @@ const Seekho = (() => {
     return ok;
   }
 
+  function sectionError(container, message, onRetry) {
+    if (!container) return;
+    container.innerHTML = `
+      <div class="empty-state api-fallback">
+        <p>${message}</p>
+        ${onRetry ? '<button type="button" class="btn btn--outline btn--sm api-retry-btn">Retry</button>' : ''}
+      </div>`;
+    const btn = container.querySelector('.api-retry-btn');
+    if (btn && onRetry) btn.addEventListener('click', onRetry);
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     initHeader();
     lazyImages();
@@ -290,7 +338,6 @@ const Seekho = (() => {
     if (window.AOS) AOS.init({ duration: 650, once: true, offset: 60 });
   });
 
-  // Catch late-injected images
   const mo = new MutationObserver((mutations) => {
     mutations.forEach((m) => {
       m.addedNodes.forEach((node) => {
@@ -307,7 +354,8 @@ const Seekho = (() => {
   return {
     api, toast, dialog, qs, qsa, formatPrice, formatDate, stars,
     lazyImages, openLightbox, initFaq, loadSettings, validateForm,
-    clearCache, hideLoader, bindImageFallbacks, safeImg, PLACEHOLDER
+    clearCache, hideLoader, bindImageFallbacks, safeImg, PLACEHOLDER,
+    sectionError, siteUrl, API_BASE
   };
 })();
 

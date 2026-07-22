@@ -21,11 +21,11 @@ async function seed() {
   const now = new Date().toISOString();
 
   await replaceAll('banners', [
-    { id: 'banner-1', title: 'Choose Perfect Training For Your Journey', subtitle: 'Learn scooty and bike riding with confidence.', ctaText: 'Book Training', ctaLink: '/pages/booking.html', image: b(1), displayOrder: 1, active: true, createdAt: now, updatedAt: now },
-    { id: 'banner-2', title: 'Women Empowerment Starts Here', subtitle: 'Every woman deserves freedom and confidence.', ctaText: 'Start Learning', ctaLink: '/pages/booking.html', image: b(7), displayOrder: 2, active: true, createdAt: now, updatedAt: now },
-    { id: 'banner-3', title: 'From Beginner To Road Ready', subtitle: 'Expert trainers with practical lessons.', ctaText: 'Explore Courses', ctaLink: '/pages/courses.html', image: b(3), displayOrder: 3, active: true, createdAt: now, updatedAt: now },
-    { id: 'banner-4', title: 'Thousands Trained Successfully', subtitle: "Join Kolkata's trusted riding academy.", ctaText: 'Join Today', ctaLink: '/pages/booking.html', image: b(5), displayOrder: 4, active: true, createdAt: now, updatedAt: now },
-    { id: 'banner-5', title: 'Ride Without Fear', subtitle: 'Confidence begins with your first lesson.', ctaText: 'Get Started', ctaLink: '/pages/booking.html', image: b(2), displayOrder: 5, active: true, createdAt: now, updatedAt: now }
+    { id: 'banner-1', title: 'Learn To Ride. Build Confidence. Live Independently.', subtitle: 'Premium scooty & bike training for women and beginners across Kolkata.', ctaText: 'Book Training', ctaLink: '/pages/booking.html', image: b(1), displayOrder: 1, active: true, createdAt: now, updatedAt: now },
+    { id: 'banner-2', title: 'Women Empowerment Starts Here.', subtitle: 'Every woman deserves freedom, safety and the confidence to ride alone.', ctaText: 'Start Learning', ctaLink: '/pages/booking.html', image: b(7), displayOrder: 2, active: true, createdAt: now, updatedAt: now },
+    { id: 'banner-3', title: 'Ride Without Fear.', subtitle: 'Patient trainers. Real road practice. Confidence from your first lesson.', ctaText: 'Get Started', ctaLink: '/pages/booking.html', image: b(2), displayOrder: 3, active: true, createdAt: now, updatedAt: now },
+    { id: 'banner-4', title: 'From Beginner To Confident Rider.', subtitle: 'Expert guidance that takes you from zero experience to road-ready.', ctaText: 'Explore Courses', ctaLink: '/pages/courses.html', image: b(3), displayOrder: 4, active: true, createdAt: now, updatedAt: now },
+    { id: 'banner-5', title: 'Thousands Trained Successfully.', subtitle: "Join Kolkata's trusted two-wheeler academy since 2018.", ctaText: 'Join Today', ctaLink: '/pages/booking.html', image: b(5), displayOrder: 5, active: true, createdAt: now, updatedAt: now }
   ]);
 
   await replaceAll('pricing', [
