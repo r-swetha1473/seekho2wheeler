@@ -1,10 +1,11 @@
 /**
  * Google authentication for Sheets / Drive.
  *
- * Mode A — Environment variables (email + private key)
- * Mode B — credentials/service-account.json (preferred on Windows / Node 22)
+ * Mode A — GOOGLE_SERVICE_ACCOUNT_EMAIL + GOOGLE_PRIVATE_KEY
+ * Mode B — credentials/service-account.json (local / Windows)
+ * Mode C — GOOGLE_SERVICE_ACCOUNT_JSON (best for Vercel: paste whole JSON as one env var)
  *
- * Automatically falls back to keyFile when env JWT fails (OpenSSL decoder errors).
+ * Automatically tries modes in a reliable order and falls back on OpenSSL failures.
  */
 const fs = require('fs');
 const path = require('path');
@@ -24,12 +25,10 @@ function normalizePrivateKey(raw) {
   if (!raw) return '';
   let key = String(raw).trim();
 
-  // Strip wrapping quotes: "..." or '...'
   if ((key.startsWith('"') && key.endsWith('"')) || (key.startsWith("'") && key.endsWith("'"))) {
     key = key.slice(1, -1);
   }
 
-  // Common .env escape forms
   key = key
     .replace(/\\r\\n/g, '\n')
     .replace(/\\n/g, '\n')
@@ -37,17 +36,14 @@ function normalizePrivateKey(raw) {
     .replace(/\r\n/g, '\n')
     .replace(/\r/g, '\n');
 
-  // Some paste tools turn real newlines into literal "\n" twice
   if (key.includes('\\\\n')) {
     key = key.replace(/\\\\n/g, '\n');
   }
 
-  // Ensure BEGIN/END markers have surrounding newlines
   key = key
     .replace(/-----BEGIN ([A-Z0-9 ]+)-----/g, '-----BEGIN $1-----\n')
     .replace(/\n?-----END ([A-Z0-9 ]+)-----/g, '\n-----END $1-----\n');
 
-  // Collapse accidental blank line spam inside PEM
   key = key.replace(/\n{3,}/g, '\n\n').trim() + '\n';
 
   return key;
@@ -98,6 +94,43 @@ function loadKeyFileJson(filePath) {
   return json;
 }
 
+/**
+ * Parse GOOGLE_SERVICE_ACCOUNT_JSON (raw JSON or base64).
+ * Best option for Vercel — one env var, no PEM escaping issues.
+ */
+function parseServiceAccountJsonEnv(raw) {
+  if (!raw) return null;
+  let text = String(raw).trim();
+  if ((text.startsWith('"') && text.endsWith('"')) || (text.startsWith("'") && text.endsWith("'"))) {
+    text = text.slice(1, -1);
+  }
+
+  let parsed;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    try {
+      const decoded = Buffer.from(text, 'base64').toString('utf8');
+      parsed = JSON.parse(decoded);
+    } catch {
+      return null;
+    }
+  }
+
+  if (!parsed || !parsed.client_email || !parsed.private_key) return null;
+
+  return {
+    ...parsed,
+    private_key: normalizePrivateKey(parsed.private_key)
+  };
+}
+
+function getJsonEnvCredentials() {
+  return parseServiceAccountJsonEnv(
+    process.env.GOOGLE_SERVICE_ACCOUNT_JSON || process.env.GOOGLE_CREDENTIALS_JSON || ''
+  );
+}
+
 function printAuthReport(extra = {}) {
   const pkg = require('../../package.json');
   const googleapisVer = (pkg.dependencies && pkg.dependencies.googleapis) || 'unknown';
@@ -112,15 +145,33 @@ function printAuthReport(extra = {}) {
   console.log('==============================================\n');
 }
 
+async function authFromCredentials(credentials, method, debug) {
+  const auth = new google.auth.GoogleAuth({
+    credentials: {
+      client_email: credentials.client_email,
+      private_key: normalizePrivateKey(credentials.private_key)
+    },
+    scopes: SCOPES
+  });
+  const client = await auth.getClient();
+  await client.getAccessToken();
+  if (debug) console.log(`[auth] ✓ ${method} succeeded`);
+  return {
+    auth: client,
+    method,
+    keyFile: null,
+    clientEmail: credentials.client_email
+  };
+}
+
 /**
  * Create an authenticated Google auth client.
- * Prefers keyFile when present; otherwise env credentials.
- * If env JWT fails with decoder/OpenSSL errors, retries with keyFile.
  */
 async function createGoogleAuth(options = {}) {
   const debug = options.debug !== false;
   const keyFile = findKeyFile();
-  const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || '';
+  const jsonCreds = getJsonEnvCredentials();
+  const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || (jsonCreds && jsonCreds.client_email) || '';
   const rawKey = process.env.GOOGLE_PRIVATE_KEY || '';
   const privateKey = normalizePrivateKey(rawKey);
   const diag = keyDiagnostics('env', privateKey);
@@ -128,25 +179,27 @@ async function createGoogleAuth(options = {}) {
   if (debug) {
     printAuthReport({
       'Key file found': keyFile || '(none)',
+      'JSON env set': Boolean(jsonCreds),
       'Env email set': Boolean(email),
       'Env key length': diag.length,
       'Env key BEGIN': diag.startsWithBegin,
       'Env key END': diag.endsWithEnd,
-      'Env key placeholder': diag.looksPlaceholder,
-      'Env key preview': `${diag.previewStart} ... ${diag.previewEnd}`
+      'Env key placeholder': diag.looksPlaceholder
     });
   }
 
-  if (diag.looksPlaceholder && !keyFile) {
-    const err = new Error(
-      'GOOGLE_PRIVATE_KEY is still a placeholder (YOUR_NEW_PRIVATE_KEY_CONTENT). ' +
-        'Paste the real private_key from your service account JSON, or place the file at credentials/service-account.json'
-    );
-    err.code = 'PLACEHOLDER_KEY';
-    throw err;
+  // Mode C — full JSON in env (Vercel-friendly)
+  if (jsonCreds) {
+    try {
+      if (debug) console.log('[auth] Trying Mode C: GOOGLE_SERVICE_ACCOUNT_JSON');
+      return await authFromCredentials(jsonCreds, 'json-env', debug);
+    } catch (err) {
+      console.error('[auth] Mode C (JSON env) failed:', err.message);
+      if (debug && err.stack) console.error(err.stack);
+    }
   }
 
-  // Mode B first when file exists (most reliable on Node 22 / Windows)
+  // Mode B — key file (local)
   if (keyFile) {
     try {
       if (debug) console.log('[auth] Trying Mode B: GoogleAuth keyFile →', keyFile);
@@ -166,73 +219,86 @@ async function createGoogleAuth(options = {}) {
     } catch (err) {
       console.error('[auth] Mode B (keyFile) failed:', err.message);
       if (debug && err.stack) console.error(err.stack);
-      // fall through to env if available
     }
   }
 
-  // Mode A — env credentials via GoogleAuth credentials object (preferred over legacy JWT ctor)
+  // Mode A — email + private key env vars
   if (email && privateKey && diag.startsWithBegin && diag.endsWithEnd && !diag.looksPlaceholder) {
     try {
-      if (debug) console.log('[auth] Trying Mode A: GoogleAuth credentials (env private key)');
-      const auth = new google.auth.GoogleAuth({
-        credentials: {
-          client_email: email,
-          private_key: privateKey
-        },
-        scopes: SCOPES
-      });
-      const client = await auth.getClient();
-      // Force token fetch to surface OpenSSL errors early
-      await client.getAccessToken();
-      if (debug) console.log('[auth] ✓ Mode A succeeded (env credentials)');
-      return {
-        auth: client,
-        method: 'env',
-        keyFile: null,
-        clientEmail: email
-      };
+      if (debug) console.log('[auth] Trying Mode A: env email + private key');
+      return await authFromCredentials(
+        { client_email: email, private_key: privateKey },
+        'env',
+        debug
+      );
     } catch (err) {
       console.error('[auth] Mode A (env) failed:', err.message);
       if (/DECODER|unsupported|ERR_OSSL|private key/i.test(err.message + (err.stack || ''))) {
         console.error(
-          '[auth] This usually means the PEM private key in .env is corrupted/escaped incorrectly.\n' +
-            '       Fix: use credentials/service-account.json instead of GOOGLE_PRIVATE_KEY on Windows/Node 22.'
+          '[auth] PEM decode failed. On Vercel, set GOOGLE_SERVICE_ACCOUNT_JSON to the full service-account JSON instead.'
         );
       }
       if (debug && err.stack) console.error(err.stack);
-
-      // Last resort: legacy JWT if keyFile appeared after env failure path
-      if (keyFile) {
-        if (debug) console.log('[auth] Retrying Mode B after Mode A failure…');
-        const auth = new google.auth.GoogleAuth({ keyFile, scopes: SCOPES });
-        const client = await auth.getClient();
-        const json = loadKeyFileJson(keyFile);
-        return {
-          auth: client,
-          method: 'keyFile-fallback',
-          keyFile,
-          clientEmail: json.client_email
-        };
-      }
       throw err;
     }
   }
 
+  if (diag.looksPlaceholder) {
+    throw new Error(
+      'GOOGLE_PRIVATE_KEY is a placeholder. On Vercel set GOOGLE_SERVICE_ACCOUNT_JSON to your full service-account JSON.'
+    );
+  }
+
   throw new Error(
     'No usable Google credentials.\n' +
-      'Provide either:\n' +
-      '  A) credentials/service-account.json  (recommended)\n' +
-      '  B) GOOGLE_SERVICE_ACCOUNT_EMAIL + GOOGLE_PRIVATE_KEY in .env'
+      'Provide one of:\n' +
+      '  C) GOOGLE_SERVICE_ACCOUNT_JSON  (recommended on Vercel)\n' +
+      '  B) credentials/service-account.json  (local)\n' +
+      '  A) GOOGLE_SERVICE_ACCOUNT_EMAIL + GOOGLE_PRIVATE_KEY'
   );
 }
 
 function credentialsAvailable() {
-  const keyFile = findKeyFile();
-  if (keyFile) return true;
+  if (getJsonEnvCredentials()) return true;
+  if (findKeyFile()) return true;
   const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || '';
   const privateKey = normalizePrivateKey(process.env.GOOGLE_PRIVATE_KEY || '');
   const diag = keyDiagnostics('check', privateKey);
   return Boolean(email && privateKey && diag.startsWithBegin && diag.endsWithEnd && !diag.looksPlaceholder);
+}
+
+/** Safe diagnostics for /api/health (no secrets). */
+function credentialStatus() {
+  const jsonCreds = getJsonEnvCredentials();
+  const keyFile = findKeyFile();
+  const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || '';
+  const privateKey = normalizePrivateKey(process.env.GOOGLE_PRIVATE_KEY || '');
+  const diag = keyDiagnostics('status', privateKey);
+  const missing = [];
+
+  if (!process.env.GOOGLE_SHEETS_ID) missing.push('GOOGLE_SHEETS_ID');
+  if (!jsonCreds && !keyFile) {
+    if (!email) missing.push('GOOGLE_SERVICE_ACCOUNT_EMAIL');
+    if (!diag.startsWithBegin || !diag.endsWithEnd) missing.push('GOOGLE_PRIVATE_KEY (or GOOGLE_SERVICE_ACCOUNT_JSON)');
+    else if (diag.looksPlaceholder) missing.push('GOOGLE_PRIVATE_KEY is still a placeholder');
+  }
+
+  let hint = 'ok';
+  if (missing.length) {
+    hint =
+      'On Vercel: add GOOGLE_SERVICE_ACCOUNT_JSON = contents of credentials/service-account.json (one line JSON).';
+  }
+
+  return {
+    hasSpreadsheetId: Boolean(process.env.GOOGLE_SHEETS_ID),
+    hasKeyFile: Boolean(keyFile),
+    hasJsonEnv: Boolean(jsonCreds),
+    hasEmail: Boolean(email || (jsonCreds && jsonCreds.client_email)),
+    hasPrivateKey: Boolean(diag.startsWithBegin && diag.endsWithEnd && !diag.looksPlaceholder) || Boolean(jsonCreds),
+    privateKeyLength: diag.length,
+    missing,
+    hint
+  };
 }
 
 module.exports = {
@@ -243,6 +309,9 @@ module.exports = {
   findKeyFile,
   createGoogleAuth,
   credentialsAvailable,
+  credentialStatus,
+  parseServiceAccountJsonEnv,
+  getJsonEnvCredentials,
   printAuthReport,
   loadKeyFileJson
 };

@@ -46,6 +46,8 @@ app.use('/api/auth/login', rateLimit({ windowMs: 15 * 60 * 1000, max: 20 }));
 app.get('/api/health', (req, res) => {
   const config = require('./config');
   const db = require('./services/db');
+  const { credentialStatus } = require('./services/googleAuth');
+  const creds = credentialStatus();
   res.json({
     success: true,
     message: 'Seekho API is online',
@@ -53,6 +55,8 @@ app.get('/api/health', (req, res) => {
     storage: db.useLocalStore() ? 'local-json (development)' : 'google-sheets (primary)',
     sheetsEnabled: config.sheets.enabled,
     sheetsReady: config.sheets.ready,
+    sheetsMissing: creds.missing,
+    sheetsHint: config.sheets.ready ? 'ok' : creds.hint,
     time: new Date().toISOString()
   });
 });

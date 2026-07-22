@@ -26,8 +26,9 @@ if (sheetsEnabled && (!spreadsheetId || !hasCreds)) {
   console.warn(
     '[config] GOOGLE_SHEETS_ENABLED=true but credentials are incomplete.\n' +
       '  Need GOOGLE_SHEETS_ID plus either:\n' +
-      '  A) credentials/service-account.json  (recommended on Windows / Node 22)\n' +
-      '  B) GOOGLE_SERVICE_ACCOUNT_EMAIL + real GOOGLE_PRIVATE_KEY (not a placeholder)'
+      '  C) GOOGLE_SERVICE_ACCOUNT_JSON  (recommended on Vercel)\n' +
+      '  A) credentials/service-account.json  (local)\n' +
+      '  B) GOOGLE_SERVICE_ACCOUNT_EMAIL + real GOOGLE_PRIVATE_KEY'
   );
 }
 

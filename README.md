@@ -114,7 +114,14 @@ npm run init-sheets
 npm run init-sheets -- --seed
 ```
 
-5. On Vercel, either upload env Mode A vars **or** set `GOOGLE_APPLICATION_CREDENTIALS` / paste the JSON fields. Verify `/api/health` shows `"storage":"google-sheets (primary)"`.
+5. On Vercel, set Sheets env vars (JSON mode is most reliable):
+
+```bash
+npm run print-vercel-sheets-env
+```
+
+Paste the printed `GOOGLE_SERVICE_ACCOUNT_JSON` (plus `GOOGLE_SHEETS_ENABLED` / `GOOGLE_SHEETS_ID`) into Vercel → Environment Variables, then **Redeploy**.  
+Verify `/api/health` shows `"storage":"google-sheets (primary)"` and `"sheetsReady":true`.
 
 ## Email Notifications
 

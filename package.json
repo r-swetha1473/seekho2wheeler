@@ -9,6 +9,7 @@
     "seed": "node scripts/seed.js",
     "init-sheets": "node scripts/init-sheets.js",
     "init-sheets:seed": "node scripts/init-sheets.js --seed",
+    "print-vercel-sheets-env": "node scripts/print-vercel-sheets-env.js",
     "optimize-images": "node scripts/optimize-images.js",
     "make-variants": "node scripts/make-variants.js",
     "vercel-build": "node -e \"console.log('Seekho: no frontend build step')\""
