@@ -1,0 +1,12 @@
+node_modules/
+uploads-temp/
+.env
+*.log
+.DS_Store
+Thumbs.db
+public/uploads/**/*
+!public/uploads/**/.gitkeep
+!public/uploads/**/.gitkeep
+server/data/*.json
+!server/data/.gitkeep
+scripts/album-urls.json

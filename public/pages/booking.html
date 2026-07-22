@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register & Book | Seekho Two Wheeler Academy</title>
+  <meta name="description" content="Book your scooty or bike training at Seekho Two Wheeler Academy. Choose course, branch, date and time — instant confirmation across Kolkata.">
+  <link rel="canonical" href="http://localhost:3000/pages/booking.html">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Book Training | Seekho Two Wheeler Academy">
+  <meta property="og:description" content="5-step booking wizard — course, branch, date, time and confirmation.">
+  <meta property="og:url" content="http://localhost:3000/pages/booking.html">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Book Seekho Training">
+  <meta name="twitter:description" content="Register and book your riding lesson in Kolkata.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+  <div class="page-loader"><div class="spinner"></div></div>
+  <div id="site-header-mount"></div>
+
+  <main>
+    <section class="page-hero">
+      <div class="container">
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+          <a href="/">Home</a><span>/</span><span>Register & Book</span>
+        </nav>
+        <h1>Register & Book Training</h1>
+        <p>Complete the 5-step wizard to book your scooty or bike training session.</p>
+      </div>
+    </section>
+
+    <section class="section section--alt">
+      <div class="container">
+        <div class="wizard" data-aos="fade-up">
+          <div class="wizard__steps" role="tablist" aria-label="Booking steps">
+            <div class="wizard__step active" data-step="1"><span>1</span>Course</div>
+            <div class="wizard__step" data-step="2"><span>2</span>Branch</div>
+            <div class="wizard__step" data-step="3"><span>3</span>Date</div>
+            <div class="wizard__step" data-step="4"><span>4</span>Time</div>
+            <div class="wizard__step" data-step="5"><span>5</span>Submit</div>
+          </div>
+
+          <div class="wizard__body">
+            <!-- Step 1: Course -->
+            <div class="wizard__panel active" data-step="1">
+              <h2 style="font-family:var(--font-display);font-size:1.25rem;margin-bottom:1rem">Select Your Course</h2>
+              <p style="color:var(--text-muted);margin-bottom:1.25rem;font-size:0.95rem">Choose the training program that fits your needs.</p>
+              <div class="option-grid" id="courseOptions">
+                <div class="skeleton" style="height:80px"></div>
+                <div class="skeleton" style="height:80px"></div>
+                <div class="skeleton" style="height:80px"></div>
+              </div>
+            </div>
+
+            <!-- Step 2: Branch -->
+            <div class="wizard__panel" data-step="2">
+              <h2 style="font-family:var(--font-display);font-size:1.25rem;margin-bottom:1rem">Choose A Branch</h2>
+              <p style="color:var(--text-muted);margin-bottom:1.25rem;font-size:0.95rem">Pick the nearest Seekho branch for your training.</p>
+              <div class="option-grid" id="branchOptions">
+                <div class="skeleton" style="height:80px"></div>
+                <div class="skeleton" style="height:80px"></div>
+              </div>
+            </div>
+
+            <!-- Step 3: Date -->
+            <div class="wizard__panel" data-step="3">
+              <h2 style="font-family:var(--font-display);font-size:1.25rem;margin-bottom:1rem">Select Date</h2>
+              <p style="color:var(--text-muted);margin-bottom:1.25rem;font-size:0.95rem">Choose your preferred training date.</p>
+              <div class="form-group">
+                <label for="bookingDate">Training Date *</label>
+                <input type="date" id="bookingDate" name="date" required>
+              </div>
+            </div>
+
+            <!-- Step 4: Time -->
+            <div class="wizard__panel" data-step="4">
+              <h2 style="font-family:var(--font-display);font-size:1.25rem;margin-bottom:1rem">Select Time Slot</h2>
+              <p style="color:var(--text-muted);margin-bottom:1.25rem;font-size:0.95rem">Morning and evening slots available.</p>
+              <div class="slot-grid" id="slotOptions">
+                <div class="skeleton" style="height:44px"></div>
+                <div class="skeleton" style="height:44px"></div>
+                <div class="skeleton" style="height:44px"></div>
+              </div>
+            </div>
+
+            <!-- Step 5: Submit -->
+            <div class="wizard__panel" data-step="5">
+              <h2 style="font-family:var(--font-display);font-size:1.25rem;margin-bottom:1rem">Confirm & Submit</h2>
+              <div id="bookingSummary"></div>
+              <form id="bookingForm">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="bookName">Full Name *</label>
+                    <input type="text" id="bookName" name="name" required placeholder="Your name">
+                    <span class="form-error">Required</span>
+                  </div>
+                  <div class="form-group">
+                    <label for="bookPhone">Phone *</label>
+                    <input type="tel" id="bookPhone" name="phone" required placeholder="10-digit mobile">
+                    <span class="form-error">Valid mobile required</span>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="bookEmail">Email</label>
+                  <input type="email" id="bookEmail" name="email" placeholder="you@email.com">
+                </div>
+                <div class="form-group">
+                  <label for="bookMessage">Notes (optional)</label>
+                  <textarea id="bookMessage" name="message" placeholder="Any special requirements…"></textarea>
+                </div>
+                <button type="submit" class="btn btn--primary btn--block">Confirm Booking</button>
+              </form>
+            </div>
+
+            <div class="wizard__nav">
+              <button type="button" class="btn btn--outline" id="wizardPrev" style="visibility:hidden">Back</button>
+              <button type="button" class="btn btn--primary" id="wizardNext">Continue</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer-mount"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+  <script src="/js/layout.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/js/pages/booking.js"></script>
+</body>
+</html>
