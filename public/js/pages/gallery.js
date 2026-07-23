@@ -1,4 +1,4 @@
-/* Gallery — masonry grid + lightbox */
+/* Gallery — uniform grid + lightbox */
 (function () {
   const { api, qs, qsa, openLightbox, safeImg } = Seekho;
 
@@ -16,11 +16,11 @@
   function paint(filter = 'all') {
     if (!grid) return;
     const list = filter === 'all' ? items : items.filter((g) => g.category === filter);
-    grid.className = 'gallery-masonry';
+    grid.className = 'gallery-grid-uniform';
     grid.innerHTML = list.length
-      ? list.map((g, i) => `
-        <div class="gallery-item ${i % 5 === 0 ? 'gallery-item--tall' : ''} media-frame" data-aos="fade-up" data-aos-delay="${(i % 8) * 40}" data-src="${g.image}" data-alt="${escapeHtml(g.title || g.category)}">
-          ${safeImg(g.image, g.title || g.category, { w: 1200, h: 1200 })}
+      ? list.map((g) => `
+        <div class="gallery-item media-frame media-frame--square" data-aos="fade-up" data-src="${g.image}" data-alt="${escapeHtml(g.title || g.category)}" tabindex="0" role="button" aria-label="Open gallery image">
+          ${safeImg(g.image, g.title || g.category, { w: 800, h: 800 })}
           <div class="gallery-item__overlay"><span>${escapeHtml(g.category)}</span><i class="fa-solid fa-expand"></i></div>
         </div>`).join('')
       : '<p class="empty-state">No images in this category.</p>';
@@ -29,7 +29,7 @@
 
   async function init() {
     if (!grid) return;
-    grid.className = 'gallery-masonry';
+    grid.className = 'gallery-grid-uniform';
     grid.innerHTML = Array.from({ length: 6 }, () => '<div class="skeleton media-skeleton" style="height:220px"></div>').join('');
     try {
       items = (await api('/gallery')).data;
@@ -42,6 +42,13 @@
     grid.addEventListener('click', (e) => {
       const item = e.target.closest('.gallery-item');
       if (item) openLightbox(item.dataset.src, item.dataset.alt);
+    });
+    grid.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      const item = e.target.closest('.gallery-item');
+      if (!item) return;
+      e.preventDefault();
+      openLightbox(item.dataset.src, item.dataset.alt);
     });
 
     qsa('.gallery-filters .filter-btn').forEach((btn) => {

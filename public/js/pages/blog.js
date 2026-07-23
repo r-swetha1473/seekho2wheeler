@@ -17,9 +17,10 @@
     grid.innerHTML = Array.from({ length: 3 }, () => '<div class="skeleton media-skeleton" style="height:300px"></div>').join('');
     try {
       const { data } = await api('/blogs');
+      grid.className = 'blog-rail blog-rail--page';
       grid.innerHTML = data.length
-        ? data.map((b, i) => `
-          <article class="blog-card" data-aos="fade-up" data-aos-delay="${(i % 6) * 60}">
+        ? data.map((b) => `
+          <article class="blog-card blog-rail__card">
             <a href="/blog/${b.slug}">
               <div class="blog-card__media media-frame media-frame--blog">
                 ${safeImg(b.featuredImage, b.title, { w: 1200, h: 630 })}

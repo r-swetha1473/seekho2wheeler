@@ -1,4 +1,4 @@
-/* Homepage — framed images with consistent aspect ratios */
+/* Homepage — mobile-first carousels + framed media */
 (async function () {
   const { api, qs, qsa, formatPrice, formatDate, stars, openLightbox, initFaq, toast, safeImg } = Seekho;
 
@@ -52,7 +52,8 @@
         effect: 'fade',
         fadeEffect: { crossFade: true },
         pagination: { el: '.hero .swiper-pagination', clickable: true },
-        navigation: { nextEl: '.hero .swiper-button-next', prevEl: '.hero .swiper-button-prev' }
+        navigation: { nextEl: '.hero .swiper-button-next', prevEl: '.hero .swiper-button-prev' },
+        a11y: { enabled: true }
       });
     } catch (err) {
       console.error('[home] banners', err);
@@ -86,22 +87,41 @@
     wrap.innerHTML = skeletonCards(6, 420);
     try {
       const { data } = await api('/pricing');
-      wrap.className = 'course-grid';
-      wrap.innerHTML = data.map((c, i) => `
-        <article class="course-card" data-aos="fade-up" data-aos-delay="${i * 60}">
-          <div class="course-card__media media-frame media-frame--43">
-            ${safeImg(c.image || `/images/courses/seekho-0${(i % 7) + 1}.webp`, c.courseName, { w: 1200, h: 900 })}
-          </div>
-          <div class="course-card__body">
-            <h3 class="course-card__title">${escapeHtml(c.courseName)}</h3>
-            <p class="course-card__desc">${escapeHtml(c.description || '')}</p>
-            <div class="course-card__meta">
-              <span class="course-card__price">${formatPrice(c.price)}</span>
-              <span class="course-card__duration"><i class="fa-regular fa-clock"></i> ${escapeHtml(c.duration || 'Flexible')}</span>
-            </div>
-            <a href="/pages/booking.html?course=${encodeURIComponent(c.courseName)}" class="btn btn--primary btn--block">Book Now</a>
-          </div>
-        </article>`).join('');
+      wrap.className = 'swiper course-swiper';
+      wrap.setAttribute('aria-label', 'Training courses');
+      wrap.innerHTML = `
+        <div class="swiper-wrapper">
+          ${data.map((c, i) => `
+            <div class="swiper-slide">
+              <article class="course-card">
+                <div class="course-card__media media-frame media-frame--43">
+                  ${safeImg(c.image || `/images/courses/seekho-0${(i % 7) + 1}.webp`, c.courseName, { w: 1200, h: 900 })}
+                </div>
+                <div class="course-card__body">
+                  <h3 class="course-card__title">${escapeHtml(c.courseName)}</h3>
+                  <p class="course-card__desc">${escapeHtml(c.description || '')}</p>
+                  <div class="course-card__meta">
+                    <span class="course-card__price">${formatPrice(c.price)}</span>
+                    <span class="course-card__duration"><i class="fa-regular fa-clock"></i> ${escapeHtml(c.duration || 'Flexible')}</span>
+                  </div>
+                  <a href="/pages/booking.html?course=${encodeURIComponent(c.courseName)}" class="btn btn--primary btn--block">Book Now</a>
+                </div>
+              </article>
+            </div>`).join('')}
+        </div>
+        <div class="swiper-pagination course-swiper__dots"></div>`;
+
+      new Swiper('.course-swiper', {
+        slidesPerView: 1.15,
+        spaceBetween: 16,
+        grabCursor: true,
+        pagination: { el: '.course-swiper__dots', clickable: true },
+        breakpoints: {
+          720: { slidesPerView: 2.15, spaceBetween: 16 },
+          1024: { slidesPerView: 3, spaceBetween: 20 }
+        },
+        a11y: { enabled: true }
+      });
     } catch (err) {
       console.error('[home] courses', err);
       Seekho.sectionError(wrap, 'Unable to load courses right now. Please try again.', renderCourses);
@@ -123,10 +143,10 @@
 
     function paint(filter = 'all') {
       const list = filter === 'all' ? items : items.filter((g) => g.category === filter);
-      grid.className = 'gallery-masonry';
-      grid.innerHTML = list.map((g, i) => `
-        <div class="gallery-item ${i % 5 === 0 ? 'gallery-item--tall' : ''} media-frame" data-src="${g.image}" data-alt="${escapeHtml(g.title || g.category)}">
-          ${safeImg(g.image, g.title || g.category, { w: 1200, h: 1200 })}
+      grid.className = 'gallery-grid-uniform';
+      grid.innerHTML = list.map((g) => `
+        <div class="gallery-item media-frame media-frame--square" data-src="${g.image}" data-alt="${escapeHtml(g.title || g.category)}" tabindex="0" role="button" aria-label="Open ${escapeHtml(g.title || g.category)}">
+          ${safeImg(g.image, g.title || g.category, { w: 800, h: 800 })}
           <div class="gallery-item__overlay"><span>${escapeHtml(g.category)}</span><i class="fa-solid fa-expand"></i></div>
         </div>`).join('') || '<p class="empty-state">No images in this category.</p>';
     }
@@ -135,6 +155,13 @@
     grid.onclick = (e) => {
       const item = e.target.closest('.gallery-item');
       if (item) openLightbox(item.dataset.src, item.dataset.alt);
+    };
+    grid.onkeydown = (e) => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      const item = e.target.closest('.gallery-item');
+      if (!item) return;
+      e.preventDefault();
+      openLightbox(item.dataset.src, item.dataset.alt);
     };
 
     qsa('.gallery-filters .filter-btn').forEach((btn) => {
@@ -146,19 +173,19 @@
     });
   }
 
-  function branchCard(b, i = 0) {
+  function branchCard(b) {
     return `
-      <article class="branch-card" data-aos="fade-up" data-aos-delay="${i * 50}">
-        <div class="branch-card__media media-frame media-frame--43">
-          ${safeImg(b.image, b.name, { w: 1200, h: 900 })}
+      <article class="branch-card branch-rail__card">
+        <div class="branch-card__media media-frame media-frame--banner">
+          ${safeImg(b.image, b.name, { w: 1200, h: 675 })}
         </div>
         <div class="branch-card__body">
-          <h3 class="branch-card__name">${escapeHtml(b.name)}</h3>
-          <p class="branch-card__addr"><i class="fa-solid fa-location-dot"></i> ${escapeHtml(b.address)}</p>
+          <h3 class="branch-card__name">${escapeHtml(b.area || b.name)}</h3>
+          <p class="branch-card__addr"><i class="fa-solid fa-location-dot"></i> ${escapeHtml(b.address || b.name)}</p>
           <a class="branch-card__phone" href="tel:${b.phone}"><i class="fa-solid fa-phone"></i> ${escapeHtml(b.phone)}</a>
           <div class="branch-card__actions">
             <a href="${b.mapsLink || '#'}" target="_blank" rel="noopener" class="btn btn--outline btn--sm"><i class="fa-solid fa-map"></i> Map</a>
-            <a href="/pages/booking.html?branch=${encodeURIComponent(b.name)}" class="btn btn--primary btn--sm">Book Training</a>
+            <a href="/pages/booking.html?branch=${encodeURIComponent(b.name)}" class="btn btn--primary btn--sm">Book</a>
           </div>
         </div>
       </article>`;
@@ -171,7 +198,9 @@
     let allBranches = [];
     try {
       allBranches = (await api('/branches')).data;
-      grid.innerHTML = allBranches.map((b, i) => branchCard(b, i)).join('');
+      grid.className = 'branch-rail';
+      grid.setAttribute('aria-label', 'Branches');
+      grid.innerHTML = allBranches.map((b) => branchCard(b)).join('');
     } catch {
       grid.innerHTML = '<p class="empty-state">Branches unavailable.</p>';
       return;
@@ -184,7 +213,7 @@
         const filtered = !q ? allBranches : allBranches.filter((b) =>
           `${b.name} ${b.area} ${b.address}`.toLowerCase().includes(q)
         );
-        grid.innerHTML = filtered.map((b, i) => branchCard(b, i)).join('')
+        grid.innerHTML = filtered.map((b) => branchCard(b)).join('')
           || '<p class="empty-state">No branches match your search.</p>';
       });
     }
@@ -195,9 +224,11 @@
     if (!grid) return;
     grid.innerHTML = skeletonCards(3, 300);
     try {
-      const { data } = await api('/blogs?limit=3');
-      grid.innerHTML = data.map((b, i) => `
-        <article class="blog-card" data-aos="fade-up" data-aos-delay="${i * 60}">
+      const { data } = await api('/blogs?limit=6');
+      grid.className = 'blog-rail';
+      grid.setAttribute('aria-label', 'Blog posts');
+      grid.innerHTML = data.map((b) => `
+        <article class="blog-card blog-rail__card">
           <a href="/blog/${b.slug}">
             <div class="blog-card__media media-frame media-frame--blog">
               ${safeImg(b.featuredImage, b.title, { w: 1200, h: 630 })}
@@ -205,7 +236,6 @@
             <div class="blog-card__body">
               <div class="blog-card__date">${formatDate(b.publishedAt || b.createdAt)}</div>
               <h3 class="blog-card__title">${escapeHtml(b.title)}</h3>
-              <p class="blog-card__excerpt">${escapeHtml(b.metaDescription || '').slice(0, 110)}...</p>
             </div>
           </a>
         </article>`).join('');
@@ -220,19 +250,49 @@
     grid.innerHTML = skeletonCards(3, 360);
     try {
       const { data } = await api('/testimonials');
-      grid.innerHTML = data.slice(0, 3).map((t, i) => `
-        <article class="testimonial-card" data-aos="fade-up" data-aos-delay="${i * 70}">
-          <div class="testimonial-card__media media-frame media-frame--square media-frame--contain">
-            ${safeImg(t.photo, t.name, { w: 800, h: 800, className: 'img-contain' })}
-            ${t.type === 'video' || t.videoUrl ? '<div class="testimonial-card__play"><i class="fa-solid fa-circle-play"></i></div>' : ''}
-          </div>
-          <div class="testimonial-card__body">
-            <div class="rating-badge__stars" style="color:var(--primary);margin-bottom:0.4rem">${stars(t.rating)}</div>
-            <h3 class="testimonial-card__headline">${escapeHtml(t.headline || 'Student Story')}</h3>
-            <p class="testimonial-card__text">"${escapeHtml(t.review)}"</p>
-            <div class="testimonial-card__author">— ${escapeHtml(t.name)}</div>
-          </div>
-        </article>`).join('');
+      const list = data.length ? data : [];
+      grid.className = 'swiper reviews-swiper';
+      grid.setAttribute('aria-label', 'Student reviews');
+      grid.innerHTML = `
+        <div class="swiper-wrapper">
+          ${list.map((t) => `
+            <div class="swiper-slide">
+              <article class="testimonial-card">
+                <div class="testimonial-card__media media-frame media-frame--square media-frame--contain">
+                  ${safeImg(t.photo, t.name, { w: 800, h: 800, className: 'img-contain' })}
+                  ${t.type === 'video' || t.videoUrl ? '<div class="testimonial-card__play"><i class="fa-solid fa-circle-play"></i></div>' : ''}
+                </div>
+                <div class="testimonial-card__body">
+                  <div class="rating-badge__stars" style="color:var(--primary);margin-bottom:0.4rem">${stars(t.rating)}</div>
+                  <h3 class="testimonial-card__headline">${escapeHtml(t.headline || 'Student Story')}</h3>
+                  <p class="testimonial-card__text">"${escapeHtml(t.review)}"</p>
+                  <div class="testimonial-card__author">— ${escapeHtml(t.name)}</div>
+                </div>
+              </article>
+            </div>`).join('')}
+        </div>
+        <div class="swiper-pagination reviews-swiper__dots"></div>`;
+
+      const swiper = new Swiper('.reviews-swiper', {
+        slidesPerView: 1,
+        spaceBetween: 16,
+        loop: list.length > 1,
+        autoplay: list.length > 1 ? { delay: 4000, disableOnInteraction: false, pauseOnMouseEnter: true } : false,
+        pagination: { el: '.reviews-swiper__dots', clickable: true },
+        breakpoints: {
+          720: { slidesPerView: 2, spaceBetween: 16 },
+          1024: { slidesPerView: 3, spaceBetween: 20 }
+        },
+        a11y: { enabled: true }
+      });
+
+      const el = qs('.reviews-swiper');
+      if (el && swiper.autoplay) {
+        el.addEventListener('touchstart', () => swiper.autoplay.stop(), { passive: true });
+        el.addEventListener('touchend', () => {
+          setTimeout(() => swiper.autoplay.start(), 2500);
+        }, { passive: true });
+      }
     } catch {
       grid.innerHTML = '<p class="empty-state">Reviews unavailable.</p>';
     }

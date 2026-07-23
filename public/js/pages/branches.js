@@ -20,20 +20,21 @@
 
   function render(list) {
     if (!grid) return;
+    grid.className = 'branch-rail branch-rail--page';
     grid.innerHTML = list.length
-      ? list.map((b, i) => `
-        <article class="branch-card" id="${slugify(b.area || b.name)}" data-aos="fade-up" data-aos-delay="${(i % 4) * 50}">
-          <div class="branch-card__media media-frame media-frame--43">
-            ${safeImg(b.image, b.name, { w: 1200, h: 900 })}
+      ? list.map((b) => `
+        <article class="branch-card branch-rail__card" id="${slugify(b.area || b.name)}">
+          <div class="branch-card__media media-frame media-frame--banner">
+            ${safeImg(b.image, b.name, { w: 1200, h: 675 })}
           </div>
           <div class="branch-card__body">
-            <h2 class="branch-card__name">${escapeHtml(b.name)}</h2>
+            <h2 class="branch-card__name">${escapeHtml(b.area || b.name)}</h2>
             <p class="branch-card__addr"><i class="fa-solid fa-location-dot"></i> ${escapeHtml(b.address)}</p>
             <a class="branch-card__phone" href="tel:${b.phone}"><i class="fa-solid fa-phone"></i> ${escapeHtml(b.phone)}</a>
-            ${b.availableCourses?.length ? `<p style="font-size:0.85rem;color:var(--text-muted)">${escapeHtml(b.availableCourses.join(' · '))}</p>` : ''}
+            ${b.availableCourses?.length ? `<p class="branch-card__courses">${escapeHtml(b.availableCourses.join(' · '))}</p>` : ''}
             <div class="branch-card__actions">
-              <a href="${b.mapsLink || '#'}" target="_blank" rel="noopener" class="btn btn--outline btn--sm"><i class="fa-solid fa-map"></i> Google Map</a>
-              <a href="/pages/booking.html?branch=${encodeURIComponent(b.name)}" class="btn btn--primary btn--sm">Book Training</a>
+              <a href="${b.mapsLink || '#'}" target="_blank" rel="noopener" class="btn btn--outline btn--sm"><i class="fa-solid fa-map"></i> Map</a>
+              <a href="/pages/booking.html?branch=${encodeURIComponent(b.name)}" class="btn btn--primary btn--sm">Book</a>
             </div>
           </div>
         </article>`).join('')
