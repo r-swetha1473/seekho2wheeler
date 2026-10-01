@@ -185,6 +185,34 @@ function applyHeaderAliases(sheet, obj) {
     }
     if (classes !== undefined) obj.classes = classes;
   }
+  if (sheet === 'home_sections') {
+    const imageUrl = sheetPick(obj, 'image_url', 'image', 'imageUrl');
+    if (imageUrl !== undefined) obj.image_url = imageUrl;
+    const features = sheetPick(obj, 'features_json', 'features');
+    if (features !== undefined) obj.features_json = features;
+  }
+  if (sheet === 'page_copy') {
+    const title = sheetPick(obj, 'title', 'heading');
+    const subtitle = sheetPick(obj, 'subtitle');
+    const body = sheetPick(obj, 'body_html', 'body', 'html', 'description');
+    const ctaText = sheetPick(obj, 'cta_text', 'ctaText', 'button_text');
+    const ctaLink = sheetPick(obj, 'cta_link', 'ctaLink', 'button_link');
+    const page = sheetPick(obj, 'page');
+    const slot = sheetPick(obj, 'slot');
+    if (title !== undefined) obj.title = title;
+    if (subtitle !== undefined) obj.subtitle = subtitle;
+    if (body !== undefined) obj.body_html = body;
+    if (ctaText !== undefined) obj.cta_text = ctaText;
+    if (ctaLink !== undefined) obj.cta_link = ctaLink;
+    if (page !== undefined) obj.page = page;
+    if (slot !== undefined) obj.slot = slot;
+  }
+  if (sheet === 'detail_pages') {
+    const body = sheetPick(obj, 'body_html', 'body', 'html', 'content');
+    if (body !== undefined) obj.body_html = body;
+    const image = sheetPick(obj, 'hero_image_url', 'image_url', 'image');
+    if (image !== undefined) obj.hero_image_url = image;
+  }
   return obj;
 }
 

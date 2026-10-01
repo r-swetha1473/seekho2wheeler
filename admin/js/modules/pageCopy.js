@@ -271,7 +271,7 @@ function paintEditor(container, items, page, section) {
           if (!el) return;
           payload[f.key] = el.value;
         });
-        if (row && row.id) {
+        if (row && row.id && row.from_seed !== true) {
           await api(`/admin/page-copy/${row.id}`, { method: 'PUT', json: payload });
         } else {
           await api('/admin/page-copy', { method: 'POST', json: payload });

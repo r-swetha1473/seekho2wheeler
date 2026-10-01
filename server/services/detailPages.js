@@ -104,6 +104,26 @@ async function ensureTab() {
   }
 }
 
+function hydrateDetailPages(rows) {
+  const mapped = (rows || []).map(normalizePage).filter((p) => p && p.slug);
+  const bySlug = new Map(mapped.map((p) => [String(p.slug).toLowerCase(), p]));
+  DEFAULT_PAGES.forEach((seed) => {
+    const cur = bySlug.get(seed.slug);
+    if (!cur) {
+      mapped.push({ ...normalizePage(seed), from_seed: true });
+      return;
+    }
+    if (!String(cur.title || '').trim()) cur.title = seed.title;
+    if (!String(cur.hero_image_url || '').trim()) cur.hero_image_url = seed.hero_image_url;
+    if (!String(cur.seo_title || '').trim()) cur.seo_title = seed.seo_title;
+    if (!String(cur.seo_description || '').trim()) cur.seo_description = seed.seo_description;
+    if (!hasBody(cur.body_html) && seed.slug === 'our-mission' && hasBody(seed.body_html)) {
+      cur.body_html = seed.body_html;
+    }
+  });
+  return mapped;
+}
+
 async function listPages() {
   if (!(db.allowRuntimeSeed && !db.allowRuntimeSeed())) {
     await ensureTab();
@@ -119,7 +139,7 @@ async function listPages() {
   if (!(db.allowRuntimeSeed && !db.allowRuntimeSeed())) {
     rows = await ensureOurMissionRow(rows);
   }
-  return rows.map(normalizePage).filter((p) => p && p.slug);
+  return hydrateDetailPages(rows);
 }
 
 async function ensureOurMissionRow(rows) {
@@ -197,9 +217,12 @@ async function updatePage(id, payload) {
   if (!current) return { ok: false, message: 'Page not found', status: 404 };
   const title = payload.title !== undefined ? String(payload.title || '').trim() : current.title;
   if (!title) return { ok: false, message: 'Title is required' };
+  const raw = await db.getAll('detail_pages');
+  const inSheet = raw.find((r) => String(r.id) === String(id))
+    || raw.find((r) => String(r.slug || '').toLowerCase() === String(current.slug || '').toLowerCase());
   let slug = current.slug;
   if (payload.slug !== undefined || payload.title !== undefined) {
-    slug = await uniqueSlug(makeSlug(title, payload.slug !== undefined ? payload.slug : current.slug), current.id);
+    slug = await uniqueSlug(makeSlug(title, payload.slug !== undefined ? payload.slug : current.slug), inSheet ? inSheet.id : current.id);
   }
   const next = {
     ...current,
@@ -212,7 +235,11 @@ async function updatePage(id, payload) {
     is_active: payload.is_active !== undefined ? parseBool(payload.is_active, true) : current.is_active,
     created_at: current.created_at
   };
-  const saved = await db.update('detail_pages', id, toSheetRow(next));
+  if (!inSheet) {
+    const created = await db.create('detail_pages', toSheetRow(next));
+    return { ok: true, data: normalizePage(created) };
+  }
+  const saved = await db.update('detail_pages', inSheet.id, toSheetRow({ ...next, id: inSheet.id }));
   return { ok: true, data: normalizePage(saved) };
 }
 

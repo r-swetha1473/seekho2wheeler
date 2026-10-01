@@ -141,7 +141,27 @@ async function listSections() {
   await ensureTab();
   let rows = await db.getAll('home_sections');
   if (db.allowRuntimeSeed && !db.allowRuntimeSeed()) {
-    return rows.map(normalizeSection).filter(Boolean).sort((a, b) => a.sort_order - b.sort_order);
+    const mapped = rows.map(normalizeSection).filter(Boolean);
+    const keys = new Set(mapped.map((r) => r.key));
+    SECTION_SEEDS.forEach((seed) => {
+      if (!keys.has(seed.key)) {
+        mapped.push({ ...normalizeSection(seed), from_seed: true });
+        return;
+      }
+      const i = mapped.findIndex((r) => r.key === seed.key);
+      if (i < 0) return;
+      const cur = mapped[i];
+      mapped[i] = {
+        ...cur,
+        title: cur.title && String(cur.title).replace(/<[^>]+>/g, '').trim() ? cur.title : seed.title,
+        subtitle: cur.subtitle && String(cur.subtitle).trim() ? cur.subtitle : seed.subtitle,
+        description: cur.description && String(cur.description).replace(/<[^>]+>/g, '').trim() ? cur.description : seed.description,
+        image_url: cur.image_url || seed.image_url,
+        features: (cur.features && cur.features.length) ? cur.features : parseFeatures(seed.features_json),
+        link_slug: cur.link_slug || seed.link_slug
+      };
+    });
+    return mapped.sort((a, b) => a.sort_order - b.sort_order);
   }
   for (const seed of SECTION_SEEDS) {
     if (!rows.some((r) => r.key === seed.key)) {
@@ -194,7 +214,14 @@ async function saveSectionByKey(key, payload) {
   };
 
   const row = toSheetRow(next);
-  const saved = await db.update('home_sections', current.id, row);
+  const raw = await db.getAll('home_sections');
+  const inSheet = raw.find((r) => String(r.id) === String(current.id))
+    || raw.find((r) => r.key === key);
+  if (!inSheet) {
+    const created = await db.create('home_sections', row);
+    return { ok: true, data: normalizeSection(created) };
+  }
+  const saved = await db.update('home_sections', inSheet.id, { ...row, id: inSheet.id });
   return { ok: true, data: normalizeSection(saved || row) };
 }
 

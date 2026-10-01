@@ -290,33 +290,65 @@ async function ensureTab() {
   if (typeof db.ensureSheetTab === 'function') await db.ensureSheetTab('page_copy');
 }
 
+function copyIsBlank(val) {
+  return !String(val || '').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/gi, ' ').trim();
+}
+
+function hydrateFromSeed(rows) {
+  const byKey = new Map();
+  (rows || []).forEach((r) => {
+    const n = normalize(r);
+    if (!n || !n.page || !n.slot) return;
+    byKey.set(`${n.page}.${n.slot}`, n);
+  });
+  const out = [];
+  COPY_SEED.forEach((seed) => {
+    const key = `${seed.page}.${seed.slot}`;
+    const existing = byKey.get(key);
+    if (!existing) {
+      out.push({ ...normalize(seed), id: seed.id, from_seed: true });
+    } else {
+      out.push({
+        ...existing,
+        title: copyIsBlank(existing.title) ? seed.title : existing.title,
+        subtitle: copyIsBlank(existing.subtitle) ? seed.subtitle : existing.subtitle,
+        body_html: copyIsBlank(existing.body_html) ? seed.body_html : existing.body_html,
+        cta_text: copyIsBlank(existing.cta_text) ? seed.cta_text : existing.cta_text,
+        cta_link: copyIsBlank(existing.cta_link) ? seed.cta_link : existing.cta_link,
+        from_seed: false
+      });
+      byKey.delete(key);
+    }
+  });
+  byKey.forEach((extra) => out.push(extra));
+  return out.sort((a, b) => a.sort_order - b.sort_order || a.page.localeCompare(b.page));
+}
+
 async function listAll() {
   await ensureTab();
   let rows = await db.getAll('page_copy');
+  const persist = !(db.allowRuntimeSeed && !db.allowRuntimeSeed());
   const now = new Date().toISOString();
-  if (db.allowRuntimeSeed && !db.allowRuntimeSeed()) {
-    return rows.map(normalize).filter((r) => r && r.page && r.slot)
-      .sort((a, b) => a.sort_order - b.sort_order || a.page.localeCompare(b.page));
-  }
-  if (!rows.length) {
-    for (const seed of COPY_SEED) {
-      await db.create('page_copy', { ...seed, created_at: now, updated_at: now });
-    }
-    rows = await db.getAll('page_copy');
-  } else {
-    const have = new Set(rows.map((r) => `${String(r.page || '').trim()}.${String(r.slot || '').trim()}`));
-    let added = false;
-    for (const seed of COPY_SEED) {
-      const key = `${seed.page}.${seed.slot}`;
-      if (!have.has(key)) {
+  if (persist) {
+    if (!rows.length) {
+      for (const seed of COPY_SEED) {
         await db.create('page_copy', { ...seed, created_at: now, updated_at: now });
-        added = true;
       }
+      rows = await db.getAll('page_copy');
+    } else {
+      const have = new Set(rows.map((r) => `${String(r.page || '').trim()}.${String(r.slot || '').trim()}`));
+      let added = false;
+      for (const seed of COPY_SEED) {
+        const key = `${seed.page}.${seed.slot}`;
+        if (!have.has(key)) {
+          await db.create('page_copy', { ...seed, created_at: now, updated_at: now });
+          added = true;
+        }
+      }
+      if (added) rows = await db.getAll('page_copy');
     }
-    if (added) rows = await db.getAll('page_copy');
   }
-  return rows.map(normalize).filter((r) => r && r.page && r.slot)
-    .sort((a, b) => a.sort_order - b.sort_order || a.page.localeCompare(b.page));
+  return hydrateFromSeed(rows);
 }
 
 async function listPublic() {
@@ -349,17 +381,27 @@ function build(payload, existing) {
 async function createItem(payload) {
   const built = build(payload, null);
   if (!built.ok) return built;
+  const raw = (await db.getAll('page_copy')).map(normalize).filter(Boolean);
+  const dup = raw.find((r) => r.page === built.row.page && r.slot === built.row.slot);
+  if (dup && dup.id) {
+    return updateItem(dup.id, payload);
+  }
   const created = await db.create('page_copy', built.row);
   return { ok: true, data: normalize(created) };
 }
 
 async function updateItem(id, payload) {
-  const all = await listAll();
-  const current = all.find((i) => String(i.id) === String(id));
-  if (!current) return { ok: false, status: 404, message: 'Copy block not found' };
+  const raw = (await db.getAll('page_copy')).map(normalize).filter(Boolean);
+  let current = raw.find((i) => String(i.id) === String(id));
+  if (!current && payload && payload.page && payload.slot) {
+    current = raw.find((i) => i.page === payload.page && i.slot === payload.slot);
+  }
+  if (!current) {
+    return createItem(payload);
+  }
   const built = build(payload, current);
   if (!built.ok) return built;
-  const saved = await db.update('page_copy', id, { ...built.row, id });
+  const saved = await db.update('page_copy', current.id, { ...built.row, id: current.id });
   return { ok: true, data: normalize(saved || { ...current, ...built.row }) };
 }
 
