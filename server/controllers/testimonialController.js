@@ -1,5 +1,6 @@
 const db = require('../services/db');
 const { processAndSave, deleteUpload } = require('../services/upload');
+const { sanitizeHtml, parseBool } = require('../utils/sanitizeHtml');
 
 exports.listPublic = async (req, res, next) => {
   try {
@@ -34,14 +35,15 @@ exports.create = async (req, res, next) => {
 
     const item = await db.create('testimonials', {
       name,
-      review,
+      review: sanitizeHtml(review),
       rating: Number(rating || 5),
       photo,
       videoUrl: videoUrl || '',
       type: type || 'text',
       headline: headline || '',
       displayOrder: Number(displayOrder || 0),
-      active: active !== 'false' && active !== false
+      active: active !== 'false' && active !== false,
+      title_bold: parseBool(req.body.title_bold)
     });
     res.status(201).json({ success: true, message: 'Testimonial created', data: item });
   } catch (err) {
@@ -60,6 +62,8 @@ exports.update = async (req, res, next) => {
       payload.photo = await processAndSave(req.file, 'testimonials');
     }
     if (payload.rating !== undefined) payload.rating = Number(payload.rating);
+    if (payload.review !== undefined) payload.review = sanitizeHtml(payload.review);
+    if (payload.title_bold !== undefined) payload.title_bold = parseBool(payload.title_bold);
 
     const item = await db.update('testimonials', req.params.id, payload);
     res.json({ success: true, message: 'Testimonial updated', data: item });

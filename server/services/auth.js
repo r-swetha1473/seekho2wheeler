@@ -2,19 +2,56 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
 const db = require('./db');
+const { AppError, publicSheetsMessage } = require('../utils/httpError');
 
+function assertLoginConfig() {
+  const email = String(config.admin.email || '').trim();
+  const password = String(config.admin.password || '');
+  if (!email || !password) {
+    throw new AppError(
+      'ADMIN_EMAIL or ADMIN_PASSWORD is not set',
+      503,
+      'Admin login is not configured. Set ADMIN_EMAIL and ADMIN_PASSWORD on the server.'
+    );
+  }
+
+  if (config.sheets.enabled && !config.sheets.ready) {
+    throw new AppError(
+      'GOOGLE_SHEETS_ENABLED=true but spreadsheet ID or credentials are missing',
+      503,
+      'Google Sheets is not configured. Set GOOGLE_SHEETS_ID and service account credentials (GOOGLE_SERVICE_ACCOUNT_JSON recommended on Vercel).'
+    );
+  }
+}
+
+/**
+ * Ensure the admins tab and bootstrap row exist.
+ * Missing tab/headers are created at runtime — never throw a generic 500.
+ */
 async function ensureAdmin() {
-  const admins = await db.getAll('admins');
-  if (admins.length) return admins[0];
+  assertLoginConfig();
 
-  const hash = await bcrypt.hash(config.admin.password, 12);
-  return db.create('admins', {
-    email: config.admin.email.toLowerCase(),
-    password: hash,
-    name: 'Seekho Admin',
-    role: 'admin',
-    active: true
-  });
+  try {
+    if (db.isSheetsMode()) {
+      await db.ensureSheetTab('admins');
+    }
+
+    const admins = await db.getAll('admins');
+    if (admins.length) return admins[0];
+
+    const hash = await bcrypt.hash(config.admin.password, 12);
+    return db.create('admins', {
+      email: config.admin.email.toLowerCase(),
+      password: hash,
+      name: 'Seekho Admin',
+      role: 'admin',
+      active: true
+    });
+  } catch (err) {
+    if (err instanceof AppError) throw err;
+    console.error('[auth] ensureAdmin failed:', err.message);
+    throw new AppError(err.message, 503, publicSheetsMessage(err));
+  }
 }
 
 async function login(email, password) {

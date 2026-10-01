@@ -1,3 +1,5 @@
+import { bindRichText } from './richtext.js';
+
 export const TOKEN_KEY = 'seekho_admin_token';
 
 const ROUTE_TITLES = {
@@ -6,7 +8,14 @@ const ROUTE_TITLES = {
   gallery: 'Gallery',
   blogs: 'Blogs',
   branches: 'Branches',
-  pricing: 'Pricing',
+  pricing: 'Courses',
+  doorstep: 'Doorstep Pricing',
+  'doorstep-section': 'Doorstep Section',
+  details: 'Detail Pages',
+  'why-choose': 'Why Choose Seekho',
+  chatbot: 'Chatbot',
+  updates: 'Updates',
+  copy: 'Content Management',
   bookings: 'Bookings',
   enquiries: 'Enquiries',
   faqs: 'FAQs',
@@ -21,6 +30,13 @@ const MODULES = {
   blogs: () => import('./modules/blogs.js'),
   branches: () => import('./modules/branches.js'),
   pricing: () => import('./modules/pricing.js'),
+  doorstep: () => import('./modules/doorstep.js'),
+  'doorstep-section': () => import('./modules/doorstepSection.js'),
+  details: () => import('./modules/details.js'),
+  'why-choose': () => import('./modules/whyChoose.js'),
+  chatbot: () => import('./modules/chatbot.js'),
+  updates: () => import('./modules/updates.js'),
+  copy: () => import('./modules/pageCopy.js'),
   bookings: () => import('./modules/bookings.js'),
   enquiries: () => import('./modules/enquiries.js'),
   faqs: () => import('./modules/faqs.js'),
@@ -34,6 +50,10 @@ let confirmResolve = null;
 /* ========== API ========== */
 export function getToken() {
   return localStorage.getItem(TOKEN_KEY);
+}
+
+export function setUnsaved(flag) {
+  window.__seekhoUnsaved = !!flag;
 }
 
 export function logout() {
@@ -55,7 +75,7 @@ export async function api(path, options = {}) {
     return apiUploadXhr(url, { method, formData, token, onProgress });
   }
 
-  const opts = { method, headers: { ...headers } };
+  const opts = { method, headers: { ...headers }, cache: 'no-store' };
   if (token) opts.headers.Authorization = `Bearer ${token}`;
 
   if (formData) {
@@ -227,12 +247,12 @@ export function formatDate(iso) {
 }
 
 export function formatCurrency(n) {
-  return '₹' + Number(n || 0).toLocaleString('en-IN');
+  return '₹' + Number(n || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 export function statusBadge(status) {
   const s = (status || '').toLowerCase();
-  const cls = ['pending', 'confirmed', 'completed', 'cancelled', 'new', 'read', 'resolved', 'active', 'inactive', 'published', 'draft', 'scheduled'].includes(s)
+  const cls = ['pending', 'confirmed', 'completed', 'cancelled', 'new', 'read', 'resolved', 'active', 'inactive', 'published', 'draft', 'scheduled', 'live', 'expired'].includes(s)
     ? s : 'read';
   return `<span class="badge badge--${cls}">${escapeHtml(status || '—')}</span>`;
 }
@@ -350,6 +370,7 @@ export function openModal({ title, body, footer, size }) {
   document.getElementById('modalFooter').innerHTML = footer || '';
   modal.classList.toggle('modal--lg', size === 'lg');
   backdrop.classList.add('show');
+  bindRichText(document.getElementById('modalBody'));
 }
 
 export function closeModal() {
@@ -443,7 +464,29 @@ async function init() {
     return;
   }
 
-  window.addEventListener('hashchange', navigate);
+  let savedHash = location.hash || '#dashboard';
+  window.addEventListener('beforeunload', (e) => {
+    if (!window.__seekhoUnsaved) return;
+    e.preventDefault();
+    e.returnValue = '';
+  });
+  window.addEventListener('hashchange', () => {
+    if (window.__seekhoIgnoreHash) {
+      window.__seekhoIgnoreHash = false;
+      return;
+    }
+    if (window.__seekhoUnsaved) {
+      const leave = window.confirm('You have unsaved changes. Are you sure you want to leave?');
+      if (!leave) {
+        window.__seekhoIgnoreHash = true;
+        history.replaceState(null, '', savedHash);
+        return;
+      }
+      window.__seekhoUnsaved = false;
+    }
+    savedHash = location.hash || '#dashboard';
+    navigate();
+  });
   navigate();
   loadNotifications();
 

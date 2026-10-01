@@ -1,6 +1,6 @@
 /* FAQ page */
 (function () {
-  const { api, qs, initFaq } = Seekho;
+  const { api, qs, initFaq, sanitizeHtml, formatTitle, stripHtml } = Seekho;
 
   const list = qs('#faqList');
 
@@ -18,8 +18,8 @@
       const { data } = await api('/faqs');
       list.innerHTML = data.map((f) => `
         <div class="faq-item">
-          <button class="faq-item__q" type="button">${escapeHtml(f.question)} <i class="fa-solid fa-chevron-down"></i></button>
-          <div class="faq-item__a">${escapeHtml(f.answer)}</div>
+          <button class="faq-item__q" type="button">${formatTitle(f.question, f.title_bold)} <i class="fa-solid fa-chevron-down"></i></button>
+          <div class="faq-item__a rich-html">${sanitizeHtml(f.answer)}</div>
         </div>`).join('');
       initFaq(list);
 
@@ -30,8 +30,8 @@
           '@type': 'FAQPage',
           mainEntity: data.map((f) => ({
             '@type': 'Question',
-            name: f.question,
-            acceptedAnswer: { '@type': 'Answer', text: f.answer }
+            name: stripHtml(f.question),
+            acceptedAnswer: { '@type': 'Answer', text: stripHtml(f.answer) }
           }))
         });
       }

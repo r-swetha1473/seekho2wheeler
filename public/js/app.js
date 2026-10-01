@@ -29,6 +29,49 @@ const Seekho = (() => {
     }, 3800);
   }
 
+  function sanitizeHtml(html) {
+    if (window.SeekhoSanitize && typeof window.SeekhoSanitize.sanitizeHtml === 'function') {
+      return window.SeekhoSanitize.sanitizeHtml(html);
+    }
+    return String(html || '');
+  }
+
+  function stripHtml(html) {
+    if (window.SeekhoSanitize && typeof window.SeekhoSanitize.stripHtml === 'function') {
+      return window.SeekhoSanitize.stripHtml(html);
+    }
+    return String(html || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+
+  function formatTitle(text, bold) {
+    if (window.SeekhoSanitize && typeof window.SeekhoSanitize.formatTitle === 'function') {
+      return window.SeekhoSanitize.formatTitle(text, bold);
+    }
+    const safe = String(text || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+    return bold ? `<strong>${safe}</strong>` : safe;
+  }
+
+  function courseDetailHref(c) {
+    const slug = encodeURIComponent(c && (c.slug || '') || '');
+    return `/pages/detail.html?type=course&slug=${slug}`;
+  }
+
+  function sectionCardHref(section) {
+    const slug = (section && section.link_slug) || '';
+    if (!slug) return '/pages/detail.html';
+    return `/p/${encodeURIComponent(slug)}`;
+  }
+
+  function classesLabel(c) {
+    const n = Number(c && c.classes);
+    const count = Number.isFinite(n) && n >= 1 ? n : 1;
+    return `${count} classes`;
+  }
+
   function dialog({ title, message, type = 'info', confirmText = 'OK', cancelText = null, onConfirm }) {
     let overlay = document.querySelector('.dialog-overlay');
     if (!overlay) {
@@ -66,7 +109,9 @@ const Seekho = (() => {
     const cacheKey = method === 'GET' ? path : null;
     const retries = options.retries ?? (method === 'GET' ? MAX_RETRIES : 0);
 
-    if (cacheKey && cache.has(cacheKey) && !options.nocache) {
+    const liveCms = path.startsWith('/admin/')
+      || /^\/(banners|home-sections|page-copy|settings|why-choose|updates)(\/|$)/.test(path);
+    if (cacheKey && !liveCms && cache.has(cacheKey) && !options.nocache) {
       const hit = cache.get(cacheKey);
       if (Date.now() - hit.time < CACHE_TTL) return hit.data;
     }
@@ -88,6 +133,7 @@ const Seekho = (() => {
 
         const res = await fetch(url, {
           ...options,
+          cache: options.cache || 'no-store',
           headers,
           body: options.body instanceof FormData || typeof options.body === 'string'
             ? options.body
@@ -114,7 +160,7 @@ const Seekho = (() => {
           throw new Error(data.message || `Request failed (${res.status})`);
         }
 
-        if (cacheKey) cache.set(cacheKey, { time: Date.now(), data });
+        if (cacheKey && !liveCms) cache.set(cacheKey, { time: Date.now(), data });
         return data;
       } catch (err) {
         lastError = err;
@@ -137,7 +183,7 @@ const Seekho = (() => {
   function qsa(sel, root = document) { return [...root.querySelectorAll(sel)]; }
 
   function formatPrice(n) {
-    return `₹${Number(n).toLocaleString('en-IN')}`;
+    return `₹${Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   }
 
   function formatDate(iso) {
@@ -297,21 +343,188 @@ const Seekho = (() => {
 
   async function loadSettings() {
     try {
-      const res = await api('/settings');
-      window.SEEKHO_SETTINGS = res.data;
-      applySettings(res.data);
-      return res.data;
+      const [setRes, copyRes] = await Promise.all([
+        api('/settings'),
+        api('/page-copy').catch(() => ({ data: [] }))
+      ]);
+      window.SEEKHO_SETTINGS = setRes.data;
+      applyPageCopy(copyRes.data);
+      applySettings(setRes.data);
+      return setRes.data;
     } catch (err) {
       console.error('[Seekho] settings failed', err.message);
       return null;
     }
   }
 
+  function applyPageCopy(items) {
+    const map = {};
+    (items || []).forEach((r) => {
+      if (r && r.is_active !== false && r.page && r.slot) map[`${r.page}.${r.slot}`] = r;
+    });
+    window.SEEKHO_COPY = map;
+    qsa('[data-copy]').forEach((el) => {
+      const key = el.getAttribute('data-copy');
+      const fieldAttr = el.getAttribute('data-copy-field');
+      const field = fieldAttr || 'title';
+      const row = map[key];
+      if (!row) return;
+      const hrefField = el.getAttribute('data-copy-href');
+      if (hrefField && row[hrefField] && el.tagName === 'A') el.setAttribute('href', row[hrefField]);
+      if (!fieldAttr && hrefField) return;
+      const val = row[field];
+      if (val == null || String(val).trim() === '') return;
+      let html = sanitizeHtml(val);
+      const inlineHost = /^(P|LABEL|SPAN|H1|H2|H3|H4|STRONG|BUTTON)$/.test(el.tagName);
+      if (field === 'body_html' && inlineHost) {
+        html = html.replace(/^\s*<p[^>]*>/i, '').replace(/<\/p>\s*$/i, '');
+      }
+      el.innerHTML = html;
+    });
+  }
+
+  function isHttpsUrl(u) {
+    try {
+      return new URL(String(u)).protocol === 'https:';
+    } catch {
+      return false;
+    }
+  }
+
+  function escapeAttr(str) {
+    return String(str || '')
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;');
+  }
+
+  function hasLatLng(lat, lng) {
+    const ls = String(lat ?? '').trim();
+    const gs = String(lng ?? '').trim();
+    if (!ls || !gs) return false;
+    const a = Number(ls);
+    const b = Number(gs);
+    return Number.isFinite(a) && a >= -90 && a <= 90 && Number.isFinite(b) && b >= -180 && b <= 180;
+  }
+
+  function mapsDirectionsUrl(lat, lng) {
+    if (!hasLatLng(lat, lng)) return '';
+    return `https://www.google.com/maps/dir/?api=1&destination=${Number(lat)},${Number(lng)}`;
+  }
+
+  function mapsEmbedUrl(lat, lng) {
+    if (!hasLatLng(lat, lng)) return '';
+    return `https://maps.google.com/maps?q=${Number(lat)},${Number(lng)}&z=15&output=embed`;
+  }
+
+  function branchMapsHref(b) {
+    if (!b) return '';
+    if (b.mapsLink && isHttpsUrl(b.mapsLink)) return b.mapsLink;
+    return mapsDirectionsUrl(b.latitude, b.longitude);
+  }
+
+  function branchMapButtonsHtml(b) {
+    const map = branchMapsHref(b);
+    const dir = mapsDirectionsUrl(b && b.latitude, b && b.longitude);
+    const parts = [];
+    if (map) {
+      parts.push(`<a href="${escapeAttr(map)}" target="_blank" rel="noopener" class="btn btn--outline btn--sm"><i class="fa-solid fa-map"></i> Map</a>`);
+    }
+    if (dir && dir !== map) {
+      parts.push(`<a href="${escapeAttr(dir)}" target="_blank" rel="noopener" class="btn btn--outline btn--sm"><i class="fa-solid fa-route"></i> Get directions</a>`);
+    }
+    return parts.join('');
+  }
+
+  function applyLocalBusinessSchema(s) {
+    qsa('script[type="application/ld+json"]').forEach((el) => {
+      let data;
+      try { data = JSON.parse(el.textContent); } catch { return; }
+      const list = Array.isArray(data) ? data : [data];
+      let changed = false;
+      list.forEach((node) => {
+        if (!node || node['@type'] !== 'LocalBusiness') return;
+        changed = true;
+        if (s.address) {
+          node.address = node.address && typeof node.address === 'object'
+            ? node.address
+            : { '@type': 'PostalAddress', addressCountry: 'IN' };
+          node.address['@type'] = node.address['@type'] || 'PostalAddress';
+          node.address.streetAddress = s.address;
+        }
+        const same = new Set((Array.isArray(node.sameAs) ? node.sameAs : []).filter(Boolean));
+        [s.facebookUrl, s.instagramUrl, s.youtubeUrl, s.gmb_url].forEach((u) => {
+          if (u && isHttpsUrl(u)) same.add(u);
+        });
+        node.sameAs = [...same];
+        if (s.gmb_url && isHttpsUrl(s.gmb_url)) node.hasMap = s.gmb_url;
+        else delete node.hasMap;
+        if (hasLatLng(s.latitude, s.longitude)) {
+          node.geo = {
+            '@type': 'GeoCoordinates',
+            latitude: Number(s.latitude),
+            longitude: Number(s.longitude)
+          };
+        } else {
+          delete node.geo;
+        }
+      });
+      if (changed) el.textContent = JSON.stringify(Array.isArray(data) ? list : list[0]);
+    });
+  }
+
+  function fillAcademyLocation(s) {
+    const bits = [];
+    if (s.gmb_url && isHttpsUrl(s.gmb_url)) {
+      bits.push(`<a class="btn btn--primary btn--sm" href="${escapeAttr(s.gmb_url)}" target="_blank" rel="noopener">Find us on Google</a>`);
+    }
+    const dir = mapsDirectionsUrl(s.latitude, s.longitude);
+    if (dir) {
+      bits.push(`<a class="btn btn--outline btn--sm" href="${escapeAttr(dir)}" target="_blank" rel="noopener">Get directions</a>`);
+    }
+    const actions = qs('#gmbActions');
+    if (actions) {
+      const slot = actions.querySelector('[data-gmb-btns]') || actions;
+      slot.innerHTML = bits.join(' ');
+      actions.hidden = bits.length === 0;
+    }
+
+    let embedSrc = '';
+    if (s.map_embed_url && isHttpsUrl(s.map_embed_url)) embedSrc = s.map_embed_url;
+    else embedSrc = mapsEmbedUrl(s.latitude, s.longitude);
+    const wrap = qs('#academyMapWrap');
+    if (wrap) {
+      if (embedSrc) {
+        wrap.hidden = false;
+        wrap.innerHTML = `<iframe title="Academy location map" src="${escapeAttr(embedSrc)}" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`;
+      } else {
+        wrap.hidden = true;
+        wrap.innerHTML = '';
+      }
+    }
+
+    const ext = (s.gmb_url && isHttpsUrl(s.gmb_url)) ? s.gmb_url : dir;
+    qsa('[data-gmb-link]').forEach((el) => {
+      if (ext) {
+        el.href = ext;
+        el.target = '_blank';
+        el.rel = 'noopener';
+      } else {
+        el.href = '/pages/branches.html';
+        el.removeAttribute('target');
+        el.removeAttribute('rel');
+      }
+    });
+  }
+
   function applySettings(s) {
     if (!s) return;
     qsa('[data-whatsapp]').forEach((el) => {
       const num = s.whatsapp || '9748481630';
-      if (el.tagName === 'A') el.href = `https://wa.me/91${num}`;
+      if (el.tagName === 'A') el.href = `https://wa.me/91${String(num).replace(/\D/g, '').slice(-10)}`;
+    });
+    qsa('[data-whatsapp-number]').forEach((el) => {
+      el.textContent = s.whatsapp || '9748481630';
     });
     qsa('[data-social="facebook"]').forEach((el) => { if (s.facebookUrl) el.href = s.facebookUrl; });
     qsa('[data-social="instagram"]').forEach((el) => { if (s.instagramUrl) el.href = s.instagramUrl; });
@@ -321,6 +534,46 @@ const Seekho = (() => {
     qsa('[data-setting="googleRating"]').forEach((el) => { el.textContent = s.googleRating || '4.9'; });
     qsa('[data-setting="facebookRating"]').forEach((el) => { el.textContent = s.facebookRating || '4.8'; });
     qsa('[data-setting="reviewCount"]').forEach((el) => { el.textContent = `${s.reviewCount || 500}+`; });
+    qsa('[data-setting="tagline"]').forEach((el) => {
+      const raw = s.tagline || el.textContent;
+      el.innerHTML = formatTitle(raw, s.tagline_bold);
+    });
+    const phones = Array.isArray(s.phones)
+      ? s.phones
+      : String(s.phones || '').split(',').map((x) => x.trim()).filter(Boolean);
+    qsa('[data-footer-phones]').forEach((el) => {
+      el.innerHTML = phones.map((p) => `<a href="tel:${String(p).replace(/\D/g, '')}">${p}</a>`).join('');
+    });
+    qsa('[data-footer-phones-list]').forEach((el) => {
+      el.innerHTML = phones.map((p) => `<i class="fa-solid fa-phone"></i> <a href="tel:${String(p).replace(/\D/g, '')}">${p}</a>`).join('<br>');
+    });
+    qsa('[data-phones]').forEach((el) => {
+      el.innerHTML = phones.map((p) => `<a href="tel:${String(p).replace(/\D/g, '')}">${p}</a>`).join('<br>');
+    });
+    if (phones[0]) {
+      qsa('[data-call-primary]').forEach((el) => {
+        el.href = `tel:${String(phones[0]).replace(/\D/g, '')}`;
+      });
+    }
+    qsa('[data-setting="workingHours"]').forEach((el) => { el.textContent = s.workingHours || el.textContent; });
+    qsa('[data-setting="email"]').forEach((el) => {
+      if (s.email) {
+        if (el.tagName === 'A') { el.href = `mailto:${s.email}`; el.textContent = s.email; }
+        else el.textContent = s.email;
+      }
+    });
+    qsa('[data-setting="header_cta_text"]').forEach((el) => { if (s.header_cta_text) el.textContent = s.header_cta_text; });
+    qsa('[data-setting="footer_cta_title"]').forEach((el) => { if (s.footer_cta_title) el.textContent = s.footer_cta_title; });
+    qsa('[data-setting="footer_cta_text"]').forEach((el) => { if (s.footer_cta_text) el.textContent = s.footer_cta_text; });
+    qsa('[data-setting="footer_cta_button"]').forEach((el) => { if (s.footer_cta_button) el.textContent = s.footer_cta_button; });
+    qsa('[data-setting="copyright_text"]').forEach((el) => { if (s.copyright_text) el.textContent = s.copyright_text; });
+    qsa('[data-setting="logo_subline"]').forEach((el) => { if (s.logo_subline) el.textContent = s.logo_subline; });
+    qsa('[data-href-setting]').forEach((el) => {
+      const key = el.getAttribute('data-href-setting');
+      if (key && s[key]) el.setAttribute('href', s[key]);
+    });
+    fillAcademyLocation(s);
+    applyLocalBusinessSchema(s);
   }
 
   function hideLoader() {
@@ -387,7 +640,8 @@ const Seekho = (() => {
     api, toast, dialog, qs, qsa, formatPrice, formatDate, stars,
     lazyImages, openLightbox, initFaq, loadSettings, validateForm,
     clearCache, hideLoader, bindImageFallbacks, safeImg, PLACEHOLDER,
-    sectionError, siteUrl, API_BASE
+    sectionError, siteUrl, API_BASE, sanitizeHtml, stripHtml, formatTitle,
+    courseDetailHref, sectionCardHref, classesLabel, branchMapButtonsHtml, mapsDirectionsUrl, hasLatLng
   };
 })();
 

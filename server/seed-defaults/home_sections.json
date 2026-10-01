@@ -1,0 +1,38 @@
+[
+  {
+    "id": "home-doorstep",
+    "key": "doorstep",
+    "title": "DOORSTEP TRAINING",
+    "subtitle": "Learn to Ride. We Come to You.",
+    "description": "Learn scooty or bike from the comfort of your own neighbourhood with personalised, one-on-one doorstep training.",
+    "image_url": "/images/courses/seekho-05.webp",
+    "features_json": [
+      { "icon": "🛵", "text": "Scooty + Bike Training" },
+      { "icon": "📍", "text": "Up to 10 KM from Netaji metro" },
+      { "icon": "👨‍🏫", "text": "Personal Trainer at Your Location" },
+      { "icon": "📅", "text": "15-Session Standard Package" },
+      { "icon": "⚙️", "text": "Customisable Duration & Schedule" }
+    ],
+    "link_slug": "doorstep-training",
+    "is_active": true,
+    "sort_order": 1,
+    "title_bold": false,
+    "created_at": "2026-09-30T00:00:00.000Z",
+    "updated_at": "2026-09-30T00:00:00.000Z"
+  },
+  {
+    "id": "home-why-choose",
+    "key": "why_choose",
+    "title": "Training Built For Real Confidence",
+    "subtitle": "Why Choose Seekho",
+    "description": "Patient trainers, flexible slots, and guided road practice — everything you need to ride independently.",
+    "image_url": "",
+    "features_json": [],
+    "link_slug": "",
+    "is_active": true,
+    "sort_order": 1,
+    "title_bold": false,
+    "created_at": "2026-09-30T00:00:00.000Z",
+    "updated_at": "2026-09-30T00:00:00.000Z"
+  }
+]

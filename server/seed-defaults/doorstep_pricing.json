@@ -1,0 +1,14 @@
+[
+  {
+    "id": "default",
+    "base_km": 3,
+    "base_price": 4500,
+    "max_km": 10,
+    "max_price": 8000,
+    "per_km_extra": 500,
+    "pricing_mode": "linear_ceil",
+    "out_of_range_message": "Doorstep service is available up to 10 km",
+    "created_at": "2026-09-30T00:00:00.000Z",
+    "updated_at": "2026-09-30T00:00:00.000Z"
+  }
+]

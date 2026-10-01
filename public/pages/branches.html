@@ -33,8 +33,8 @@
         <nav class="breadcrumb" aria-label="Breadcrumb">
           <a href="/">Home</a><span>/</span><span>Our Branches</span>
         </nav>
-        <h1>Find A Branch Near You</h1>
-        <p>Four convenient locations across Kolkata with flexible morning and evening training slots.</p>
+        <h1 data-copy="branches.hero" data-copy-field="title">Find A Branch Near You</h1>
+        <p data-copy="branches.hero" data-copy-field="subtitle">Four convenient locations across Kolkata with flexible morning and evening training slots.</p>
       </div>
     </section>
 
@@ -42,8 +42,13 @@
       <div class="container">
         <div class="branch-search" data-aos="fade-up">
           <input type="search" id="branchSearch" placeholder="Search by area, name or address..." aria-label="Search branches">
-          <a href="/pages/booking.html" class="btn btn--primary">Book Training</a>
+          <a href="/pages/booking.html" class="btn btn--primary" data-copy="branches.search_cta" data-copy-field="title" data-copy-href="cta_link">Book Training</a>
         </div>
+        <div class="academy-findus" id="gmbActions" hidden>
+          <strong>Academy location</strong>
+          <div data-gmb-btns></div>
+        </div>
+        <div class="map-embed" id="academyMapWrap" hidden></div>
         <div class="branch-grid" id="branchGrid">
           <div class="skeleton" style="height:320px"></div>
           <div class="skeleton" style="height:320px"></div>
@@ -59,6 +64,7 @@
   <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
   <script src="/js/layout.js"></script>
   <script src="/js/config.js"></script>
+  <script src="/js/sanitize-html.js"></script>
   <script src="/js/app.js"></script>
   <script src="/js/pages/branches.js"></script>
 </body>

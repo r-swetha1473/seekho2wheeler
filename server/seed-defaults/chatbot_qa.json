@@ -1,0 +1,68 @@
+[
+  {
+    "id": "qa-scooty-price",
+    "question": "What is the price of scooty training?",
+    "keywords": "scooty, price, fees, cost, charges, scooty training, course fees, scooty course",
+    "answer": "Scooty training is {{course:scooty-training.price}} for {{course:scooty-training.classes}} classes.",
+    "category": "Pricing",
+    "is_active": true,
+    "sort_order": 1,
+    "created_at": "2026-09-30T00:00:00.000Z",
+    "updated_at": "2026-09-30T00:00:00.000Z"
+  },
+  {
+    "id": "qa-courses",
+    "question": "What courses do you offer?",
+    "keywords": "courses, programs, training, scooty, bike, ladies, list",
+    "answer": "We currently offer: {{courses.names}}. Ask about a course name for its fee and class count.",
+    "category": "Courses",
+    "is_active": true,
+    "sort_order": 2,
+    "created_at": "2026-09-30T00:00:00.000Z",
+    "updated_at": "2026-09-30T00:00:00.000Z"
+  },
+  {
+    "id": "qa-doorstep",
+    "question": "How does doorstep training pricing work?",
+    "keywords": "doorstep, home training, km, kilometre, come to you, doorstep price",
+    "answer": "Doorstep training is {{doorstep.base_price}} up to {{doorstep.base_km}} km, then extra per km, capped at {{doorstep.max_price}} (max {{doorstep.max_km}} km).",
+    "category": "Doorstep",
+    "is_active": true,
+    "sort_order": 3,
+    "created_at": "2026-09-30T00:00:00.000Z",
+    "updated_at": "2026-09-30T00:00:00.000Z"
+  },
+  {
+    "id": "qa-timings",
+    "question": "What are your timings?",
+    "keywords": "timing, timings, hours, open, slot, schedule, working hours",
+    "answer": "We are open {{settings.workingHours}}.",
+    "category": "Timings",
+    "is_active": true,
+    "sort_order": 4,
+    "created_at": "2026-09-30T00:00:00.000Z",
+    "updated_at": "2026-09-30T00:00:00.000Z"
+  },
+  {
+    "id": "qa-location",
+    "question": "Where are you located?",
+    "keywords": "location, address, where, branch, kolkata, map",
+    "answer": "Seekho Two Wheeler Academy is in {{settings.address}}. We have multiple Kolkata branches — see the Branches page for maps.",
+    "category": "Location",
+    "is_active": true,
+    "sort_order": 5,
+    "created_at": "2026-09-30T00:00:00.000Z",
+    "updated_at": "2026-09-30T00:00:00.000Z"
+  },
+  {
+    "id": "qa-contact",
+    "question": "How can I contact you?",
+    "keywords": "contact, phone, call, whatsapp, number, email",
+    "answer": "Call {{settings.phone}} or WhatsApp {{settings.whatsapp}}.",
+    "category": "Contact",
+    "is_active": true,
+    "sort_order": 6,
+    "created_at": "2026-09-30T00:00:00.000Z",
+    "updated_at": "2026-09-30T00:00:00.000Z"
+  }
+]

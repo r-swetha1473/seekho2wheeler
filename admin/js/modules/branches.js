@@ -129,6 +129,16 @@ function showForm(branch, container) {
           <div class="form-group form-group--full">
             <label>Google Maps Link</label>
             <input class="form-control" name="mapsLink" value="${escapeHtml(branch?.mapsLink || '')}" placeholder="https://maps.google.com/...">
+            <p class="form-hint">Optional https link. Leave blank if you only have coordinates.</p>
+          </div>
+          <div class="form-group">
+            <label>Latitude</label>
+            <input class="form-control" name="latitude" type="number" step="any" min="-90" max="90" value="${escapeHtml(branch && (branch.latitude === 0 || branch.latitude) ? String(branch.latitude) : '')}" placeholder="—">
+          </div>
+          <div class="form-group">
+            <label>Longitude</label>
+            <input class="form-control" name="longitude" type="number" step="any" min="-180" max="180" value="${escapeHtml(branch && (branch.longitude === 0 || branch.longitude) ? String(branch.longitude) : '')}" placeholder="—">
+            <p class="form-hint">Leave empty until the client provides this branch’s coordinates. Do not invent values.</p>
           </div>
           <div class="form-group">
             <label>Phone</label>

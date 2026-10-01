@@ -1,5 +1,6 @@
 const db = require('../services/db');
 const { processAndSave, deleteUpload } = require('../services/upload');
+const { parseBool } = require('../utils/sanitizeHtml');
 
 exports.listPublic = async (req, res, next) => {
   try {
@@ -44,7 +45,8 @@ exports.create = async (req, res, next) => {
         category,
         image,
         displayOrder: order,
-        active: true
+        active: true,
+        title_bold: parseBool(req.body.title_bold)
       });
       created.push(item);
     }
@@ -65,6 +67,7 @@ exports.update = async (req, res, next) => {
       payload.image = await processAndSave(req.file, 'gallery');
     }
     if (payload.displayOrder !== undefined) payload.displayOrder = Number(payload.displayOrder);
+    if (payload.title_bold !== undefined) payload.title_bold = parseBool(payload.title_bold);
 
     const item = await db.update('gallery', req.params.id, payload);
     res.json({ success: true, message: 'Gallery item updated', data: item });

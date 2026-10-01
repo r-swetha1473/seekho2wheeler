@@ -1,6 +1,7 @@
 const slugify = require('slugify');
 const db = require('../services/db');
 const { processAndSave, deleteUpload } = require('../services/upload');
+const { sanitizeHtml, parseBool } = require('../utils/sanitizeHtml');
 
 function makeSlug(title, existingSlug) {
   return existingSlug || slugify(title, { lower: true, strict: true });
@@ -26,11 +27,11 @@ exports.listPublic = async (req, res, next) => {
 exports.getBySlug = async (req, res, next) => {
   try {
     const blogs = await db.getAll('blogs');
-    const blog = blogs.find((b) => b.slug === req.params.slug);
-    if (!blog || blog.status === 'draft') {
+    const found = blogs.find((b) => b.slug === req.params.slug);
+    if (!found || found.status === 'draft') {
       return res.status(404).json({ success: false, message: 'Blog not found' });
     }
-    res.json({ success: true, data: blog });
+    res.json({ success: true, data: { ...found, content: sanitizeHtml(found.content) } });
   } catch (err) {
     next(err);
   }
@@ -65,13 +66,14 @@ exports.create = async (req, res, next) => {
     const blog = await db.create('blogs', {
       title,
       slug,
-      content,
+      content: sanitizeHtml(content),
       featuredImage,
       metaTitle: metaTitle || title,
       metaDescription: metaDescription || '',
       status: status || 'published',
       scheduledAt: scheduledAt || null,
-      publishedAt: status === 'scheduled' ? null : new Date().toISOString()
+      publishedAt: status === 'scheduled' ? null : new Date().toISOString(),
+      title_bold: parseBool(req.body.title_bold)
     });
     res.status(201).json({ success: true, message: 'Blog created', data: blog });
   } catch (err) {
@@ -86,6 +88,8 @@ exports.update = async (req, res, next) => {
 
     const payload = { ...req.body };
     if (payload.title && !payload.slug) payload.slug = makeSlug(payload.title);
+    if (payload.content !== undefined) payload.content = sanitizeHtml(payload.content);
+    if (payload.title_bold !== undefined) payload.title_bold = parseBool(payload.title_bold);
     if (req.file) {
       if (existing.featuredImage) await deleteUpload(existing.featuredImage);
       payload.featuredImage = await processAndSave(req.file, 'blogs');

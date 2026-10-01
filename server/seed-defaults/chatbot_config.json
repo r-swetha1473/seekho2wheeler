@@ -1,0 +1,18 @@
+[
+  {
+    "id": "default",
+    "fallback_message": "I don't have verified information about that. I can help you with Seekho's training, branches, timings, booking, and other available website information.",
+    "match_threshold": 3,
+    "greeting": "Hi! Ask about courses, fees, doorstep training, timings or location.",
+    "quick_replies_json": [
+      { "label": "Courses", "prompt": "What courses do you offer?" },
+      { "label": "Pricing", "prompt": "What is the price of scooty training?" },
+      { "label": "Doorstep", "prompt": "How does doorstep training pricing work?" },
+      { "label": "Timings", "prompt": "What are your timings?" },
+      { "label": "Location", "prompt": "Where are you located?" },
+      { "label": "Contact", "prompt": "How can I contact you?" }
+    ],
+    "created_at": "2026-09-30T00:00:00.000Z",
+    "updated_at": "2026-09-30T00:00:00.000Z"
+  }
+]

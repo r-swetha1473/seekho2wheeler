@@ -1,6 +1,6 @@
 /* Blog listing — 1200x630 frames */
 (function () {
-  const { api, qs, formatDate, safeImg } = Seekho;
+  const { api, qs, formatDate, safeImg, formatTitle } = Seekho;
 
   const grid = qs('#blogGrid');
 
@@ -27,7 +27,7 @@
               </div>
               <div class="blog-card__body">
                 <div class="blog-card__date">${formatDate(b.publishedAt || b.createdAt)}</div>
-                <h2 class="blog-card__title">${escapeHtml(b.title)}</h2>
+                <h2 class="blog-card__title">${formatTitle(b.title, b.title_bold)}</h2>
                 <p class="blog-card__excerpt">${escapeHtml(b.metaDescription || '').slice(0, 140)}${(b.metaDescription || '').length > 140 ? '…' : ''}</p>
               </div>
             </a>

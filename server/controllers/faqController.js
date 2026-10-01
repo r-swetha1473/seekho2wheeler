@@ -1,4 +1,5 @@
 const db = require('../services/db');
+const { sanitizeHtml, parseBool } = require('../utils/sanitizeHtml');
 
 exports.listPublic = async (req, res, next) => {
   try {
@@ -29,9 +30,10 @@ exports.create = async (req, res, next) => {
     }
     const faq = await db.create('faqs', {
       question,
-      answer,
+      answer: sanitizeHtml(answer),
       displayOrder: Number(displayOrder || 0),
-      active: active !== 'false' && active !== false
+      active: active !== 'false' && active !== false,
+      title_bold: parseBool(req.body.title_bold)
     });
     res.status(201).json({ success: true, message: 'FAQ created', data: faq });
   } catch (err) {
@@ -41,7 +43,10 @@ exports.create = async (req, res, next) => {
 
 exports.update = async (req, res, next) => {
   try {
-    const faq = await db.update('faqs', req.params.id, req.body);
+    const payload = { ...req.body };
+    if (payload.answer !== undefined) payload.answer = sanitizeHtml(payload.answer);
+    if (payload.title_bold !== undefined) payload.title_bold = parseBool(payload.title_bold);
+    const faq = await db.update('faqs', req.params.id, payload);
     if (!faq) return res.status(404).json({ success: false, message: 'FAQ not found' });
     res.json({ success: true, message: 'FAQ updated', data: faq });
   } catch (err) {

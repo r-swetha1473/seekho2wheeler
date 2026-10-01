@@ -1,6 +1,6 @@
 /* Homepage — mobile-first carousels + framed media */
 (async function () {
-  const { api, qs, qsa, formatPrice, formatDate, stars, openLightbox, initFaq, toast, safeImg } = Seekho;
+  const { api, qs, qsa, formatPrice, formatDate, stars, openLightbox, initFaq, toast, safeImg, sanitizeHtml, stripHtml, formatTitle, courseDetailHref, sectionCardHref, classesLabel, branchMapButtonsHtml } = Seekho;
 
   function escapeHtml(str) {
     return String(str || '')
@@ -18,33 +18,46 @@
     const wrap = qs('#heroSlides');
     if (!wrap) return;
     try {
+      if (!window.SEEKHO_SETTINGS) {
+        try {
+          const setRes = await api('/settings');
+          window.SEEKHO_SETTINGS = setRes.data || {};
+        } catch {
+          /* brand line optional */
+        }
+      }
       const { data } = await api('/banners');
-      const slides = data.length ? data : [{
-        title: 'Learn Scooty & Bike Riding With Confidence',
-        subtitle: 'Empowering independence through safe riding.',
-        ctaText: 'Start Learning',
-        ctaLink: '/pages/booking.html',
-        image: '/images/banners/seekho-01.webp'
-      }];
+      const slides = Array.isArray(data) ? data : [];
+      if (!slides.length) {
+        wrap.innerHTML = '';
+        Seekho.sectionError(wrap, 'No banners are published yet. Add them in Admin → Banners.', renderBanners);
+        return;
+      }
 
-      wrap.innerHTML = slides.map((b, idx) => `
+      const brand = String((window.SEEKHO_SETTINGS && window.SEEKHO_SETTINGS.siteName) || '').trim();
+
+      wrap.innerHTML = slides.map((b, idx) => {
+        const ctaText = String(b.ctaText || '').trim();
+        const ctaLink = String(b.ctaLink || '').trim();
+        const cta = ctaText && ctaLink
+          ? `<a href="${escapeHtml(ctaLink)}" class="btn btn--primary btn--lg">${escapeHtml(ctaText)}</a>`
+          : '';
+        return `
         <div class="swiper-slide">
           <div class="hero__slide">
             <div class="hero__media media-frame media-frame--banner">
-              ${safeImg(b.image, b.title, { w: 1920, h: 1080, className: 'img-cover', priority: idx === 0 })}
+              ${b.image ? safeImg(b.image, stripHtml(b.title) || 'Banner', { w: 1920, h: 1080, className: 'img-cover', priority: idx === 0 }) : ''}
             </div>
             <div class="hero__overlay"></div>
             <div class="hero__content">
-              <div class="hero__brand">Seekho Two Wheeler Academy</div>
-              <h1 class="hero__title">${escapeHtml(b.title)}</h1>
-              <p class="hero__subtitle">${escapeHtml(b.subtitle || '')}</p>
-              <div class="hero__actions">
-                <a href="${b.ctaLink || '/pages/booking.html'}" class="btn btn--primary btn--lg">${escapeHtml(b.ctaText || 'Book Training')}</a>
-                <a href="/pages/reviews.html" class="btn btn--outline-white btn--lg">Watch Real Feedback</a>
-              </div>
+              ${brand ? `<div class="hero__brand">${escapeHtml(brand)}</div>` : ''}
+              <h1 class="hero__title">${formatTitle(b.title, b.title_bold)}</h1>
+              <div class="hero__subtitle rich-html">${sanitizeHtml(b.subtitle || '')}</div>
+              ${cta ? `<div class="hero__actions">${cta}</div>` : ''}
             </div>
           </div>
-        </div>`).join('');
+        </div>`;
+      }).join('');
 
       new Swiper('.hero-swiper', {
         loop: slides.length > 1,
@@ -57,27 +70,8 @@
       });
     } catch (err) {
       console.error('[home] banners', err);
-      wrap.innerHTML = `
-        <div class="swiper-slide">
-          <div class="hero__slide">
-            <div class="hero__media media-frame media-frame--banner">
-              ${safeImg('/images/banners/seekho-01.webp', 'Seekho Academy', { w: 1920, h: 1080, priority: true })}
-            </div>
-            <div class="hero__overlay"></div>
-            <div class="hero__content">
-              <div class="hero__brand">Seekho Two Wheeler Academy</div>
-              <h1 class="hero__title">Learn To Ride. Build Confidence. Live Independently.</h1>
-              <p class="hero__subtitle">Women-focused scooty & bike training across Kolkata.</p>
-              <div class="hero__actions">
-                <a href="/pages/booking.html" class="btn btn--primary btn--lg">Book Training</a>
-                <button type="button" class="btn btn--outline-white btn--lg" id="retryBanners">Retry Load</button>
-              </div>
-            </div>
-          </div>
-        </div>`;
-      new Swiper('.hero-swiper', { effect: 'fade', fadeEffect: { crossFade: true } });
-      const retry = qs('#retryBanners');
-      if (retry) retry.onclick = () => renderBanners();
+      wrap.innerHTML = '';
+      Seekho.sectionError(wrap, 'Unable to load banners right now. Please try again.', renderBanners);
     }
   }
 
@@ -93,20 +87,20 @@
         <div class="swiper-wrapper">
           ${data.map((c, i) => `
             <div class="swiper-slide">
-              <article class="course-card">
-                <div class="course-card__media media-frame media-frame--43">
-                  ${safeImg(c.image || `/images/courses/seekho-0${(i % 7) + 1}.webp`, c.courseName, { w: 1200, h: 900 })}
-                </div>
-                <div class="course-card__body">
-                  <h3 class="course-card__title">${escapeHtml(c.courseName)}</h3>
-                  <p class="course-card__desc">${escapeHtml(c.description || '')}</p>
-                  <div class="course-card__meta">
-                    <span class="course-card__price">${formatPrice(c.price)}</span>
-                    <span class="course-card__duration"><i class="fa-regular fa-clock"></i> ${escapeHtml(c.duration || 'Flexible')}</span>
+              <a class="course-card" href="${courseDetailHref(c)}" aria-label="${escapeHtml(c.name || c.courseName)} details">
+                  <div class="course-card__media media-frame media-frame--43">
+                    ${c.badge ? `<span class="course-card__badge">${escapeHtml(c.badge)}</span>` : ''}
+                    ${safeImg(c.image_url || c.image || `/images/courses/seekho-0${(i % 7) + 1}.webp`, c.name || c.courseName, { w: 1200, h: 900 })}
                   </div>
-                  <a href="/pages/booking.html?course=${encodeURIComponent(c.courseName)}" class="btn btn--primary btn--block">Book Now</a>
-                </div>
-              </article>
+                  <div class="course-card__body">
+                    <h3 class="course-card__title">${formatTitle(c.name || c.courseName, c.title_bold)}</h3>
+                    <div class="course-card__desc rich-html">${sanitizeHtml(c.description || '')}</div>
+                    <div class="course-card__meta">
+                      <span class="course-card__price">${formatPrice(c.price)}</span>
+                      <span class="course-card__duration"><i class="fa-regular fa-clock"></i> ${escapeHtml(classesLabel(c))}</span>
+                    </div>
+                  </div>
+              </a>
             </div>`).join('')}
         </div>
         <div class="swiper-pagination course-swiper__dots"></div>`;
@@ -125,6 +119,126 @@
     } catch (err) {
       console.error('[home] courses', err);
       Seekho.sectionError(wrap, 'Unable to load courses right now. Please try again.', renderCourses);
+    }
+  }
+
+  function bindDoorstepAccordion(root) {
+    root.querySelectorAll('[data-doorstep-toggle]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const card = btn.closest('.doorstep-service');
+        const open = btn.getAttribute('aria-expanded') === 'true';
+        root.querySelectorAll('[data-doorstep-toggle]').forEach((other) => {
+          other.setAttribute('aria-expanded', 'false');
+          const panel = other.closest('.doorstep-service')?.querySelector('.doorstep-service__panel');
+          if (panel) panel.hidden = true;
+        });
+        if (!open && card) {
+          btn.setAttribute('aria-expanded', 'true');
+          const panel = card.querySelector('.doorstep-service__panel');
+          if (panel) panel.hidden = false;
+        }
+      });
+    });
+  }
+
+  async function renderDoorstepSection() {
+    const mount = qs('#doorstepSectionMount');
+    const sectionEl = qs('#doorstep');
+    if (!mount) return;
+    try {
+      const { data } = await api('/home-sections/doorstep');
+      if (!data) {
+        if (sectionEl) sectionEl.hidden = true;
+        return;
+      }
+      if (sectionEl) sectionEl.hidden = false;
+      const feats = Array.isArray(data.features) ? data.features.filter((f) => f && (f.text || f.icon || f.detail)) : [];
+      const href = data.link_slug ? sectionCardHref(data) : '';
+      const moreLabel = stripHtml(data.title) || 'Doorstep training';
+
+      const cards = feats.length
+        ? `<div class="doorstep-grid">
+            ${feats.map((f, i) => {
+              const heading = f.text || `Service ${i + 1}`;
+              const panelHtml = f.detail
+                ? sanitizeHtml(f.detail)
+                : sanitizeHtml(data.description || '');
+              return `
+              <article class="doorstep-service">
+                <button type="button" class="doorstep-service__toggle" data-doorstep-toggle aria-expanded="false">
+                  <span class="doorstep-service__icon">${escapeHtml(f.icon || '')}</span>
+                  <span class="doorstep-service__copy">
+                    <span class="doorstep-service__title">${escapeHtml(heading)}</span>
+                    <span class="doorstep-service__hint">View details</span>
+                  </span>
+                  <i class="fa-solid fa-chevron-down doorstep-service__chevron" aria-hidden="true"></i>
+                </button>
+                <div class="doorstep-service__panel rich-html" hidden>${panelHtml}</div>
+              </article>`;
+            }).join('')}
+          </div>`
+        : `<div class="doorstep-intro rich-html">${sanitizeHtml(data.description || '')}</div>`;
+
+      mount.innerHTML = `
+        <div class="doorstep-block" data-aos="fade-up">
+          ${data.image_url ? `<div class="doorstep-block__media media-frame">${safeImg(data.image_url, moreLabel, { w: 1200, h: 900 })}</div>` : ''}
+          <div class="doorstep-block__body">
+            <h2 class="doorstep-block__title rich-html">${sanitizeHtml(data.title)}</h2>
+            <div class="doorstep-block__subtitle rich-html">${sanitizeHtml(data.subtitle || '')}</div>
+            ${feats.length ? `<div class="doorstep-block__lede rich-html">${sanitizeHtml(data.description || '')}</div>` : ''}
+            ${cards}
+            ${href ? `<a class="btn btn--outline doorstep-block__more" href="${href}">Read the full guide</a>` : ''}
+          </div>
+        </div>`;
+      bindDoorstepAccordion(mount);
+    } catch (err) {
+      console.error('[home] doorstep section', err);
+      Seekho.sectionError(mount, 'Unable to load doorstep training right now. Please try again.', renderDoorstepSection);
+    }
+  }
+
+  function whyIconHtml(icon) {
+    const raw = String(icon || '').trim();
+    if (/^fa[a-z0-9\s-]+$/i.test(raw)) {
+      return `<i class="${escapeHtml(raw)}" aria-hidden="true"></i>`;
+    }
+    return `<span aria-hidden="true">${escapeHtml(raw || '★')}</span>`;
+  }
+
+  async function renderWhyChoose() {
+    const head = qs('#whyChooseHead');
+    const grid = qs('#whyGrid');
+    const sectionEl = qs('#why');
+    if (!head || !grid) return;
+    try {
+      const { data } = await api('/why-choose');
+      const section = data && data.section;
+      const items = (data && data.items) || [];
+      if (!section) {
+        if (sectionEl) sectionEl.hidden = true;
+        return;
+      }
+      if (sectionEl) sectionEl.hidden = false;
+      head.innerHTML = `
+        <span class="section__eyebrow rich-html">${sanitizeHtml(section.subtitle || 'Why Choose Seekho')}</span>
+        <h2 class="section__title rich-html">${sanitizeHtml(section.title || '')}</h2>
+        <div class="section__desc rich-html">${sanitizeHtml(section.description || '')}</div>`;
+      grid.innerHTML = items.map((item) => {
+        const label = stripHtml(item.title) || 'Why Seekho';
+        const inner = `
+            <div class="why-item__icon">${whyIconHtml(item.icon)}</div>
+            <div class="why-item__copy">
+              <div class="why-item__title rich-html">${sanitizeHtml(item.title)}</div>
+              <div class="why-item__desc rich-html">${sanitizeHtml(item.description || '')}</div>
+            </div>`;
+        if (item.link_slug) {
+          return `<a class="why-item" href="${sectionCardHref(item)}" aria-label="${escapeHtml(label)} details">${inner}</a>`;
+        }
+        return `<div class="why-item">${inner}</div>`;
+      }).join('') || '<p class="empty-state">No items yet.</p>';
+    } catch (err) {
+      console.error('[home] why choose', err);
+      Seekho.sectionError(grid, 'Unable to load this section right now. Please try again.', renderWhyChoose);
     }
   }
 
@@ -147,7 +261,7 @@
       grid.innerHTML = list.map((g) => `
         <div class="gallery-item media-frame media-frame--square" data-src="${g.image}" data-alt="${escapeHtml(g.title || g.category)}" tabindex="0" role="button" aria-label="Open ${escapeHtml(g.title || g.category)}">
           ${safeImg(g.image, g.title || g.category, { w: 800, h: 800 })}
-          <div class="gallery-item__overlay"><span>${escapeHtml(g.category)}</span><i class="fa-solid fa-expand"></i></div>
+          <div class="gallery-item__overlay"><span>${formatTitle(g.title || g.category, g.title_bold)}</span><i class="fa-solid fa-expand"></i></div>
         </div>`).join('') || '<p class="empty-state">No images in this category.</p>';
     }
 
@@ -184,7 +298,7 @@
           <p class="branch-card__addr"><i class="fa-solid fa-location-dot"></i> ${escapeHtml(b.address || b.name)}</p>
           <a class="branch-card__phone" href="tel:${b.phone}"><i class="fa-solid fa-phone"></i> ${escapeHtml(b.phone)}</a>
           <div class="branch-card__actions">
-            <a href="${b.mapsLink || '#'}" target="_blank" rel="noopener" class="btn btn--outline btn--sm"><i class="fa-solid fa-map"></i> Map</a>
+            ${branchMapButtonsHtml(b)}
             <a href="/pages/booking.html?branch=${encodeURIComponent(b.name)}" class="btn btn--primary btn--sm">Book</a>
           </div>
         </div>
@@ -235,7 +349,7 @@
             </div>
             <div class="blog-card__body">
               <div class="blog-card__date">${formatDate(b.publishedAt || b.createdAt)}</div>
-              <h3 class="blog-card__title">${escapeHtml(b.title)}</h3>
+              <h3 class="blog-card__title">${formatTitle(b.title, b.title_bold)}</h3>
             </div>
           </a>
         </article>`).join('');
@@ -264,8 +378,8 @@
                 </div>
                 <div class="testimonial-card__body">
                   <div class="rating-badge__stars" style="color:var(--primary);margin-bottom:0.4rem">${stars(t.rating)}</div>
-                  <h3 class="testimonial-card__headline">${escapeHtml(t.headline || 'Student Story')}</h3>
-                  <p class="testimonial-card__text">"${escapeHtml(t.review)}"</p>
+                  <h3 class="testimonial-card__headline">${formatTitle(t.headline || 'Student Story', t.title_bold)}</h3>
+                  <div class="testimonial-card__text rich-html">${sanitizeHtml(t.review)}</div>
                   <div class="testimonial-card__author">— ${escapeHtml(t.name)}</div>
                 </div>
               </article>
@@ -305,8 +419,8 @@
       const { data } = await api('/faqs');
       list.innerHTML = data.map((f) => `
         <div class="faq-item">
-          <button class="faq-item__q" type="button">${escapeHtml(f.question)} <i class="fa-solid fa-chevron-down"></i></button>
-          <div class="faq-item__a">${escapeHtml(f.answer)}</div>
+          <button class="faq-item__q" type="button">${formatTitle(f.question, f.title_bold)} <i class="fa-solid fa-chevron-down"></i></button>
+          <div class="faq-item__a rich-html">${sanitizeHtml(f.answer)}</div>
         </div>`).join('');
       initFaq(list);
     } catch {
@@ -362,6 +476,8 @@
   await Promise.all([
     renderBanners(),
     renderCourses(),
+    renderDoorstepSection(),
+    renderWhyChoose(),
     renderGallery(),
     renderBranches(),
     renderBlogs(),

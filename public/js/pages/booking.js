@@ -51,11 +51,14 @@
 
   function renderCourses() {
     if (!courseGrid) return;
-    courseGrid.innerHTML = courses.map((c) => `
-      <div class="option-card" data-id="${escapeHtml(c.id)}" data-name="${escapeHtml(c.courseName)}" data-price="${c.price}">
-        <strong>${escapeHtml(c.courseName)}</strong>
-        <small>${formatPrice(c.price)}</small>
-      </div>`).join('');
+    courseGrid.innerHTML = courses.map((c) => {
+      const name = c.name || c.courseName || '';
+      return `
+      <div class="option-card" data-id="${escapeHtml(c.id)}" data-name="${escapeHtml(name)}" data-slug="${escapeHtml(c.slug || '')}" data-price="${c.price}">
+        <strong>${escapeHtml(name)}</strong>
+        <small>${formatPrice(c.price)} · ${escapeHtml(c.classes_label || `${c.classes || 1} classes`)}</small>
+      </div>`;
+    }).join('');
 
     courseGrid.addEventListener('click', (e) => {
       const card = e.target.closest('.option-card');
@@ -68,7 +71,12 @@
     const params = new URLSearchParams(location.search);
     const preselect = params.get('course');
     if (preselect) {
-      const match = courses.find((c) => c.courseName.toLowerCase() === preselect.toLowerCase());
+      const match = courses.find((c) => {
+        const name = (c.name || c.courseName || '').toLowerCase();
+        const slug = (c.slug || '').toLowerCase();
+        const q = preselect.toLowerCase();
+        return name === q || slug === q;
+      });
       if (match) {
         const card = courseGrid.querySelector(`[data-id="${match.id}"]`);
         if (card) {

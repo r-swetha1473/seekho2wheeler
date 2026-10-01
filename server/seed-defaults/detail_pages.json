@@ -1,0 +1,62 @@
+[
+  {
+    "id": "page-doorstep-training",
+    "slug": "doorstep-training",
+    "title": "DOORSTEP TRAINING",
+    "hero_image_url": "/images/courses/seekho-05.webp",
+    "body_html": "",
+    "seo_title": "Doorstep Training | Seekho Two Wheeler Academy",
+    "seo_description": "Learn scooty or bike at your location. Doorstep training from Seekho Two Wheeler Academy, Kolkata.",
+    "is_active": true,
+    "created_at": "2026-09-30T00:00:00.000Z",
+    "updated_at": "2026-09-30T00:00:00.000Z"
+  },
+  {
+    "id": "page-our-mission",
+    "slug": "our-mission",
+    "title": "Our Mission",
+    "hero_image_url": "/images/thumbs/seekho-01.webp",
+    "body_html": "<p>Details coming soon</p>",
+    "seo_title": "Our Mission | Seekho Two Wheeler Academy",
+    "seo_description": "Empowering every learner to ride independently and safely on Kolkata roads.",
+    "is_active": true,
+    "created_at": "2026-09-30T00:00:00.000Z",
+    "updated_at": "2026-09-30T00:00:00.000Z"
+  },
+  {
+    "id": "page-our-journey",
+    "slug": "our-journey",
+    "title": "Our Journey",
+    "hero_image_url": "",
+    "body_html": "",
+    "seo_title": "Our Journey | Seekho Two Wheeler Academy",
+    "seo_description": "From 2018 to today — Seekho Two Wheeler Academy in Kolkata.",
+    "is_active": true,
+    "created_at": "2026-09-30T00:00:00.000Z",
+    "updated_at": "2026-09-30T00:00:00.000Z"
+  },
+  {
+    "id": "page-women-empowerment",
+    "slug": "women-empowerment",
+    "title": "Women Empowerment",
+    "hero_image_url": "/images/thumbs/seekho-07.webp",
+    "body_html": "",
+    "seo_title": "Women Empowerment | Seekho Two Wheeler Academy",
+    "seo_description": "Ladies batches and supportive training for women riders in Kolkata.",
+    "is_active": true,
+    "created_at": "2026-09-30T00:00:00.000Z",
+    "updated_at": "2026-09-30T00:00:00.000Z"
+  },
+  {
+    "id": "page-our-story",
+    "slug": "our-story",
+    "title": "Our Story",
+    "hero_image_url": "/images/thumbs/seekho-02.webp",
+    "body_html": "",
+    "seo_title": "Our Story | Seekho Two Wheeler Academy",
+    "seo_description": "How Seekho Two Wheeler Academy grew across Kolkata.",
+    "is_active": true,
+    "created_at": "2026-09-30T00:00:00.000Z",
+    "updated_at": "2026-09-30T00:00:00.000Z"
+  }
+]

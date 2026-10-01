@@ -42,8 +42,8 @@
         <nav class="breadcrumb" aria-label="Breadcrumb">
           <a href="/">Home</a><span>/</span><span>Contact</span>
         </nav>
-        <h1>Contact Us</h1>
-        <p>Have questions about training? Call us, WhatsApp or send an enquiry — we'll respond quickly.</p>
+        <h1 data-copy="contact.hero" data-copy-field="title">Contact Us</h1>
+        <p data-copy="contact.hero" data-copy-field="subtitle">Have questions about training? Call us, WhatsApp or send an enquiry — we'll respond quickly.</p>
       </div>
     </section>
 
@@ -53,43 +53,50 @@
           <div class="contact-info__item">
             <i class="fa-solid fa-phone"></i>
             <div>
-              <strong>Phone</strong>
-              <p><a href="tel:9748481630">9748481630</a><br><a href="tel:7980108587">7980108587</a><br><a href="tel:7980110273">7980110273</a></p>
+              <strong data-copy="contact.label_phone" data-copy-field="title">Phone</strong>
+              <p data-phones><a href="tel:9748481630">9748481630</a><br><a href="tel:7980108587">7980108587</a><br><a href="tel:7980110273">7980110273</a></p>
             </div>
           </div>
           <div class="contact-info__item">
             <i class="fa-brands fa-whatsapp"></i>
             <div>
-              <strong>WhatsApp</strong>
-              <p><a href="https://wa.me/919748481630" data-whatsapp target="_blank" rel="noopener">9748481630</a></p>
+              <strong data-copy="contact.label_whatsapp" data-copy-field="title">WhatsApp</strong>
+              <p><a href="https://wa.me/919748481630" data-whatsapp target="_blank" rel="noopener" data-whatsapp-number>9748481630</a></p>
             </div>
           </div>
           <div class="contact-info__item">
             <i class="fa-solid fa-envelope"></i>
             <div>
-              <strong>Email</strong>
-              <p><a href="mailto:info@seekhoacademy.com">info@seekhoacademy.com</a></p>
+              <strong data-copy="contact.label_email" data-copy-field="title">Email</strong>
+              <p><a href="mailto:info@seekhoacademy.com" data-setting="email">info@seekhoacademy.com</a></p>
             </div>
           </div>
           <div class="contact-info__item">
             <i class="fa-solid fa-location-dot"></i>
             <div>
-              <strong>Branches</strong>
-              <p>Tollygunge · New Town · Barasat · Sodepur</p>
-              <a href="/pages/branches.html" class="btn btn--outline btn--sm" style="margin-top:0.5rem">View All Branches</a>
+              <strong data-copy="contact.label_branches" data-copy-field="title">Branches</strong>
+              <p data-copy="contact.label_branches" data-copy-field="subtitle">Tollygunge · New Town · Barasat · Sodepur</p>
+              <a href="/pages/branches.html" class="btn btn--outline btn--sm" style="margin-top:0.5rem" data-copy="contact.label_branches" data-copy-field="cta_text" data-copy-href="cta_link">View All Branches</a>
+            </div>
+          </div>
+          <div class="contact-info__item" id="gmbActions" hidden>
+            <i class="fa-solid fa-map-location-dot"></i>
+            <div>
+              <strong data-copy="contact.label_findus" data-copy-field="title">Find us</strong>
+              <div data-gmb-btns></div>
             </div>
           </div>
           <div class="contact-info__item">
             <i class="fa-solid fa-clock"></i>
             <div>
-              <strong>Hours</strong>
-              <p>Monday – Sunday: 7:00 AM – 7:00 PM</p>
+              <strong data-copy="contact.label_hours" data-copy-field="title">Hours</strong>
+              <p data-setting="workingHours">Monday – Sunday: 7:00 AM – 7:00 PM</p>
             </div>
           </div>
         </div>
 
         <form class="contact-form" id="contactForm" data-aos="fade-left">
-          <h2 style="font-family:var(--font-display);font-size:1.35rem;margin-bottom:1.25rem">Send An Enquiry</h2>
+          <h2 style="font-family:var(--font-display);font-size:1.35rem;margin-bottom:1.25rem" data-copy="contact.form_title" data-copy-field="title">Send An Enquiry</h2>
           <div class="form-row">
             <div class="form-group">
               <label for="name">Full Name *</label>
@@ -111,8 +118,11 @@
             <textarea id="message" name="message" required placeholder="Tell us about your training needs…"></textarea>
             <span class="form-error">Please enter your message</span>
           </div>
-          <button type="submit" class="btn btn--primary btn--block">Send Enquiry</button>
+          <button type="submit" class="btn btn--primary btn--block" data-copy="contact.form_title" data-copy-field="cta_text">Send Enquiry</button>
         </form>
+      </div>
+      <div class="container" style="margin-top:1.75rem">
+        <div class="map-embed" id="academyMapWrap" hidden></div>
       </div>
     </section>
   </main>
@@ -122,6 +132,7 @@
   <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
   <script src="/js/layout.js"></script>
   <script src="/js/config.js"></script>
+  <script src="/js/sanitize-html.js"></script>
   <script src="/js/app.js"></script>
   <script src="/js/pages/contact.js"></script>
 </body>

@@ -30,8 +30,8 @@
         <nav class="breadcrumb" aria-label="Breadcrumb">
           <a href="/">Home</a><span>/</span><span>Register & Book</span>
         </nav>
-        <h1>Register & Book Training</h1>
-        <p>Complete the 5-step wizard to book your scooty or bike training session.</p>
+        <h1 data-copy="booking.hero" data-copy-field="title">Register & Book Training</h1>
+        <p data-copy="booking.hero" data-copy-field="subtitle">Complete the 5-step wizard to book your scooty or bike training session.</p>
       </div>
     </section>
 
@@ -39,29 +39,36 @@
       <div class="container">
         <div class="wizard" data-aos="fade-up">
           <div class="wizard__steps" role="tablist" aria-label="Booking steps">
-            <div class="wizard__step active" data-step="1"><span>1</span>Course</div>
-            <div class="wizard__step" data-step="2"><span>2</span>Branch</div>
-            <div class="wizard__step" data-step="3"><span>3</span>Date</div>
-            <div class="wizard__step" data-step="4"><span>4</span>Time</div>
-            <div class="wizard__step" data-step="5"><span>5</span>Submit</div>
+            <div class="wizard__step active" data-step="1"><span>1</span><span data-copy="booking.tab_course" data-copy-field="title">Course</span></div>
+            <div class="wizard__step" data-step="2"><span>2</span><span data-copy="booking.tab_branch" data-copy-field="title">Branch</span></div>
+            <div class="wizard__step" data-step="3"><span>3</span><span data-copy="booking.tab_date" data-copy-field="title">Date</span></div>
+            <div class="wizard__step" data-step="4"><span>4</span><span data-copy="booking.tab_time" data-copy-field="title">Time</span></div>
+            <div class="wizard__step" data-step="5"><span>5</span><span data-copy="booking.tab_submit" data-copy-field="title">Submit</span></div>
           </div>
 
           <div class="wizard__body">
             <!-- Step 1: Course -->
             <div class="wizard__panel active" data-step="1">
-              <h2 style="font-family:var(--font-display);font-size:1.25rem;margin-bottom:1rem">Select Your Course</h2>
-              <p style="color:var(--text-muted);margin-bottom:1.25rem;font-size:0.95rem">Choose the training program that fits your needs.</p>
+              <h2 style="font-family:var(--font-display);font-size:1.25rem;margin-bottom:1rem" data-copy="booking.step1" data-copy-field="title">Select Your Course</h2>
+              <p style="color:var(--text-muted);margin-bottom:1.25rem;font-size:0.95rem" data-copy="booking.step1" data-copy-field="subtitle">Choose the training program that fits your needs.</p>
               <div class="option-grid" id="courseOptions">
                 <div class="skeleton" style="height:80px"></div>
                 <div class="skeleton" style="height:80px"></div>
                 <div class="skeleton" style="height:80px"></div>
               </div>
+              <div class="doorstep-price doorstep-price--compact" data-doorstep-widget style="margin-top:1.25rem">
+                <h3 class="doorstep-price__title" data-copy="booking.doorstep_widget" data-copy-field="title">Doorstep training distance</h3>
+                <p class="doorstep-price__hint" data-doorstep-hint data-copy="booking.doorstep_widget" data-copy-field="subtitle">Type kilometres to see the live doorstep scooty price.</p>
+                <label class="doorstep-price__label" for="bookDoorstepKm" data-copy="booking.doorstep_widget" data-copy-field="body_html">Distance (km)</label>
+                <input class="doorstep-price__input" id="bookDoorstepKm" type="number" min="0.1" step="0.1" inputmode="decimal" data-doorstep-km placeholder="e.g. 5">
+                <p class="doorstep-price__result" data-doorstep-result hidden></p>
+              </div>
             </div>
 
             <!-- Step 2: Branch -->
             <div class="wizard__panel" data-step="2">
-              <h2 style="font-family:var(--font-display);font-size:1.25rem;margin-bottom:1rem">Choose A Branch</h2>
-              <p style="color:var(--text-muted);margin-bottom:1.25rem;font-size:0.95rem">Pick the nearest Seekho branch for your training.</p>
+              <h2 style="font-family:var(--font-display);font-size:1.25rem;margin-bottom:1rem" data-copy="booking.step2" data-copy-field="title">Choose A Branch</h2>
+              <p style="color:var(--text-muted);margin-bottom:1.25rem;font-size:0.95rem" data-copy="booking.step2" data-copy-field="subtitle">Pick the nearest Seekho branch for your training.</p>
               <div class="option-grid" id="branchOptions">
                 <div class="skeleton" style="height:80px"></div>
                 <div class="skeleton" style="height:80px"></div>
@@ -70,8 +77,8 @@
 
             <!-- Step 3: Date -->
             <div class="wizard__panel" data-step="3">
-              <h2 style="font-family:var(--font-display);font-size:1.25rem;margin-bottom:1rem">Select Date</h2>
-              <p style="color:var(--text-muted);margin-bottom:1.25rem;font-size:0.95rem">Choose your preferred training date.</p>
+              <h2 style="font-family:var(--font-display);font-size:1.25rem;margin-bottom:1rem" data-copy="booking.step3" data-copy-field="title">Select Date</h2>
+              <p style="color:var(--text-muted);margin-bottom:1.25rem;font-size:0.95rem" data-copy="booking.step3" data-copy-field="subtitle">Choose your preferred training date.</p>
               <div class="form-group">
                 <label for="bookingDate">Training Date *</label>
                 <input type="date" id="bookingDate" name="date" required>
@@ -80,8 +87,8 @@
 
             <!-- Step 4: Time -->
             <div class="wizard__panel" data-step="4">
-              <h2 style="font-family:var(--font-display);font-size:1.25rem;margin-bottom:1rem">Select Time Slot</h2>
-              <p style="color:var(--text-muted);margin-bottom:1.25rem;font-size:0.95rem">Morning and evening slots available.</p>
+              <h2 style="font-family:var(--font-display);font-size:1.25rem;margin-bottom:1rem" data-copy="booking.step4" data-copy-field="title">Select Time Slot</h2>
+              <p style="color:var(--text-muted);margin-bottom:1.25rem;font-size:0.95rem" data-copy="booking.step4" data-copy-field="subtitle">Morning and evening slots available.</p>
               <div class="slot-grid" id="slotOptions">
                 <div class="skeleton" style="height:44px"></div>
                 <div class="skeleton" style="height:44px"></div>
@@ -91,7 +98,7 @@
 
             <!-- Step 5: Submit -->
             <div class="wizard__panel" data-step="5">
-              <h2 style="font-family:var(--font-display);font-size:1.25rem;margin-bottom:1rem">Confirm & Submit</h2>
+              <h2 style="font-family:var(--font-display);font-size:1.25rem;margin-bottom:1rem" data-copy="booking.step5" data-copy-field="title">Confirm & Submit</h2>
               <div id="bookingSummary"></div>
               <form id="bookingForm">
                 <div class="form-row">
@@ -114,13 +121,13 @@
                   <label for="bookMessage">Notes (optional)</label>
                   <textarea id="bookMessage" name="message" placeholder="Any special requirements…"></textarea>
                 </div>
-                <button type="submit" class="btn btn--primary btn--block">Confirm Booking</button>
+                <button type="submit" class="btn btn--primary btn--block" data-copy="booking.step5" data-copy-field="cta_text">Confirm Booking</button>
               </form>
             </div>
 
             <div class="wizard__nav">
-              <button type="button" class="btn btn--outline" id="wizardPrev" style="visibility:hidden">Back</button>
-              <button type="button" class="btn btn--primary" id="wizardNext">Continue</button>
+              <button type="button" class="btn btn--outline" id="wizardPrev" style="visibility:hidden" data-copy="booking.nav_back" data-copy-field="title">Back</button>
+              <button type="button" class="btn btn--primary" id="wizardNext" data-copy="booking.nav_next" data-copy-field="title">Continue</button>
             </div>
           </div>
         </div>
@@ -133,7 +140,9 @@
   <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
   <script src="/js/layout.js"></script>
   <script src="/js/config.js"></script>
+  <script src="/js/sanitize-html.js"></script>
   <script src="/js/app.js"></script>
+  <script src="/js/doorstep-price.js"></script>
   <script src="/js/pages/booking.js"></script>
 </body>
 </html>

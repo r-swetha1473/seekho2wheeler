@@ -1,6 +1,6 @@
 /* Branches — 4:3 framed cards */
 (function () {
-  const { api, qs, safeImg } = Seekho;
+  const { api, qs, safeImg, branchMapButtonsHtml } = Seekho;
 
   const grid = qs('#branchGrid');
   const search = qs('#branchSearch');
@@ -33,7 +33,7 @@
             <a class="branch-card__phone" href="tel:${b.phone}"><i class="fa-solid fa-phone"></i> ${escapeHtml(b.phone)}</a>
             ${b.availableCourses?.length ? `<p class="branch-card__courses">${escapeHtml(b.availableCourses.join(' · '))}</p>` : ''}
             <div class="branch-card__actions">
-              <a href="${b.mapsLink || '#'}" target="_blank" rel="noopener" class="btn btn--outline btn--sm"><i class="fa-solid fa-map"></i> Map</a>
+              ${branchMapButtonsHtml(b)}
               <a href="/pages/booking.html?branch=${encodeURIComponent(b.name)}" class="btn btn--primary btn--sm">Book</a>
             </div>
           </div>

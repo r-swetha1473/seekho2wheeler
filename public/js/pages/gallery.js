@@ -1,6 +1,6 @@
 /* Gallery — uniform grid + lightbox */
 (function () {
-  const { api, qs, qsa, openLightbox, safeImg } = Seekho;
+  const { api, qs, qsa, openLightbox, safeImg, formatTitle } = Seekho;
 
   const grid = qs('#galleryGrid');
   let items = [];
@@ -21,7 +21,7 @@
       ? list.map((g) => `
         <div class="gallery-item media-frame media-frame--square" data-aos="fade-up" data-src="${g.image}" data-alt="${escapeHtml(g.title || g.category)}" tabindex="0" role="button" aria-label="Open gallery image">
           ${safeImg(g.image, g.title || g.category, { w: 800, h: 800 })}
-          <div class="gallery-item__overlay"><span>${escapeHtml(g.category)}</span><i class="fa-solid fa-expand"></i></div>
+          <div class="gallery-item__overlay"><span>${formatTitle(g.title || g.category, g.title_bold)}</span><i class="fa-solid fa-expand"></i></div>
         </div>`).join('')
       : '<p class="empty-state">No images in this category.</p>';
     if (window.AOS) AOS.refresh();

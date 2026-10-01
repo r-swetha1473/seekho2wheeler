@@ -1,5 +1,6 @@
 const db = require('../services/db');
 const { processAndSave, deleteUpload } = require('../services/upload');
+const { applyLocationFields } = require('../utils/geo');
 
 exports.listPublic = async (req, res, next) => {
   try {
@@ -33,11 +34,19 @@ exports.listAdmin = async (req, res, next) => {
 exports.create = async (req, res, next) => {
   try {
     const {
-      name, address, area, mapsLink, phone, whatsapp, availableCourses, trainerCount, active
+      name, address, area, mapsLink, latitude, longitude, phone, whatsapp, availableCourses, trainerCount, active
     } = req.body;
     if (!name || !address) {
       return res.status(400).json({ success: false, message: 'Branch name and address are required' });
     }
+
+    const geo = {
+      mapsLink: mapsLink || '',
+      latitude: latitude ?? '',
+      longitude: longitude ?? ''
+    };
+    const loc = applyLocationFields(geo);
+    if (!loc.ok) return res.status(400).json({ success: false, message: loc.message });
 
     let image = req.body.image || '';
     if (req.file) image = await processAndSave(req.file, 'branches');
@@ -51,7 +60,9 @@ exports.create = async (req, res, next) => {
       name,
       area: area || '',
       address,
-      mapsLink: mapsLink || '',
+      mapsLink: geo.mapsLink,
+      latitude: geo.latitude,
+      longitude: geo.longitude,
       phone: phone || '',
       whatsapp: whatsapp || phone || '',
       availableCourses: courses,
@@ -80,6 +91,8 @@ exports.update = async (req, res, next) => {
       catch { payload.availableCourses = payload.availableCourses.split(',').map((s) => s.trim()); }
     }
     if (payload.trainerCount !== undefined) payload.trainerCount = Number(payload.trainerCount);
+    const loc = applyLocationFields(payload);
+    if (!loc.ok) return res.status(400).json({ success: false, message: loc.message });
 
     const branch = await db.update('branches', req.params.id, payload);
     res.json({ success: true, message: 'Branch updated', data: branch });

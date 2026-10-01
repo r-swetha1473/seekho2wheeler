@@ -4,6 +4,7 @@ import {
   prepareImageFiles, renderUploadProgress, clearUploadProgress,
   iconBtn, addBtn
 } from '../admin.js';
+import { richTextField, titleBoldToggle, syncRichText } from '../richtext.js';
 
 let banners = [];
 
@@ -153,10 +154,11 @@ function showForm(banner = null) {
           <div class="form-group form-group--full">
             <label>Title <span class="required">*</span></label>
             <input class="form-control" name="title" required value="${escapeHtml(banner?.title || '')}">
+            ${titleBoldToggle({ checked: !!banner?.title_bold })}
           </div>
           <div class="form-group form-group--full">
             <label>Subtitle</label>
-            <input class="form-control" name="subtitle" value="${escapeHtml(banner?.subtitle || '')}">
+            ${richTextField({ name: 'subtitle', value: banner?.subtitle || '', minHeight: '90px' })}
           </div>
           <div class="form-group">
             <label>CTA Text</label>
@@ -193,6 +195,7 @@ function showForm(banner = null) {
 
   document.getElementById('saveBanner').addEventListener('click', async () => {
     const form = document.getElementById('bannerForm');
+    syncRichText(form);
     if (!form.checkValidity()) { form.reportValidity(); return; }
 
     const saveBtn = document.getElementById('saveBanner');
@@ -202,6 +205,7 @@ function showForm(banner = null) {
     try {
       const fd = new FormData(form);
       fd.set('active', form.querySelector('[name="active"]').checked ? 'true' : 'false');
+      fd.set('title_bold', form.querySelector('[name="title_bold"]').checked ? 'true' : 'false');
 
       const fileInput = form.querySelector('[name="image"]');
       if (fileInput?.files?.[0]) {

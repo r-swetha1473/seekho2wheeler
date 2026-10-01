@@ -31,8 +31,8 @@
         <nav class="breadcrumb" aria-label="Breadcrumb">
           <a href="/">Home</a><span>/</span><span>FAQ</span>
         </nav>
-        <h1>Frequently Asked Questions</h1>
-        <p>Everything you need to know about training, timing, vehicles and booking at Seekho.</p>
+        <h1 data-copy="faq.hero" data-copy-field="title">Frequently Asked Questions</h1>
+        <p data-copy="faq.hero" data-copy-field="subtitle">Everything you need to know about training, timing, vehicles and booking at Seekho.</p>
       </div>
     </section>
 
@@ -45,9 +45,9 @@
           <div class="skeleton" style="height:60px"></div>
         </div>
         <div style="text-align:center;margin-top:2rem" data-aos="fade-up">
-          <p style="color:var(--text-muted);margin-bottom:1rem">Still have questions?</p>
-          <a href="/pages/contact.html" class="btn btn--primary">Contact Us</a>
-          <a href="/pages/booking.html" class="btn btn--outline" style="margin-left:0.5rem">Book Training</a>
+          <p style="color:var(--text-muted);margin-bottom:1rem" data-copy="faq.cta" data-copy-field="title">Still have questions?</p>
+          <a href="/pages/contact.html" class="btn btn--primary" data-copy="faq.cta" data-copy-field="cta_text" data-copy-href="cta_link">Contact Us</a>
+          <a href="/pages/booking.html" class="btn btn--outline" style="margin-left:0.5rem" data-copy="faq.cta_book" data-copy-field="title" data-copy-href="cta_link">Book Training</a>
         </div>
       </div>
     </section>
@@ -58,6 +58,7 @@
   <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
   <script src="/js/layout.js"></script>
   <script src="/js/config.js"></script>
+  <script src="/js/sanitize-html.js"></script>
   <script src="/js/app.js"></script>
   <script src="/js/pages/faq.js"></script>
 </body>

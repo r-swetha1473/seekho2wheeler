@@ -1,6 +1,6 @@
 /* Blog detail — slug from /blog/:slug */
 (function () {
-  const { api, qs, formatDate, toast } = Seekho;
+  const { api, qs, formatDate, toast, sanitizeHtml, formatTitle } = Seekho;
 
   const slug = location.pathname.replace(/^\/blog\/?/, '').replace(/\/$/, '');
   const article = qs('#blogArticle');
@@ -62,8 +62,8 @@
             <time datetime="${blog.publishedAt || blog.createdAt}">${formatDate(blog.publishedAt || blog.createdAt)}</time>
             <span>· Seekho Two Wheeler Academy</span>
           </div>
-          <h1 class="blog-detail__title" data-aos="fade-up">${escapeHtml(blog.title)}</h1>
-          <div class="blog-detail__content" data-aos="fade-up">${blog.content}</div>
+          <h1 class="blog-detail__title" data-aos="fade-up">${formatTitle(blog.title, blog.title_bold)}</h1>
+          <div class="blog-detail__content rich-html" data-aos="fade-up">${sanitizeHtml(blog.content)}</div>
           <div class="blog-detail__cta" data-aos="fade-up">
             <p>Ready to start your riding journey?</p>
             <a href="/pages/booking.html" class="btn btn--primary">Book Training Now</a>

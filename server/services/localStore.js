@@ -21,7 +21,16 @@ const SHEETS = [
   'settings',
   'visits',
   'admins',
-  'notifications'
+  'notifications',
+  'doorstep_pricing',
+  'home_sections',
+  'detail_pages',
+  'why_choose',
+  'chatbot_qa',
+  'chatbot_unanswered',
+  'chatbot_config',
+  'updates',
+  'page_copy'
 ];
 
 const CONTENT_SHEETS = [
@@ -32,7 +41,15 @@ const CONTENT_SHEETS = [
   'pricing',
   'faqs',
   'testimonials',
-  'settings'
+  'settings',
+  'doorstep_pricing',
+  'home_sections',
+  'detail_pages',
+  'why_choose',
+  'chatbot_qa',
+  'chatbot_config',
+  'updates',
+  'page_copy'
 ];
 
 function copySeedIfNeeded(name) {

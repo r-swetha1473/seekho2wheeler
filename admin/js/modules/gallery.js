@@ -4,6 +4,7 @@ import {
   prepareImageFiles, renderUploadProgress, clearUploadProgress,
   iconBtn, addBtn
 } from '../admin.js';
+import { titleBoldToggle } from '../richtext.js';
 
 const CATEGORIES = [
   'Scooty Training',
@@ -149,6 +150,7 @@ function showUploadForm() {
         <div class="form-group">
           <label>Title (optional, applies to all)</label>
           <input class="form-control" name="title" placeholder="Leave blank to use category name">
+          ${titleBoldToggle({ label: 'Bold title' })}
         </div>
         <div class="form-group">
           <label>Images <span class="required">*</span></label>
@@ -184,6 +186,7 @@ function showUploadForm() {
       const fd = new FormData();
       fd.append('category', form.category.value);
       fd.append('title', form.title.value);
+      fd.append('title_bold', form.querySelector('[name="title_bold"]')?.checked ? 'true' : 'false');
       compressed.forEach((f) => fd.append('images', f, f.name));
 
       const res = await api('/admin/gallery', {
@@ -211,6 +214,7 @@ function showEditForm(item, container) {
         <div class="form-group">
           <label>Title</label>
           <input class="form-control" name="title" value="${escapeHtml(item.title || '')}">
+          ${titleBoldToggle({ checked: !!item.title_bold })}
         </div>
         <div class="form-group">
           <label>Category</label>
@@ -246,6 +250,7 @@ function showEditForm(item, container) {
     const form = document.getElementById('editGalleryForm');
     const fd = new FormData(form);
     fd.set('active', form.querySelector('[name="active"]').checked ? 'true' : 'false');
+    fd.set('title_bold', form.querySelector('[name="title_bold"]').checked ? 'true' : 'false');
     const progressEl = document.getElementById('uploadProgressSlot') || document.getElementById('editPreview');
     const saveBtn = document.getElementById('saveEdit');
     saveBtn.disabled = true;

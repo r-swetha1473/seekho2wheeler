@@ -15,12 +15,16 @@ async function prepare() {
     await ensureAdmin();
     const db = require('../server/services/db');
     const banners = await db.getAll('banners');
-    if (!banners.length) {
-      console.log('[vercel] Seeding default content...');
+    if (!banners.length && db.useLocalStore()) {
+      console.log('[vercel] Seeding default content into local JSON (Sheets not configured)...');
       const seed = require('../scripts/seed');
       await seed();
     }
-  })();
+  })().catch((err) => {
+    ready = undefined;
+    console.error('[vercel bootstrap]', err.message);
+    throw err;
+  });
   return ready;
 }
 
@@ -28,7 +32,7 @@ module.exports = async (req, res) => {
   try {
     await prepare();
   } catch (err) {
-    console.error('[vercel bootstrap]', err);
+    console.error('[vercel bootstrap]', err.message);
   }
   return app(req, res);
 };

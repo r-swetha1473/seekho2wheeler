@@ -7,7 +7,11 @@ const { ensureDataFiles } = require('./services/localStore');
 
 async function bootstrap() {
   ensureDataFiles();
-  await ensureAdmin();
+  try {
+    await ensureAdmin();
+  } catch (err) {
+    console.error('[bootstrap] Admin bootstrap skipped:', err.message);
+  }
 
   const db = require('./services/db');
   const banners = await db.getAll('banners');

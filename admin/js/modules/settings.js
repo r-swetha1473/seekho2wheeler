@@ -37,6 +37,7 @@ export default async function render(container) {
                 <div class="form-group">
                   <label>Tagline</label>
                   <input class="form-control" name="tagline" value="${escapeHtml(settings.tagline || '')}">
+                  <label class="form-check" style="margin-top:0.45rem;"><input type="checkbox" name="tagline_bold" ${settings.tagline_bold ? 'checked' : ''}> Bold tagline</label>
                 </div>
                 <div class="form-group">
                   <label>Email</label>
@@ -45,6 +46,25 @@ export default async function render(container) {
                 <div class="form-group">
                   <label>Address</label>
                   <input class="form-control" name="address" value="${escapeHtml(settings.address || '')}">
+                </div>
+                <div class="form-group form-group--full">
+                  <label>Google Business Profile URL</label>
+                  <input class="form-control" name="gmb_url" type="url" value="${escapeHtml(settings.gmb_url || '')}" placeholder="https://…">
+                  <p class="form-hint">Leave empty until the client provides the official GMB / Google Maps listing URL. Do not guess.</p>
+                </div>
+                <div class="form-group">
+                  <label>Latitude</label>
+                  <input class="form-control" name="latitude" type="number" step="any" min="-90" max="90" value="${escapeHtml(settings.latitude === 0 || settings.latitude ? String(settings.latitude) : '')}" placeholder="—">
+                </div>
+                <div class="form-group">
+                  <label>Longitude</label>
+                  <input class="form-control" name="longitude" type="number" step="any" min="-180" max="180" value="${escapeHtml(settings.longitude === 0 || settings.longitude ? String(settings.longitude) : '')}" placeholder="—">
+                  <p class="form-hint">Leave both coordinates empty until the client provides them. Range: lat −90…90, lng −180…180.</p>
+                </div>
+                <div class="form-group form-group--full">
+                  <label>Map embed URL (optional)</label>
+                  <input class="form-control" name="map_embed_url" type="url" value="${escapeHtml(settings.map_embed_url || '')}" placeholder="https://www.google.com/maps/embed?…">
+                  <p class="form-hint">Paste the Google Maps iframe <strong>src</strong> only (https). Optional if latitude and longitude are set.</p>
                 </div>
                 <div class="form-group">
                   <label>Working Hours</label>
@@ -61,6 +81,34 @@ export default async function render(container) {
                 <div class="form-group">
                   <label>Review Count</label>
                   <input class="form-control" type="number" name="reviewCount" value="${settings.reviewCount ?? ''}">
+                </div>
+                <div class="form-group">
+                  <label>Header button text</label>
+                  <input class="form-control" name="header_cta_text" value="${escapeHtml(settings.header_cta_text || '')}">
+                </div>
+                <div class="form-group">
+                  <label>Header button link</label>
+                  <input class="form-control" name="header_cta_link" value="${escapeHtml(settings.header_cta_link || '')}" placeholder="/pages/booking.html">
+                </div>
+                <div class="form-group form-group--full">
+                  <label>Logo second line</label>
+                  <input class="form-control" name="logo_subline" value="${escapeHtml(settings.logo_subline || '')}">
+                </div>
+                <div class="form-group form-group--full">
+                  <label>Footer CTA heading</label>
+                  <input class="form-control" name="footer_cta_title" value="${escapeHtml(settings.footer_cta_title || '')}">
+                </div>
+                <div class="form-group form-group--full">
+                  <label>Footer CTA text</label>
+                  <input class="form-control" name="footer_cta_text" value="${escapeHtml(settings.footer_cta_text || '')}">
+                </div>
+                <div class="form-group">
+                  <label>Footer CTA button</label>
+                  <input class="form-control" name="footer_cta_button" value="${escapeHtml(settings.footer_cta_button || '')}">
+                </div>
+                <div class="form-group form-group--full">
+                  <label>Copyright line (after year)</label>
+                  <input class="form-control" name="copyright_text" value="${escapeHtml(settings.copyright_text || '')}">
                 </div>
               </div>
               <button type="submit" class="btn btn--primary" style="margin-top:1rem;">Save Site Settings</button>
@@ -169,12 +217,24 @@ function bindForms(container) {
     const payload = buildPayload({
       siteName: form.siteName.value,
       tagline: form.tagline.value,
+      tagline_bold: form.querySelector('[name="tagline_bold"]').checked,
       email: form.email.value,
       address: form.address.value,
+      gmb_url: form.gmb_url.value.trim(),
+      latitude: form.latitude.value.trim(),
+      longitude: form.longitude.value.trim(),
+      map_embed_url: form.map_embed_url.value.trim(),
       workingHours: form.workingHours.value,
       foundedYear: form.foundedYear.value,
       trainedCandidates: form.trainedCandidates.value,
-      reviewCount: Number(form.reviewCount.value || 0)
+      reviewCount: Number(form.reviewCount.value || 0),
+      header_cta_text: form.header_cta_text.value.trim(),
+      header_cta_link: form.header_cta_link.value.trim(),
+      logo_subline: form.logo_subline.value.trim(),
+      footer_cta_title: form.footer_cta_title.value.trim(),
+      footer_cta_text: form.footer_cta_text.value.trim(),
+      footer_cta_button: form.footer_cta_button.value.trim(),
+      copyright_text: form.copyright_text.value.trim()
     });
 
     try {

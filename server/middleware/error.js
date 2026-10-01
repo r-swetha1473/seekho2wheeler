@@ -4,10 +4,17 @@ function errorHandler(err, req, res, next) {
     return res.status(400).json({ success: false, message: 'Image is too large. Max 5MB allowed.' });
   }
   const status = err.status || 500;
+  const isLogin = req.path === '/auth/login' || req.originalUrl === '/api/auth/login';
+  if (isLogin && status >= 500) {
+    return res.status(503).json({
+      success: false,
+      message: err.publicMessage || 'Unable to sign in right now. Storage is not ready.'
+    });
+  }
   const message =
     status === 500 && process.env.NODE_ENV === 'production'
       ? 'Something went wrong. Please try again.'
-      : err.message || 'Something went wrong. Please try again.';
+      : err.publicMessage || err.message || 'Something went wrong. Please try again.';
   res.status(status).json({ success: false, message });
 }
 

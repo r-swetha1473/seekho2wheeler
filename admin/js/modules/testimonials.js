@@ -4,6 +4,7 @@ import {
   prepareImageFiles, renderUploadProgress, clearUploadProgress,
   iconBtn, addBtn
 } from '../admin.js';
+import { richTextField, titleBoldToggle, syncRichText, validateRichText } from '../richtext.js';
 
 let items = [];
 
@@ -123,6 +124,7 @@ function showForm(item, container) {
           <div class="form-group">
             <label>Headline</label>
             <input class="form-control" name="headline" value="${escapeHtml(item?.headline || '')}" placeholder="e.g. Learned in 7 days">
+            ${titleBoldToggle({ checked: !!item?.title_bold, label: 'Bold headline' })}
           </div>
           <div class="form-group">
             <label>Rating</label>
@@ -143,7 +145,7 @@ function showForm(item, container) {
           </div>
           <div class="form-group form-group--full">
             <label>Review <span class="required">*</span></label>
-            <textarea class="form-control" name="review" required rows="4">${escapeHtml(item?.review || '')}</textarea>
+            ${richTextField({ name: 'review', value: item?.review || '', required: true, minHeight: '140px' })}
           </div>
           <div class="form-group">
             <label>Display Order</label>
@@ -176,10 +178,12 @@ function showForm(item, container) {
 
   document.getElementById('saveTestimonial').addEventListener('click', async () => {
     const form = document.getElementById('testimonialForm');
-    if (!form.checkValidity()) { form.reportValidity(); return; }
+    syncRichText(form);
+    if (!form.checkValidity() || !validateRichText(form)) { form.reportValidity(); return; }
 
     const fd = new FormData(form);
     fd.set('active', form.querySelector('[name="active"]').checked ? 'true' : 'false');
+    fd.set('title_bold', form.querySelector('[name="title_bold"]').checked ? 'true' : 'false');
 
     const btn = document.getElementById('saveTestimonial');
     btn.disabled = true;

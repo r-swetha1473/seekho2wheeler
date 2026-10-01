@@ -1,0 +1,74 @@
+[
+  {
+    "id": "why-1",
+    "title": "Non-Cyclists Welcome",
+    "description": "Special programs for those who never rode a cycle before.",
+    "icon": "fa-solid fa-person-rays",
+    "is_active": true,
+    "sort_order": 1,
+    "title_bold": false,
+    "link_slug": "",
+    "created_at": "2026-09-30T00:00:00.000Z",
+    "updated_at": "2026-09-30T00:00:00.000Z"
+  },
+  {
+    "id": "why-2",
+    "title": "Women-First Environment",
+    "description": "Female-friendly batches with supportive, patient trainers.",
+    "icon": "fa-solid fa-venus",
+    "is_active": true,
+    "sort_order": 2,
+    "title_bold": false,
+    "link_slug": "",
+    "created_at": "2026-09-30T00:00:00.000Z",
+    "updated_at": "2026-09-30T00:00:00.000Z"
+  },
+  {
+    "id": "why-3",
+    "title": "Real Traffic Practice",
+    "description": "Guided sessions on actual Kolkata roads with expert supervision.",
+    "icon": "fa-solid fa-road",
+    "is_active": true,
+    "sort_order": 3,
+    "title_bold": false,
+    "link_slug": "",
+    "created_at": "2026-09-30T00:00:00.000Z",
+    "updated_at": "2026-09-30T00:00:00.000Z"
+  },
+  {
+    "id": "why-4",
+    "title": "Flexible Timing",
+    "description": "Morning and evening slots across 4 branches in Kolkata.",
+    "icon": "fa-solid fa-clock",
+    "is_active": true,
+    "sort_order": 4,
+    "title_bold": false,
+    "link_slug": "",
+    "created_at": "2026-09-30T00:00:00.000Z",
+    "updated_at": "2026-09-30T00:00:00.000Z"
+  },
+  {
+    "id": "why-5",
+    "title": "Patient Experienced Trainers",
+    "description": "Step-by-step guidance until you feel road-ready.",
+    "icon": "fa-solid fa-chalkboard-user",
+    "is_active": true,
+    "sort_order": 5,
+    "title_bold": false,
+    "link_slug": "",
+    "created_at": "2026-09-30T00:00:00.000Z",
+    "updated_at": "2026-09-30T00:00:00.000Z"
+  },
+  {
+    "id": "why-6",
+    "title": "Multiple Vehicles",
+    "description": "Practice on academy scooties and bikes at every branch.",
+    "icon": "fa-solid fa-motorcycle",
+    "is_active": true,
+    "sort_order": 6,
+    "title_bold": false,
+    "link_slug": "",
+    "created_at": "2026-09-30T00:00:00.000Z",
+    "updated_at": "2026-09-30T00:00:00.000Z"
+  }
+]

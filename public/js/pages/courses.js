@@ -1,14 +1,14 @@
 /* Courses page — swipe carousel (mobile) / multi-card (desktop) */
 (function () {
-  const { api, qs, formatPrice, safeImg } = Seekho;
+  const { api, qs, formatPrice, safeImg, sanitizeHtml, formatTitle, courseDetailHref, classesLabel } = Seekho;
 
-  const COURSE_MAP = {
-    'Scooty Training': 'scooty',
-    'Bike Training': 'bike',
-    'Ladies Training': 'ladies',
-    'Electric Vehicle Training': 'ev',
-    'Road Practice': 'road',
-    'RTO Practice': 'rto'
+  const HASH_ALIASES = {
+    scooty: 'scooty-training',
+    bike: 'bike-training',
+    ladies: 'ladies-training',
+    ev: 'electric-vehicle-training',
+    road: 'road-practice',
+    rto: 'rto-practice'
   };
 
   function escapeHtml(str) {
@@ -30,24 +30,24 @@
       wrap.innerHTML = `
         <div class="swiper-wrapper">
           ${data.map((c, i) => {
-            const id = COURSE_MAP[c.courseName] || c.id;
-            const img = c.image || `/images/courses/seekho-0${(i % 7) + 1}.webp`;
+            const name = c.name || c.courseName || '';
+            const img = c.image_url || c.image || `/images/courses/seekho-0${(i % 7) + 1}.webp`;
             return `
               <div class="swiper-slide">
-                <article class="course-card course-anchor" id="${id}">
-                  <div class="course-card__media media-frame media-frame--43">
-                    ${safeImg(img, c.courseName, { w: 1200, h: 900 })}
-                  </div>
-                  <div class="course-card__body">
-                    <h2 class="course-card__title">${escapeHtml(c.courseName)}</h2>
-                    <p class="course-card__desc">${escapeHtml(c.description || '')}</p>
-                    <div class="course-card__meta">
-                      <span class="course-card__price">${formatPrice(c.price)}</span>
-                      <span class="course-card__duration"><i class="fa-regular fa-clock"></i> ${escapeHtml(c.duration || 'Flexible')}</span>
+                <a class="course-card course-anchor" id="${escapeHtml(c.slug || c.id)}" href="${courseDetailHref(c)}" aria-label="${escapeHtml(name)} details">
+                    <div class="course-card__media media-frame media-frame--43">
+                      ${c.badge ? `<span class="course-card__badge">${escapeHtml(c.badge)}</span>` : ''}
+                      ${safeImg(img, name, { w: 1200, h: 900 })}
                     </div>
-                    <a href="/pages/booking.html?course=${encodeURIComponent(c.courseName)}" class="btn btn--primary btn--block">Book Now</a>
-                  </div>
-                </article>
+                    <div class="course-card__body">
+                      <h2 class="course-card__title">${formatTitle(name, c.title_bold)}</h2>
+                      <div class="course-card__desc rich-html">${sanitizeHtml(c.description || '')}</div>
+                      <div class="course-card__meta">
+                        <span class="course-card__price">${formatPrice(c.price)}</span>
+                        <span class="course-card__duration"><i class="fa-regular fa-clock"></i> ${escapeHtml(classesLabel(c))}</span>
+                      </div>
+                    </div>
+                </a>
               </div>`;
           }).join('')}
         </div>
@@ -72,7 +72,8 @@
 
     const hash = location.hash.replace('#', '');
     if (hash) {
-      const el = document.getElementById(hash);
+      const id = HASH_ALIASES[hash] || hash;
+      const el = document.getElementById(id);
       if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 350);
     }
     if (window.AOS) AOS.refresh();

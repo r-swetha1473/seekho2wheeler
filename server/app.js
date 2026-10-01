@@ -32,6 +32,13 @@ const limiter = rateLimit({
   message: { success: false, message: 'Too many requests. Please try again later.' }
 });
 app.use('/api/', limiter);
+app.use('/api', (req, res, next) => {
+  if (req.method === 'GET') {
+    res.set('Cache-Control', 'private, no-store, no-cache, must-revalidate');
+    res.set('Pragma', 'no-cache');
+  }
+  next();
+});
 
 const formLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -41,6 +48,11 @@ const formLimiter = rateLimit({
 app.use('/api/bookings', formLimiter);
 app.use('/api/enquiries', formLimiter);
 app.use('/api/auth/login', rateLimit({ windowMs: 15 * 60 * 1000, max: 20 }));
+app.use('/api/chatbot/ask', rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 40,
+  message: { success: false, message: 'Too many chat messages. Please try again later.' }
+}));
 
 /* Health check for Vercel / uptime monitors */
 app.get('/api/health', (req, res) => {
@@ -90,6 +102,10 @@ app.get('/blog/:slug', (req, res) => {
   res.sendFile(path.join(publicDir, 'pages/blog-detail.html'));
 });
 
+app.get('/p/:slug', (req, res) => {
+  res.sendFile(path.join(publicDir, 'pages/detail.html'));
+});
+
 app.get('/robots.txt', (req, res) => {
   const base = process.env.BASE_URL || `${req.protocol}://${req.get('host')}`;
   res.type('text/plain').send(`User-agent: *
@@ -105,6 +121,9 @@ app.get('/sitemap.xml', async (req, res) => {
   try {
     const db = require('./services/db');
     const blogs = (await db.getAll('blogs')).filter((b) => b.status !== 'draft');
+    const { listPages } = require('./services/detailPages');
+    const pages = (await listPages()).filter((p) => p.is_active !== false);
+    const courses = (await db.getAll('pricing')).filter((p) => p.is_active !== false && p.active !== false);
     const base = process.env.BASE_URL || `${req.protocol}://${req.get('host')}`;
     const staticPages = [
       '',
@@ -123,8 +142,18 @@ app.get('/sitemap.xml', async (req, res) => {
         (p) => `  <url><loc>${base}${p || '/'}</loc><changefreq>weekly</changefreq><priority>${p ? '0.8' : '1.0'}</priority></url>`
       ),
       ...blogs.map(
-        (b) => `  <url><loc>${base}/blog/${b.slug}</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>`
-      )
+        (b) => `  <url><loc>${base}/blog/${b.slug}</loc><lastmod>${String(b.updatedAt || b.publishedAt || '').slice(0, 10)}</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>`
+      ),
+      ...pages.map((p) => {
+        const last = String(p.updated_at || '').slice(0, 10);
+        const lastTag = last ? `<lastmod>${last}</lastmod>` : '';
+        return `  <url><loc>${base}/p/${p.slug}</loc>${lastTag}<changefreq>monthly</changefreq><priority>0.7</priority></url>`;
+      }),
+      ...courses.map((c) => {
+        const slug = encodeURIComponent(c.slug || '');
+        if (!slug) return '';
+        return `  <url><loc>${base}/pages/detail.html?type=course&amp;slug=${slug}</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>`;
+      }).filter(Boolean)
     ];
     res.type('application/xml').send(`<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

@@ -1,7 +1,19 @@
-const db = require('../services/db');
 const { login, changePassword, ensureAdmin } = require('../services/auth');
+const { AppError, publicSheetsMessage } = require('../utils/httpError');
 
-exports.login = async (req, res, next) => {
+function loginFailureResponse(err) {
+  console.error('[auth/login]', err.message);
+  if (err instanceof AppError && err.status === 401) {
+    return { status: 401, message: err.publicMessage || err.message };
+  }
+  if (err instanceof AppError) {
+    const status = err.status === 500 ? 503 : err.status;
+    return { status, message: err.publicMessage || publicSheetsMessage(err) };
+  }
+  return { status: 503, message: publicSheetsMessage(err) };
+}
+
+exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
@@ -13,7 +25,8 @@ exports.login = async (req, res, next) => {
     }
     res.json({ success: true, message: 'Login successful', data: { token: result.token, admin: result.admin } });
   } catch (err) {
-    next(err);
+    const { status, message } = loginFailureResponse(err);
+    return res.status(status).json({ success: false, message });
   }
 };
 

@@ -4,6 +4,7 @@ import {
   prepareImageFiles, renderUploadProgress, clearUploadProgress,
   iconBtn, addBtn
 } from '../admin.js';
+import { richTextField, titleBoldToggle, syncRichText, validateRichText } from '../richtext.js';
 
 let blogs = [];
 
@@ -113,6 +114,7 @@ function showForm(blog, container) {
           <div class="form-group form-group--full">
             <label>Title <span class="required">*</span></label>
             <input class="form-control" name="title" required value="${escapeHtml(blog?.title || '')}">
+            ${titleBoldToggle({ checked: !!blog?.title_bold })}
           </div>
           <div class="form-group">
             <label>Slug</label>
@@ -140,7 +142,7 @@ function showForm(blog, container) {
           </div>
           <div class="form-group form-group--full">
             <label>Content <span class="required">*</span></label>
-            <textarea class="form-control form-control--lg" name="content" required rows="10">${escapeHtml(blog?.content || '')}</textarea>
+            ${richTextField({ name: 'content', value: blog?.content || '', required: true, minHeight: '220px' })}
           </div>
           <div class="form-group form-group--full">
             <label>Featured Image</label>
@@ -166,9 +168,11 @@ function showForm(blog, container) {
 
   document.getElementById('saveBlog').addEventListener('click', async () => {
     const form = document.getElementById('blogForm');
-    if (!form.checkValidity()) { form.reportValidity(); return; }
+    syncRichText(form);
+    if (!form.checkValidity() || !validateRichText(form)) { form.reportValidity(); return; }
 
     const fd = new FormData(form);
+    fd.set('title_bold', form.querySelector('[name="title_bold"]').checked ? 'true' : 'false');
     if (form.status.value !== 'scheduled') fd.delete('scheduledAt');
     else if (fd.get('scheduledAt')) {
       fd.set('scheduledAt', new Date(fd.get('scheduledAt')).toISOString());

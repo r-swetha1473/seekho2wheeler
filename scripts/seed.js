@@ -3,6 +3,7 @@
  * - Google Sheets ready → writes via Sheets API
  * - Otherwise → local JSON (development only)
  */
+const slugify = require('slugify');
 require('dotenv').config();
 
 const isMain = require.main === module;
@@ -36,6 +37,32 @@ async function seed() {
   const bl = (n) => `/images/blogs/seekho-${String(n).padStart(2, '0')}.webp`;
   const t = (n) => `/images/testimonials-safe/seekho-${String(n).padStart(2, '0')}.webp`;
   const now = new Date().toISOString();
+  const courseRow = (id, name, price, classes, description, image, features, sort, badge = '') => {
+    const slug = slugify(name, { lower: true, strict: true });
+    return {
+      id,
+      name,
+      slug,
+      description,
+      price,
+      classes,
+      image_url: image,
+      badge,
+      is_active: true,
+      sort_order: sort,
+      title_bold: false,
+      features,
+      courseName: name,
+      duration: `${classes} classes`,
+      image,
+      displayOrder: sort,
+      active: true,
+      created_at: now,
+      updated_at: now,
+      createdAt: now,
+      updatedAt: now
+    };
+  };
 
   await write('banners', [
     { id: 'banner-1', title: 'Learn To Ride. Build Confidence. Live Independently.', subtitle: 'Premium scooty & bike training for women and beginners across Kolkata.', ctaText: 'Book Training', ctaLink: '/pages/booking.html', image: b(1), displayOrder: 1, active: true, createdAt: now, updatedAt: now },
@@ -46,19 +73,85 @@ async function seed() {
   ]);
 
   await write('pricing', [
-    { id: 'price-1', courseName: 'Scooty Training', price: 2500, duration: '10–15 Days', description: 'Perfect for beginners — balance, control, traffic basics and confident city riding.', image: c(1), features: ['Non-cyclists welcome', 'Female-friendly trainers', 'Flexible timing', 'Certificate guidance'], displayOrder: 1, active: true, createdAt: now, updatedAt: now },
-    { id: 'price-2', courseName: 'Bike Training', price: 3000, duration: '12–18 Days', description: 'Gear shifting, clutch control, balance and real-road motorcycle practice.', image: c(3), features: ['Clutch mastery', 'Gear practice', 'Road confidence', 'Patient trainers'], displayOrder: 2, active: true, createdAt: now, updatedAt: now },
-    { id: 'price-3', courseName: 'Ladies Training', price: 2500, duration: '10–15 Days', description: 'Specially designed sessions for women — safe, supportive and empowering.', image: c(7), features: ['Women-first batches', 'Safe environment', 'Confidence building', 'Scooty & bike options'], displayOrder: 3, active: true, createdAt: now, updatedAt: now },
-    { id: 'price-4', courseName: 'Electric Vehicle Training', price: 2800, duration: '8–12 Days', description: 'Learn to ride electric scooties with modern controls and city practice.', image: c(4), features: ['EV basics', 'Throttle control', 'Battery awareness', 'City routes'], displayOrder: 4, active: true, createdAt: now, updatedAt: now },
-    { id: 'price-5', courseName: 'Road Practice', price: 2000, duration: '5–8 Days', description: 'Real traffic exposure with trainer guidance for everyday independence.', image: c(5), features: ['Live traffic', 'Signal practice', 'Lane discipline', 'Defensive riding'], displayOrder: 5, active: true, createdAt: now, updatedAt: now },
-    { id: 'price-6', courseName: 'RTO Practice', price: 1500, duration: '3–5 Days', description: 'Focused practice for RTO driving test routes and requirements.', image: c(6), features: ['Test track drills', 'Figure-8 practice', 'Document guidance', 'Mock tests'], displayOrder: 6, active: true, createdAt: now, updatedAt: now }
+    courseRow('price-1', 'Scooty Training', 2500.00, 15, 'Perfect for beginners — balance, control, traffic basics and confident city riding.', c(1), ['Non-cyclists welcome', 'Female-friendly trainers', 'Flexible timing', 'Certificate guidance'], 1),
+    courseRow('price-2', 'Bike Training', 3000.00, 15, 'Gear shifting, clutch control, balance and real-road motorcycle practice.', c(3), ['Clutch mastery', 'Gear practice', 'Road confidence', 'Patient trainers'], 2),
+    courseRow('price-3', 'Ladies Training', 2500.00, 15, 'Specially designed sessions for women — safe, supportive and empowering.', c(7), ['Women-first batches', 'Safe environment', 'Confidence building', 'Scooty & bike options'], 3),
+    courseRow('price-4', 'Electric Vehicle Training', 2800.00, 12, 'Learn to ride electric scooties with modern controls and city practice.', c(4), ['EV basics', 'Throttle control', 'Battery awareness', 'City routes'], 4),
+    courseRow('price-5', 'Road Practice', 2000.00, 8, 'Real traffic exposure with trainer guidance for everyday independence.', c(5), ['Live traffic', 'Signal practice', 'Lane discipline', 'Defensive riding'], 5),
+    courseRow('price-6', 'RTO Practice', 1500.00, 5, 'Focused practice for RTO driving test routes and requirements.', c(6), ['Test track drills', 'Figure-8 practice', 'Document guidance', 'Mock tests'], 6)
   ]);
 
+  await write('home_sections', [{
+    id: 'home-doorstep',
+    key: 'doorstep',
+    title: 'DOORSTEP TRAINING',
+    subtitle: 'Learn to Ride. We Come to You.',
+    description: 'Learn scooty or bike from the comfort of your own neighbourhood with personalised, one-on-one doorstep training.',
+    image_url: c(5),
+    features_json: [
+      { icon: '🛵', text: 'Scooty + Bike Training' },
+      { icon: '📍', text: 'Up to 10 KM from Netaji metro' },
+      { icon: '👨‍🏫', text: 'Personal Trainer at Your Location' },
+      { icon: '📅', text: '15-Session Standard Package' },
+      { icon: '⚙️', text: 'Customisable Duration & Schedule' }
+    ],
+    link_slug: 'doorstep-training',
+    is_active: true,
+    sort_order: 1,
+    title_bold: false,
+    created_at: now,
+    updated_at: now
+  }, {
+    id: 'home-why-choose',
+    key: 'why_choose',
+    title: 'Training Built For Real Confidence',
+    subtitle: 'Why Choose Seekho',
+    description: 'Patient trainers, flexible slots, and guided road practice — everything you need to ride independently.',
+    image_url: '',
+    features_json: [],
+    link_slug: '',
+    is_active: true,
+    sort_order: 1,
+    title_bold: false,
+    created_at: now,
+    updated_at: now
+  }]);
+
+  await write('why_choose', [
+    { id: 'why-1', title: 'Non-Cyclists Welcome', description: 'Special programs for those who never rode a cycle before.', icon: 'fa-solid fa-person-rays', is_active: true, sort_order: 1, title_bold: false, link_slug: '', created_at: now, updated_at: now },
+    { id: 'why-2', title: 'Women-First Environment', description: 'Female-friendly batches with supportive, patient trainers.', icon: 'fa-solid fa-venus', is_active: true, sort_order: 2, title_bold: false, link_slug: '', created_at: now, updated_at: now },
+    { id: 'why-3', title: 'Real Traffic Practice', description: 'Guided sessions on actual Kolkata roads with expert supervision.', icon: 'fa-solid fa-road', is_active: true, sort_order: 3, title_bold: false, link_slug: '', created_at: now, updated_at: now },
+    { id: 'why-4', title: 'Flexible Timing', description: 'Morning and evening slots across 4 branches in Kolkata.', icon: 'fa-solid fa-clock', is_active: true, sort_order: 4, title_bold: false, link_slug: '', created_at: now, updated_at: now },
+    { id: 'why-5', title: 'Patient Experienced Trainers', description: 'Step-by-step guidance until you feel road-ready.', icon: 'fa-solid fa-chalkboard-user', is_active: true, sort_order: 5, title_bold: false, link_slug: '', created_at: now, updated_at: now },
+    { id: 'why-6', title: 'Multiple Vehicles', description: 'Practice on academy scooties and bikes at every branch.', icon: 'fa-solid fa-motorcycle', is_active: true, sort_order: 6, title_bold: false, link_slug: '', created_at: now, updated_at: now }
+  ]);
+
+  await write('detail_pages', [
+    { id: 'page-doorstep-training', slug: 'doorstep-training', title: 'DOORSTEP TRAINING', hero_image_url: c(5), body_html: '', seo_title: 'Doorstep Training | Seekho Two Wheeler Academy', seo_description: 'Learn scooty or bike at your location. Doorstep training from Seekho Two Wheeler Academy, Kolkata.', is_active: true, created_at: now, updated_at: now },
+    { id: 'page-our-mission', slug: 'our-mission', title: 'Our Mission', hero_image_url: '/images/thumbs/seekho-01.webp', body_html: '<p>Details coming soon</p>', seo_title: 'Our Mission | Seekho Two Wheeler Academy', seo_description: 'Empowering every learner to ride independently and safely on Kolkata roads.', is_active: true, created_at: now, updated_at: now },
+    { id: 'page-our-journey', slug: 'our-journey', title: 'Our Journey', hero_image_url: '', body_html: '', seo_title: 'Our Journey | Seekho Two Wheeler Academy', seo_description: 'From 2018 to today — Seekho Two Wheeler Academy in Kolkata.', is_active: true, created_at: now, updated_at: now },
+    { id: 'page-women-empowerment', slug: 'women-empowerment', title: 'Women Empowerment', hero_image_url: '/images/thumbs/seekho-07.webp', body_html: '', seo_title: 'Women Empowerment | Seekho Two Wheeler Academy', seo_description: 'Ladies batches and supportive training for women riders in Kolkata.', is_active: true, created_at: now, updated_at: now },
+    { id: 'page-our-story', slug: 'our-story', title: 'Our Story', hero_image_url: '/images/thumbs/seekho-02.webp', body_html: '', seo_title: 'Our Story | Seekho Two Wheeler Academy', seo_description: 'How Seekho Two Wheeler Academy grew across Kolkata.', is_active: true, created_at: now, updated_at: now }
+  ]);
+
+  await write('doorstep_pricing', [{
+    id: 'default',
+    base_km: 3,
+    base_price: 4500,
+    max_km: 10,
+    max_price: 8000,
+    per_km_extra: 500,
+    pricing_mode: 'linear_ceil',
+    out_of_range_message: 'Doorstep service is available up to 10 km',
+    created_at: now,
+    updated_at: now
+  }]);
+
   await write('branches', [
-    { id: 'branch-1', name: 'Tollygunge Branch', area: 'Tollygunge', address: 'Near Metro Station, Tollygunge, Kolkata', mapsLink: 'https://maps.google.com/?q=Tollygunge+Kolkata', phone: '9748481630', whatsapp: '9748481630', availableCourses: ['Scooty Training', 'Bike Training', 'Ladies Training', 'Road Practice'], trainerCount: 6, image: br(1), active: true, createdAt: now, updatedAt: now },
-    { id: 'branch-2', name: 'New Town Branch', area: 'New Town', address: 'Action Area, New Town, Kolkata', mapsLink: 'https://maps.google.com/?q=New+Town+Kolkata', phone: '7980108587', whatsapp: '7980108587', availableCourses: ['Scooty Training', 'Bike Training', 'Electric Vehicle Training', 'RTO Practice'], trainerCount: 5, image: br(2), active: true, createdAt: now, updatedAt: now },
-    { id: 'branch-3', name: 'Barasat Branch', area: 'Barasat', address: 'Barasat, North 24 Parganas, Kolkata', mapsLink: 'https://maps.google.com/?q=Barasat+Kolkata', phone: '7980110273', whatsapp: '7980110273', availableCourses: ['Scooty Training', 'Ladies Training', 'Bike Training'], trainerCount: 4, image: br(3), active: true, createdAt: now, updatedAt: now },
-    { id: 'branch-4', name: 'Sodepur Branch', area: 'Sodepur', address: 'Sodepur, Kolkata', mapsLink: 'https://maps.google.com/?q=Sodepur+Kolkata', phone: '9748481630', whatsapp: '9748481630', availableCourses: ['Scooty Training', 'Bike Training', 'Road Practice', 'RTO Practice'], trainerCount: 4, image: br(5), active: true, createdAt: now, updatedAt: now }
+    { id: 'branch-1', name: 'Tollygunge Branch', area: 'Tollygunge', address: 'Near Metro Station, Tollygunge, Kolkata', mapsLink: 'https://maps.google.com/?q=Tollygunge+Kolkata', latitude: '', longitude: '', phone: '9748481630', whatsapp: '9748481630', availableCourses: ['Scooty Training', 'Bike Training', 'Ladies Training', 'Road Practice'], trainerCount: 6, image: br(1), active: true, createdAt: now, updatedAt: now },
+    { id: 'branch-2', name: 'New Town Branch', area: 'New Town', address: 'Action Area, New Town, Kolkata', mapsLink: 'https://maps.google.com/?q=New+Town+Kolkata', latitude: '', longitude: '', phone: '7980108587', whatsapp: '7980108587', availableCourses: ['Scooty Training', 'Bike Training', 'Electric Vehicle Training', 'RTO Practice'], trainerCount: 5, image: br(2), active: true, createdAt: now, updatedAt: now },
+    { id: 'branch-3', name: 'Barasat Branch', area: 'Barasat', address: 'Barasat, North 24 Parganas, Kolkata', mapsLink: 'https://maps.google.com/?q=Barasat+Kolkata', latitude: '', longitude: '', phone: '7980110273', whatsapp: '7980110273', availableCourses: ['Scooty Training', 'Ladies Training', 'Bike Training'], trainerCount: 4, image: br(3), active: true, createdAt: now, updatedAt: now },
+    { id: 'branch-4', name: 'Sodepur Branch', area: 'Sodepur', address: 'Sodepur, Kolkata', mapsLink: 'https://maps.google.com/?q=Sodepur+Kolkata', latitude: '', longitude: '', phone: '9748481630', whatsapp: '9748481630', availableCourses: ['Scooty Training', 'Bike Training', 'Road Practice', 'RTO Practice'], trainerCount: 4, image: br(5), active: true, createdAt: now, updatedAt: now }
   ]);
 
   const categories = ['Scooty Training', 'Women Riders', 'Bike Training', 'Student Success', 'Road Practice', 'Branch Activities', 'Women Riders'];
@@ -103,6 +196,10 @@ async function seed() {
     whatsapp: '9748481630',
     email: 'info@seekhoacademy.com',
     address: 'Multiple Branches Across Kolkata',
+    gmb_url: '',
+    latitude: '',
+    longitude: '',
+    map_embed_url: '',
     facebookUrl: 'https://facebook.com',
     instagramUrl: 'https://instagram.com',
     youtubeUrl: 'https://youtube.com',
@@ -115,6 +212,14 @@ async function seed() {
     createdAt: now,
     updatedAt: now
   }]);
+
+  const { QA_SEED, CONFIG_SEED } = require('../server/services/chatbot');
+  await write('chatbot_config', [{ ...CONFIG_SEED, created_at: now, updated_at: now }]);
+  await write('chatbot_qa', QA_SEED.map((q) => ({ ...q, created_at: now, updated_at: now })));
+  await write('chatbot_unanswered', []);
+  await write('updates', []);
+  const { COPY_SEED } = require('../server/services/pageCopy');
+  await write('page_copy', COPY_SEED.map((r) => ({ ...r, created_at: now, updated_at: now })));
 
   console.log(config.sheets.ready
     ? '✓ Seed data written to Google Sheets'

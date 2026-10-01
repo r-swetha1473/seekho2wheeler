@@ -3,6 +3,7 @@ import {
   escapeHtml, statusBadge,
   iconBtn, addBtn
 } from '../admin.js';
+import { richTextField, titleBoldToggle, syncRichText, validateRichText } from '../richtext.js';
 
 let faqs = [];
 
@@ -61,7 +62,7 @@ function faqTable() {
             <tr data-id="${escapeHtml(f.id)}">
               <td>${f.displayOrder ?? '—'}</td>
               <td><strong>${escapeHtml(f.question)}</strong></td>
-              <td style="max-width:320px;">${escapeHtml((f.answer || '').slice(0, 100))}${(f.answer || '').length > 100 ? '…' : ''}</td>
+              <td style="max-width:320px;">${escapeHtml((window.SeekhoSanitize ? window.SeekhoSanitize.stripHtml(f.answer || '') : f.answer || '').slice(0, 100))}${(f.answer || '').length > 100 ? '…' : ''}</td>
               <td>${f.active !== false ? statusBadge('active') : statusBadge('inactive')}</td>
               <td>
                 <div class="table-actions">
@@ -107,10 +108,11 @@ function showForm(faq, container) {
         <div class="form-group">
           <label>Question <span class="required">*</span></label>
           <input class="form-control" name="question" required value="${escapeHtml(faq?.question || '')}">
+          ${titleBoldToggle({ checked: !!faq?.title_bold, label: 'Bold question' })}
         </div>
         <div class="form-group">
           <label>Answer <span class="required">*</span></label>
-          <textarea class="form-control" name="answer" required rows="4">${escapeHtml(faq?.answer || '')}</textarea>
+          ${richTextField({ name: 'answer', value: faq?.answer || '', required: true, minHeight: '130px' })}
         </div>
         <div class="form-group">
           <label>Display Order</label>
@@ -131,13 +133,15 @@ function showForm(faq, container) {
 
   document.getElementById('saveFaq').addEventListener('click', async () => {
     const form = document.getElementById('faqForm');
-    if (!form.checkValidity()) { form.reportValidity(); return; }
+    syncRichText(form);
+    if (!form.checkValidity() || !validateRichText(form)) { form.reportValidity(); return; }
 
     const payload = {
       question: form.question.value,
       answer: form.answer.value,
       displayOrder: Number(form.displayOrder.value || 0),
-      active: form.querySelector('[name="active"]').checked
+      active: form.querySelector('[name="active"]').checked,
+      title_bold: form.querySelector('[name="title_bold"]').checked
     };
 
     const btn = document.getElementById('saveFaq');

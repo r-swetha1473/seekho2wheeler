@@ -161,9 +161,10 @@ async function main() {
         spreadsheetId: config.sheets.spreadsheetId,
         range: `${tab}!A1:Z1`
       });
-      const hasHeader = (current.data.values || []).length > 0;
+      const existingHeaders = (current.data.values && current.data.values[0]) || [];
+      const missingHeaders = headers.filter((h) => !existingHeaders.includes(h));
 
-      if (!hasHeader) {
+      if (!existingHeaders.length) {
         await api.spreadsheets.values.update({
           spreadsheetId: config.sheets.spreadsheetId,
           range: `${tab}!A1`,
@@ -172,6 +173,16 @@ async function main() {
         });
         report.headersWritten.push(tab);
         console.log(`✓ headers → ${tab}`);
+      } else if (missingHeaders.length) {
+        const merged = [...existingHeaders, ...missingHeaders];
+        await api.spreadsheets.values.update({
+          spreadsheetId: config.sheets.spreadsheetId,
+          range: `${tab}!A1`,
+          valueInputOption: 'RAW',
+          requestBody: { values: [merged] }
+        });
+        report.headersWritten.push(`${tab}(+${missingHeaders.join(',')})`);
+        console.log(`✓ headers merged → ${tab}: ${missingHeaders.join(', ')}`);
       }
 
       if (doSeed) {

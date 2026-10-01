@@ -1,6 +1,6 @@
 /* Reviews — slider on mobile, grid on larger screens via Swiper breakpoints */
 (function () {
-  const { api, qs, stars, safeImg } = Seekho;
+  const { api, qs, stars, safeImg, sanitizeHtml, formatTitle } = Seekho;
 
   const grid = qs('#testimonialGrid');
 
@@ -35,8 +35,8 @@
                 </div>
                 <div class="testimonial-card__body">
                   <div class="rating-badge__stars" style="color:var(--primary);margin-bottom:0.4rem">${stars(t.rating)}</div>
-                  <h2 class="testimonial-card__headline">${escapeHtml(t.headline || 'Student Story')}</h2>
-                  <p class="testimonial-card__text">"${escapeHtml(t.review)}"</p>
+                  <h2 class="testimonial-card__headline">${formatTitle(t.headline || 'Student Story', t.title_bold)}</h2>
+                  <div class="testimonial-card__text rich-html">${sanitizeHtml(t.review)}</div>
                   <div class="testimonial-card__author">— ${escapeHtml(t.name)}</div>
                 </div>
               </article>
