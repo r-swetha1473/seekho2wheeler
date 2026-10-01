@@ -271,6 +271,7 @@ function interpolate(template, ctx) {
 }
 
 async function ensureConfigTab() {
+  if (db.allowRuntimeSeed && !db.allowRuntimeSeed()) return;
   if (typeof db.ensureSheetTab === 'function') {
     await db.ensureSheetTab('chatbot_config');
     await db.ensureSheetTab('chatbot_qa');
@@ -282,6 +283,7 @@ async function getConfig() {
   await ensureConfigTab();
   let rows = await db.getAll('chatbot_config');
   if (!rows.length) {
+    if (db.allowRuntimeSeed && !db.allowRuntimeSeed()) return normalizeConfig(CONFIG_SEED);
     const created = await db.create('chatbot_config', {
       ...CONFIG_SEED,
       created_at: new Date().toISOString(),
@@ -316,6 +318,12 @@ async function listQa(includeInactive) {
   await ensureConfigTab();
   let rows = await db.getAll('chatbot_qa');
   const now = new Date().toISOString();
+  if (db.allowRuntimeSeed && !db.allowRuntimeSeed()) {
+    let items = rows.map(normalizeQa).filter(Boolean);
+    if (!includeInactive) items = items.filter((i) => i.is_active !== false);
+    items.sort((a, b) => a.sort_order - b.sort_order);
+    return items;
+  }
   if (!rows.length) {
     for (const seed of QA_SEED) {
       await db.create('chatbot_qa', { ...seed, created_at: now, updated_at: now });

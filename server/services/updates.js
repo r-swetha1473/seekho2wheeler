@@ -61,6 +61,7 @@ function normalize(row) {
 }
 
 async function ensureTab() {
+  if (db.allowRuntimeSeed && !db.allowRuntimeSeed()) return;
   if (typeof db.ensureSheetTab === 'function') {
     await db.ensureSheetTab('updates');
   }

@@ -68,11 +68,11 @@ function calculateDoorstepPrice(km, config) {
 }
 
 async function getDoorstepConfig() {
-  if (typeof db.ensureSheetTab === 'function') {
+  if (!(db.allowRuntimeSeed && !db.allowRuntimeSeed()) && typeof db.ensureSheetTab === 'function') {
     await db.ensureSheetTab('doorstep_pricing');
   }
   let rows = await db.getAll('doorstep_pricing');
-  if (!rows.length) {
+  if (!rows.length && !(db.allowRuntimeSeed && !db.allowRuntimeSeed())) {
     const created = await db.create('doorstep_pricing', { ...DOORSTEP_SEED, created_at: new Date().toISOString(), updated_at: new Date().toISOString() });
     return normalizeConfig(created);
   }

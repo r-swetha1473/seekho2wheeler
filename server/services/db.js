@@ -19,7 +19,7 @@ let spreadsheetMeta = null;
 const ensuredTabs = new Set();
 const ensureTabPromises = new Map();
 const readCache = new Map();
-const CACHE_TTL = 30 * 1000;
+const CACHE_TTL = process.env.VERCEL ? 120 * 1000 : 30 * 1000;
 
 /** Tabs that must live permanently in Google Sheets (never /tmp or local in prod mode) */
 const PERMANENT_SHEETS = new Set([
@@ -242,10 +242,49 @@ function getSheetsAuthMeta() {
   return sheetsAuthMeta;
 }
 
+function sheetsStatus(err) {
+  return Number(err && (err.code || err.status || (err.response && err.response.status)));
+}
+
+function isQuotaError(err) {
+  const status = sheetsStatus(err);
+  const msg = String((err && err.message) || '');
+  return status === 429 || /quota|rate limit|too many requests|userRateLimitExceeded/i.test(msg);
+}
+
 function wrapSheetsError(err, fallbackStatus = 503) {
   if (err instanceof AppError) return err;
-  const wrapped = new AppError(err.message || 'Google Sheets error', fallbackStatus, publicSheetsMessage(err));
+  const status = isQuotaError(err) ? 429 : fallbackStatus;
+  const wrapped = new AppError(err.message || 'Google Sheets error', status, publicSheetsMessage(err));
   return wrapped;
+}
+
+function allowRuntimeSeed() {
+  return !process.env.VERCEL;
+}
+
+async function sleep(ms) {
+  await new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function sheetsValuesGet(api, range) {
+  let lastErr;
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    try {
+      return await api.spreadsheets.values.get({
+        spreadsheetId: config.sheets.spreadsheetId,
+        range
+      });
+    } catch (err) {
+      lastErr = err;
+      if (isQuotaError(err) && attempt < 3) {
+        await sleep(350 * (attempt + 1));
+        continue;
+      }
+      throw err;
+    }
+  }
+  throw lastErr;
 }
 
 function headersLookValid(row, expected) {
@@ -365,13 +404,17 @@ async function readFromSheets(sheet) {
   const api = await getSheetsApi();
   if (!api) throw new AppError('Google Sheets is not configured', 503, publicSheetsMessage({ message: 'Google Sheets is not configured' }));
 
-  await ensureSheetTab(sheet);
-
-  const res = await api.spreadsheets.values.get({
-    spreadsheetId: config.sheets.spreadsheetId,
-    range: `${sheet}!A:Z`
-  });
-  return rowsFromValues(sheet, res.data.values || []);
+  try {
+    const res = await sheetsValuesGet(api, `${sheet}!A:Z`);
+    return rowsFromValues(sheet, res.data.values || []);
+  } catch (err) {
+    if (isMissingTabError(err)) {
+      await ensureSheetTab(sheet);
+      const res = await sheetsValuesGet(api, `${sheet}!A:Z`);
+      return rowsFromValues(sheet, res.data.values || []);
+    }
+    throw wrapSheetsError(err);
+  }
 }
 
 async function writeAllToSheets(sheet, rows) {
@@ -433,6 +476,7 @@ async function appendToSheets(sheet, row) {
 const db = {
   isSheetsMode: sheetsConfigured,
   useLocalStore,
+  allowRuntimeSeed,
 
   async getAll(sheet) {
     const cached = cacheGet(sheet);
@@ -559,5 +603,6 @@ module.exports.parseSpreadsheetId = parseSpreadsheetId;
 module.exports.SHEET_HEADERS = SHEET_HEADERS;
 module.exports.sheetsConfigured = sheetsConfigured;
 module.exports.useLocalStore = useLocalStore;
+module.exports.allowRuntimeSeed = allowRuntimeSeed;
 module.exports.getSheetsAuthMeta = getSheetsAuthMeta;
 module.exports.ensureSheetTab = ensureSheetTab;

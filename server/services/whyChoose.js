@@ -59,6 +59,7 @@ function validateItem(title, description) {
 }
 
 async function ensureTab() {
+  if (db.allowRuntimeSeed && !db.allowRuntimeSeed()) return;
   if (typeof db.ensureSheetTab === 'function') {
     await db.ensureSheetTab('why_choose');
   }
@@ -67,7 +68,7 @@ async function ensureTab() {
 async function listItems(includeInactive = true) {
   await ensureTab();
   let rows = await db.getAll('why_choose');
-  if (!rows.length) {
+  if (!rows.length && !(db.allowRuntimeSeed && !db.allowRuntimeSeed())) {
     const now = new Date().toISOString();
     for (const seed of WHY_ITEMS_SEED) {
       await db.create('why_choose', toSheetRow({

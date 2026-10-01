@@ -131,6 +131,7 @@ function toSheetRow(data) {
 }
 
 async function ensureTab() {
+  if (db.allowRuntimeSeed && !db.allowRuntimeSeed()) return;
   if (typeof db.ensureSheetTab === 'function') {
     await db.ensureSheetTab('home_sections');
   }
@@ -139,6 +140,9 @@ async function ensureTab() {
 async function listSections() {
   await ensureTab();
   let rows = await db.getAll('home_sections');
+  if (db.allowRuntimeSeed && !db.allowRuntimeSeed()) {
+    return rows.map(normalizeSection).filter(Boolean).sort((a, b) => a.sort_order - b.sort_order);
+  }
   for (const seed of SECTION_SEEDS) {
     if (!rows.some((r) => r.key === seed.key)) {
       const created = await db.create('home_sections', toSheetRow(seed));

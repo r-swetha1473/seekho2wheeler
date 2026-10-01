@@ -27,6 +27,9 @@ function publicSheetsMessage(err) {
   if (/Google Sheets is not configured/i.test(msg)) {
     return 'Google Sheets is not configured. Set GOOGLE_SHEETS_ID and service account credentials.';
   }
+  if (/quota|rate limit|too many requests|userRateLimitExceeded/i.test(msg) || Number(err && (err.code || err.status)) === 429) {
+    return 'Google Sheets is busy (rate limit). Wait a few seconds and refresh the page.';
+  }
   return 'Unable to reach Google Sheets. Please try again shortly.';
 }
 

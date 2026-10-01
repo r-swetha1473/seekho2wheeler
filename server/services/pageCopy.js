@@ -286,6 +286,7 @@ function normalize(row) {
 }
 
 async function ensureTab() {
+  if (db.allowRuntimeSeed && !db.allowRuntimeSeed()) return;
   if (typeof db.ensureSheetTab === 'function') await db.ensureSheetTab('page_copy');
 }
 
@@ -293,6 +294,10 @@ async function listAll() {
   await ensureTab();
   let rows = await db.getAll('page_copy');
   const now = new Date().toISOString();
+  if (db.allowRuntimeSeed && !db.allowRuntimeSeed()) {
+    return rows.map(normalize).filter((r) => r && r.page && r.slot)
+      .sort((a, b) => a.sort_order - b.sort_order || a.page.localeCompare(b.page));
+  }
   if (!rows.length) {
     for (const seed of COPY_SEED) {
       await db.create('page_copy', { ...seed, created_at: now, updated_at: now });

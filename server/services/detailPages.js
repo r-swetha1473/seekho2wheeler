@@ -105,16 +105,20 @@ async function ensureTab() {
 }
 
 async function listPages() {
-  await ensureTab();
+  if (!(db.allowRuntimeSeed && !db.allowRuntimeSeed())) {
+    await ensureTab();
+  }
   let rows = await db.getAll('detail_pages');
-  if (!rows.length) {
+  if (!rows.length && !(db.allowRuntimeSeed && !db.allowRuntimeSeed())) {
     const now = new Date().toISOString();
     for (const seed of DEFAULT_PAGES) {
       await db.create('detail_pages', { ...seed, created_at: now, updated_at: now });
     }
     rows = await db.getAll('detail_pages');
   }
-  rows = await ensureOurMissionRow(rows);
+  if (!(db.allowRuntimeSeed && !db.allowRuntimeSeed())) {
+    rows = await ensureOurMissionRow(rows);
+  }
   return rows.map(normalizePage).filter((p) => p && p.slug);
 }
 
