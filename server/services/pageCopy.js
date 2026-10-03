@@ -73,7 +73,7 @@ const COPY_SEED = [
   }, 37),
   slot('home', 'highlight_students', { title: 'Students Trained' }, 40),
   slot('home', 'highlight_since', { title: 'Since' }, 41),
-  slot('home', 'highlight_branches', { title: 'Branches', subtitle: '4+' }, 42),
+  slot('home', 'highlight_branches', { title: 'Branches', subtitle: '7' }, 42),
   slot('home', 'highlight_rating', { title: 'Google Rating' }, 43),
   slot('home', 'highlight_safety', { title: 'Safety Focus', subtitle: '100%' }, 44),
   slot('home', 'highlight_slots', { title: 'Flexible Slots', subtitle: '7AM–7PM' }, 45),

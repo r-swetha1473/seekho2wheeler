@@ -118,6 +118,11 @@ app.get('/p/:slug', (req, res) => {
   res.sendFile(path.join(publicDir, 'pages/detail.html'));
 });
 
+/* Phase 2 sitemap lists /women-training — serve approved women content */
+app.get('/women-training', (req, res) => {
+  res.redirect(302, '/p/women-empowerment');
+});
+
 app.get('/locations/:slug', (req, res) => {
   const { renderLocationHtml } = require('./services/locationRender');
   const html = renderLocationHtml(req.params.slug);

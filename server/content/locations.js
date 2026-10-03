@@ -119,7 +119,7 @@ const LOCATIONS = [
     area: 'Barasat',
     landmark: 'Lalit Cinema',
     howToReach: [
-      'Find us near Barasat Station (platform area reference used by the centre).',
+      'Near Barasat Railway Station — Platform 5 area reference used by the centre.',
       'Landmark: Lalit Cinema.',
       'Ask for Seekho Two Wheeler training near Lalit Cinema, Barasat.'
     ],
@@ -151,7 +151,7 @@ const LOCATIONS = [
         'Opened in 2024 to serve North 24 Parganas learners. The centre is easy to find near Barasat Station with Lalit Cinema as the landmark.'
     },
     usps: [
-      { icon: 'fa-solid fa-train', title: 'Near Barasat Station', text: 'Convenient for learners travelling via the station area.' },
+      { icon: 'fa-solid fa-train', title: 'Near Barasat Station', text: 'Convenient via Barasat Railway Station — Platform 5 area reference.' },
       { icon: 'fa-solid fa-signs-post', title: 'Landmark: Lalit Cinema', text: 'Ask locally for Lalit Cinema to reach the Barasat centre.' },
       { icon: 'fa-solid fa-calendar', title: 'Established 2024', text: 'A newer Seekho branch serving Barasat and nearby areas.' },
       { icon: 'fa-solid fa-clipboard-check', title: 'RTO Practice Offered', text: 'Scooty, bike and RTO exam practice are available here.' }
@@ -169,7 +169,7 @@ const LOCATIONS = [
     faqs: [
       {
         q: 'Where is the Barasat branch located?',
-        a: 'Near Barasat Station. The landmark is Lalit Cinema.'
+        a: 'Near Barasat Railway Station (Platform 5 area). The landmark is Lalit Cinema.'
       },
       {
         q: 'When did Seekho open in Barasat?',

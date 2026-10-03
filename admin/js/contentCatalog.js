@@ -38,7 +38,7 @@ export const CMS_PAGES = [
         slots: [
           tf('highlight_students', [text('title', 'Students trained label', 'Shown under the student count.')]),
           tf('highlight_since', [text('title', 'Founded year label', 'Shown under the year (the year is in Settings).')]),
-          tf('highlight_branches', [text('title', 'Branches label'), text('subtitle', 'Branches number text', 'Example: 4+')]),
+          tf('highlight_branches', [text('title', 'Branches label'), text('subtitle', 'Branches number text', 'Example: 7')]),
           tf('highlight_rating', [text('title', 'Google rating label')]),
           tf('highlight_safety', [text('title', 'Safety label'), text('subtitle', 'Safety value', 'Example: 100%')]),
           tf('highlight_slots', [text('title', 'Flexible slots label'), text('subtitle', 'Hours text', 'Example: 7AM–7PM')])
