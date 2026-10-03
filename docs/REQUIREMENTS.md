@@ -4,10 +4,10 @@
 > If a fact is not written here, do not invent it.
 
 See the full Phase 1–8 brief in the project conversation / product owner message.
-Key ambiguities to confirm before Phase 3:
+Key ambiguities (RESOLVED for Phase 3):
 
-1. Barasat landmark spelling: **Lali** vs **Lalti** Cinema
-2. Rabindra Sarobar landmark text to use on the branch page
+1. Barasat landmark: **Lalit Cinema** (confirmed)
+2. Rabindra Sarobar landmark: **Swiss Park, opposite Bhawani Cinema** (confirmed)
 
 ## Phase 1 status (implemented in code)
 
@@ -26,3 +26,13 @@ Key ambiguities to confirm before Phase 3:
 - Footer + Stay Connected social links (icons, new tab); Admin Settings editable
 - `robots.txt` + `sitemap.xml` use `BASE_URL` / `config.baseUrl`; location + women-training paths listed
 - `scripts/sync-content.js` idempotent Sheets upsert for settings (never deletes)
+
+## Phase 3 status (implemented in code)
+
+- Location SSOT: `server/content/locations.js` (7 centres)
+- Server-rendered `/locations/:slug` pages with unique SEO + LocalBusiness/FAQPage/BreadcrumbList
+- Gallery categories `Branch: <Name>` in Admin Gallery
+- Homepage / branches / footer / contact / about copy updated to seven locations
+- Chatbot `{{branches.list}}` + branch detail placeholders use location SSOT
+- Sitemap location URLs derived from SSOT
+- Patuli course list not invented (confirm on book/call)

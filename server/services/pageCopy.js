@@ -85,7 +85,7 @@ const COPY_SEED = [
   slot('home', 'branches_head', {
     subtitle: 'Our Branches',
     title: 'Find A Branch Near You',
-    body_html: '<p>Four convenient locations across Kolkata with flexible morning and evening slots.</p>'
+    body_html: '<p>Seven convenient locations across Kolkata with flexible morning and evening slots.</p>'
   }, 51),
   slot('home', 'gallery_head', {
     subtitle: 'Gallery',
@@ -168,7 +168,7 @@ const COPY_SEED = [
   slot('about', 'different', { title: 'What Makes Us Different' }, 63),
   slot('about', 'diff_trainers', { title: 'Patient, Expert Trainers', subtitle: 'Certified instructors who specialize in beginners and non-cyclists.' }, 64),
   slot('about', 'diff_women', { title: 'Women-First Approach', subtitle: 'Dedicated ladies batches in a safe, supportive environment.' }, 65),
-  slot('about', 'diff_branches', { title: '4 Kolkata Branches', subtitle: 'Tollygunge, New Town, Barasat and Sodepur — pick what\'s nearest.' }, 66),
+  slot('about', 'diff_branches', { title: '7 Kolkata Branches', subtitle: 'Tollygunge, Barasat, New Town, Sodepur, Rabindra Sarobar, Howrah and Patuli — pick what\'s nearest.' }, 66),
   slot('about', 'promise', {
     title: 'Our Promise',
     body_html: '<p>We don\'t just teach you to ride — we build lasting confidence. From your first balance drill to guided traffic practice, every lesson is designed to make you an independent, safe rider on Kolkata roads.</p>',
@@ -189,7 +189,7 @@ const COPY_SEED = [
   slot('contact', 'label_phone', { title: 'Phone' }, 81),
   slot('contact', 'label_whatsapp', { title: 'WhatsApp' }, 82),
   slot('contact', 'label_email', { title: 'Email' }, 83),
-  slot('contact', 'label_branches', { title: 'Branches', subtitle: 'Tollygunge · New Town · Barasat · Sodepur', cta_text: 'View All Branches', cta_link: '/pages/branches.html' }, 84),
+  slot('contact', 'label_branches', { title: 'Branches', subtitle: 'Tollygunge · Barasat · New Town · Sodepur · Rabindra Sarobar · Howrah · Patuli', cta_text: 'View All Branches', cta_link: '/pages/branches.html' }, 84),
   slot('contact', 'label_hours', { title: 'Hours' }, 85),
   slot('contact', 'form_title', { title: 'Send An Enquiry', cta_text: 'Send Enquiry' }, 86),
 
@@ -199,7 +199,7 @@ const COPY_SEED = [
   }, 90),
   slot('branches', 'hero', {
     title: 'Find A Branch Near You',
-    subtitle: 'Four convenient locations across Kolkata with flexible morning and evening training slots.'
+    subtitle: 'Seven convenient locations across Kolkata with flexible morning and evening training slots.'
   }, 91),
   slot('gallery', 'hero', {
     title: 'Training Gallery',

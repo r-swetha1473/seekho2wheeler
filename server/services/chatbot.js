@@ -3,6 +3,12 @@ const { sanitizeHtml, parseBool } = require('../utils/sanitizeHtml');
 const { pickBest, parseKeywords, composeMatchText } = require('./chatbotMatch');
 const { normalizeCourse } = require('./courses');
 const { getDoorstepConfig } = require('./doorstep');
+const {
+  chatbotBranchList,
+  chatbotBranchDetail,
+  listPublicCards,
+  getLocation
+} = require('../content/locations');
 
 const COURSE_SLUG_ALIASES = {
   'scooty-basic': 'scooty-training',
@@ -95,8 +101,8 @@ const QA_SEED = [
   {
     id: 'qa-branches',
     question: 'What branches do you have?',
-    keywords: 'branches, branch list, centres, centers, locations, tollygunge, new town, barasat, sodepur',
-    answer: 'Our branches: {{branches.list}}.',
+    keywords: 'branches, branch list, centres, centers, locations, tollygunge, new town, barasat, sodepur, rabindra sarobar, howrah, patuli, lalit cinema, swiss park',
+    answer: 'Our seven centres: {{branches.list}}. Open /locations pages for maps and training details.',
     category: 'Location',
     is_active: true,
     sort_order: 10
@@ -114,7 +120,7 @@ const QA_SEED = [
     id: 'qa-location',
     question: 'Where are you located?',
     keywords: 'location, address, where, branch, kolkata, map',
-    answer: 'Seekho Two Wheeler Academy is in {{settings.address}}. We have multiple Kolkata branches — see the Branches page for maps.',
+    answer: 'Our main address is {{settings.address}}. We have seven Kolkata centres (Tollygunge, Barasat, New Town, Sodepur, Rabindra Sarobar, Howrah, Patuli) — see {{branches.list}}.',
     category: 'Location',
     is_active: true,
     sort_order: 5
@@ -185,6 +191,9 @@ function activeBranches(rows) {
 }
 
 function formatBranchList(rows) {
+  // Prefer location SSOT (7 customer centres)
+  const fromSsot = chatbotBranchList();
+  if (fromSsot) return fromSsot;
   return activeBranches(rows).map((b) => {
     const name = String(b.name || b.area || '').trim();
     const addr = String(b.address || '').trim();
@@ -202,14 +211,14 @@ async function loadContext() {
   ]);
   const courses = courseRows.map(normalizeCourse).filter((c) => c && c.is_active !== false);
   const settings = settingRows[0] || {};
-  const branches = activeBranches(branchRows);
+  const branches = listPublicCards();
   let doorstep = {};
   try {
     doorstep = await getDoorstepConfig();
   } catch {
     doorstep = {};
   }
-  return { courses, settings, doorstep, branches };
+  return { courses, settings, doorstep, branches, branchRows: activeBranches(branchRows) };
 }
 
 function lookupCourse(courses, slug) {
@@ -254,6 +263,8 @@ function resolvePlaceholder(path, ctx) {
   }
   if (parts[0] === 'branches') {
     if (parts[1] === 'list' || parts[1] === 'names') return formatBranchList(ctx.branches);
+    if (parts[1] === 'detail' && parts[2]) return chatbotBranchDetail(parts[2]);
+    if (parts[1] && getLocation(parts[1])) return chatbotBranchDetail(parts[1]);
     return '';
   }
   return '';

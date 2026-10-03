@@ -12,7 +12,14 @@ const CATEGORIES = [
   'Women Riders',
   'Student Success',
   'Road Practice',
-  'Branch Activities'
+  'Branch Activities',
+  'Branch: Tollygunge',
+  'Branch: Barasat',
+  'Branch: New Town',
+  'Branch: Sodepur',
+  'Branch: Rabindra Sarobar',
+  'Branch: Howrah',
+  'Branch: Patuli'
 ];
 
 let items = [];

@@ -139,10 +139,13 @@
         <div class="footer__acc">
           <button type="button" class="footer__acc-btn" aria-expanded="false"><span data-copy="layout.col_branches" data-copy-field="title">Branches</span> <i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button>
           <div class="footer__acc-panel" hidden>
-            <a href="${p('branches.html')}#tollygunge">Tollygunge</a>
-            <a href="${p('branches.html')}#newtown">New Town</a>
-            <a href="${p('branches.html')}#barasat">Barasat</a>
-            <a href="${p('branches.html')}#sodepur">Sodepur</a>
+            <a href="/locations/tollygunge">Tollygunge</a>
+            <a href="/locations/barasat">Barasat</a>
+            <a href="/locations/new-town">New Town</a>
+            <a href="/locations/sodepur">Sodepur</a>
+            <a href="/locations/rabindra-sarobar">Rabindra Sarobar</a>
+            <a href="/locations/howrah">Howrah</a>
+            <a href="/locations/patuli">Patuli</a>
             <a href="${p('branches.html')}">All Branches</a>
           </div>
         </div>
@@ -182,10 +185,13 @@
       </div>
       <div class="footer__col footer__col--desktop">
         <h4 data-copy="layout.col_branches" data-copy-field="title">Branches</h4>
-        <a href="${p('branches.html')}#tollygunge">Tollygunge</a>
-        <a href="${p('branches.html')}#newtown">New Town</a>
-        <a href="${p('branches.html')}#barasat">Barasat</a>
-        <a href="${p('branches.html')}#sodepur">Sodepur</a>
+        <a href="/locations/tollygunge">Tollygunge</a>
+        <a href="/locations/barasat">Barasat</a>
+        <a href="/locations/new-town">New Town</a>
+        <a href="/locations/sodepur">Sodepur</a>
+        <a href="/locations/rabindra-sarobar">Rabindra Sarobar</a>
+        <a href="/locations/howrah">Howrah</a>
+        <a href="/locations/patuli">Patuli</a>
         <a href="${p('branches.html')}"><i class="fa-solid fa-map-location-dot"></i> All Branches</a>
       </div>
       <div class="footer__col footer__contact footer__col--desktop">

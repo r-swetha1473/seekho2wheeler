@@ -288,18 +288,19 @@
   }
 
   function branchCard(b) {
+    const href = b.href || (b.slug ? `/locations/${b.slug}` : '/pages/branches.html');
     return `
       <article class="branch-card branch-rail__card">
         <div class="branch-card__media media-frame media-frame--banner">
           ${safeImg(b.image, b.name, { w: 1200, h: 675 })}
         </div>
         <div class="branch-card__body">
-          <h3 class="branch-card__name">${escapeHtml(b.area || b.name)}</h3>
-          <p class="branch-card__addr"><i class="fa-solid fa-location-dot"></i> ${escapeHtml(b.address || b.name)}</p>
-          <a class="branch-card__phone" href="tel:${b.phone}"><i class="fa-solid fa-phone"></i> ${escapeHtml(b.phone)}</a>
+          <h3 class="branch-card__name">${escapeHtml(b.area || b.name || b.displayName)}</h3>
+          <p class="branch-card__addr"><i class="fa-solid fa-location-dot"></i> ${escapeHtml(b.address || b.landmark || b.name)}</p>
+          ${b.phones?.[0] || b.phone ? `<a class="branch-card__phone" href="tel:${b.phones?.[0] || b.phone}"><i class="fa-solid fa-phone"></i> ${escapeHtml(b.phones?.[0] || b.phone)}</a>` : ''}
           <div class="branch-card__actions">
-            ${branchMapButtonsHtml(b)}
-            <a href="/pages/booking.html?branch=${encodeURIComponent(b.name)}" class="btn btn--primary btn--sm">Book</a>
+            <a href="${href}" class="btn btn--outline btn--sm">View Branch</a>
+            <a href="/pages/booking.html?branch=${encodeURIComponent(b.branchName || b.name)}" class="btn btn--primary btn--sm">Book</a>
           </div>
         </div>
       </article>`;
@@ -308,10 +309,15 @@
   async function renderBranches() {
     const grid = qs('#branchGrid');
     if (!grid) return;
-    grid.innerHTML = skeletonCards(4, 360);
+    grid.innerHTML = skeletonCards(7, 360);
     let allBranches = [];
     try {
-      allBranches = (await api('/branches')).data;
+      // Prefer location SSOT (7 centres); fall back to /branches
+      try {
+        allBranches = (await api('/locations')).data;
+      } catch {
+        allBranches = (await api('/branches')).data.filter((b) => !/doorstep/i.test(`${b.name} ${b.area}`));
+      }
       grid.className = 'branch-rail';
       grid.setAttribute('aria-label', 'Branches');
       grid.innerHTML = allBranches.map((b) => branchCard(b)).join('');
@@ -325,7 +331,7 @@
       branchSearch.addEventListener('input', () => {
         const q = branchSearch.value.toLowerCase().trim();
         const filtered = !q ? allBranches : allBranches.filter((b) =>
-          `${b.name} ${b.area} ${b.address}`.toLowerCase().includes(q)
+          `${b.name} ${b.area} ${b.address} ${b.landmark || ''}`.toLowerCase().includes(q)
         );
         grid.innerHTML = filtered.map((b) => branchCard(b)).join('')
           || '<p class="empty-state">No branches match your search.</p>';

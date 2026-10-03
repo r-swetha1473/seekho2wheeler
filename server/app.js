@@ -54,6 +54,18 @@ app.use('/api/chatbot/ask', rateLimit({
   message: { success: false, message: 'Too many chat messages. Please try again later.' }
 }));
 
+/* Location SSOT (Phase 3) — before generic /api router */
+app.get('/api/locations', (req, res) => {
+  const { listPublicCards } = require('./content/locations');
+  res.json({ success: true, data: listPublicCards() });
+});
+app.get('/api/locations/:slug', (req, res) => {
+  const { getLocation, publicCard } = require('./content/locations');
+  const loc = getLocation(req.params.slug);
+  if (!loc) return res.status(404).json({ success: false, message: 'Location not found' });
+  res.json({ success: true, data: { ...publicCard(loc), faqs: loc.faqs, trainingAvailable: loc.trainingAvailable, howToReach: loc.howToReach, landmark: loc.landmark } });
+});
+
 /* Health check for Vercel / uptime monitors */
 app.get('/api/health', (req, res) => {
   const config = require('./config');
@@ -106,6 +118,13 @@ app.get('/p/:slug', (req, res) => {
   res.sendFile(path.join(publicDir, 'pages/detail.html'));
 });
 
+app.get('/locations/:slug', (req, res) => {
+  const { renderLocationHtml } = require('./services/locationRender');
+  const html = renderLocationHtml(req.params.slug);
+  if (!html) return res.status(404).sendFile(path.join(publicDir, 'pages/404.html'));
+  res.type('html').send(html);
+});
+
 app.get('/robots.txt', (req, res) => {
   const base = config.baseUrl;
   res.type('text/plain').send(`User-agent: *
@@ -124,6 +143,7 @@ app.get('/sitemap.xml', async (req, res) => {
     const { listPages } = require('./services/detailPages');
     const pages = (await listPages()).filter((p) => p.is_active !== false);
     const courses = (await db.getAll('pricing')).filter((p) => p.is_active !== false && p.active !== false);
+    const { locationPaths } = require('./content/locations');
     const base = config.baseUrl;
     const staticPages = [
       '',
@@ -138,21 +158,11 @@ app.get('/sitemap.xml', async (req, res) => {
       '/pages/faq.html',
       '/women-training'
     ];
-    // Planned location SEO paths (pages land in Phase 3+; keep in sitemap for indexing readiness).
-    const locationPages = [
-      '/locations/tollygunge',
-      '/locations/barasat',
-      '/locations/new-town',
-      '/locations/sodepur',
-      '/locations/rabindra-sarobar',
-      '/locations/howrah',
-      '/locations/patuli'
-    ];
     const urls = [
       ...staticPages.map(
         (p) => `  <url><loc>${base}${p || '/'}</loc><changefreq>weekly</changefreq><priority>${p ? '0.8' : '1.0'}</priority></url>`
       ),
-      ...locationPages.map(
+      ...locationPaths().map(
         (p) => `  <url><loc>${base}${p}</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>`
       ),
       ...blogs.map(

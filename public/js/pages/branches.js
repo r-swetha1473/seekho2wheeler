@@ -1,6 +1,6 @@
-/* Branches — 4:3 framed cards */
+/* Branches listing — uses location SSOT (/api/locations) */
 (function () {
-  const { api, qs, safeImg, branchMapButtonsHtml } = Seekho;
+  const { api, qs, safeImg } = Seekho;
 
   const grid = qs('#branchGrid');
   const search = qs('#branchSearch');
@@ -14,30 +14,30 @@
       .replace(/"/g, '&quot;');
   }
 
-  function slugify(name) {
-    return String(name || '').toLowerCase().replace(/\s+branch$/i, '').replace(/\s+/g, '');
-  }
-
   function render(list) {
     if (!grid) return;
     grid.className = 'branch-rail branch-rail--page';
     grid.innerHTML = list.length
-      ? list.map((b) => `
-        <article class="branch-card branch-rail__card" id="${slugify(b.area || b.name)}">
+      ? list.map((b) => {
+          const href = b.href || `/locations/${b.slug}`;
+          return `
+        <article class="branch-card branch-rail__card" id="${escapeHtml(b.slug || '')}">
           <div class="branch-card__media media-frame media-frame--banner">
             ${safeImg(b.image, b.name, { w: 1200, h: 675 })}
           </div>
           <div class="branch-card__body">
-            <h2 class="branch-card__name">${escapeHtml(b.area || b.name)}</h2>
-            <p class="branch-card__addr"><i class="fa-solid fa-location-dot"></i> ${escapeHtml(b.address)}</p>
-            <a class="branch-card__phone" href="tel:${b.phone}"><i class="fa-solid fa-phone"></i> ${escapeHtml(b.phone)}</a>
-            ${b.availableCourses?.length ? `<p class="branch-card__courses">${escapeHtml(b.availableCourses.join(' · '))}</p>` : ''}
+            <h2 class="branch-card__name">${escapeHtml(b.name || b.area)}</h2>
+            <p class="branch-card__addr"><i class="fa-solid fa-location-dot"></i> ${escapeHtml(b.address || b.landmark || '')}</p>
+            ${b.establishedLabel ? `<p class="branch-card__meta">${escapeHtml(b.establishedLabel)}</p>` : ''}
+            ${(b.phones && b.phones[0]) ? `<a class="branch-card__phone" href="tel:${b.phones[0]}"><i class="fa-solid fa-phone"></i> ${escapeHtml(b.phones[0])}</a>` : ''}
+            ${b.trainingAvailable?.length ? `<p class="branch-card__courses">${escapeHtml(b.trainingAvailable.join(' · '))}</p>` : ''}
             <div class="branch-card__actions">
-              ${branchMapButtonsHtml(b)}
-              <a href="/pages/booking.html?branch=${encodeURIComponent(b.name)}" class="btn btn--primary btn--sm">Book</a>
+              <a href="${href}" class="btn btn--outline btn--sm">View Branch</a>
+              <a href="/pages/booking.html?branch=${encodeURIComponent(b.branchName || b.name)}" class="btn btn--primary btn--sm">Book</a>
             </div>
           </div>
-        </article>`).join('')
+        </article>`;
+        }).join('')
       : '<p class="empty-state">No branches match your search.</p>';
     if (window.AOS) AOS.refresh();
 
@@ -50,9 +50,9 @@
 
   async function init() {
     if (!grid) return;
-    grid.innerHTML = Array.from({ length: 4 }, () => '<div class="skeleton media-skeleton" style="height:360px"></div>').join('');
+    grid.innerHTML = Array.from({ length: 7 }, () => '<div class="skeleton media-skeleton" style="height:360px"></div>').join('');
     try {
-      allBranches = (await api('/branches')).data;
+      allBranches = (await api('/locations')).data;
       render(allBranches);
     } catch {
       grid.innerHTML = '<p class="empty-state">Unable to load branches.</p>';
@@ -64,7 +64,7 @@
         const query = search.value.toLowerCase().trim();
         const filtered = !query
           ? allBranches
-          : allBranches.filter((b) => `${b.name} ${b.area} ${b.address}`.toLowerCase().includes(query));
+          : allBranches.filter((b) => `${b.name} ${b.area} ${b.address} ${b.landmark || ''}`.toLowerCase().includes(query));
         render(filtered);
       });
     }
