@@ -109,10 +109,8 @@
         <div class="footer__acc">
           <button type="button" class="footer__acc-btn" aria-expanded="false"><span data-copy="layout.col_contact" data-copy-field="title">Contact</span> <i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button>
           <div class="footer__acc-panel" hidden>
-            <div data-footer-phones>
-            <a href="tel:9748481630">9748481630</a>
-            <a href="tel:7980108587">7980108587</a>
-            <a href="tel:7980110273">7980110273</a>
+            <div data-footer-phones class="phones-inline">
+            <a href="tel:9748481630">9748481630</a> <span class="phone-sep" aria-hidden="true">·</span> <a href="tel:7980108587">7980108587</a>
             </div>
             <a href="https://wa.me/919748481630" data-whatsapp target="_blank" rel="noopener" data-copy="layout.link_whatsapp" data-copy-field="title">WhatsApp Us</a>
             <a href="/pages/branches.html" data-gmb-link rel="noopener" data-copy="layout.link_maps" data-copy-field="title">Google Maps</a>

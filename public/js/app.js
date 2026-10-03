@@ -538,21 +538,32 @@ const Seekho = (() => {
       const raw = s.tagline || el.textContent;
       el.innerHTML = formatTitle(raw, s.tagline_bold);
     });
-    const phones = Array.isArray(s.phones)
+    const OFFICIAL_PHONES = ['9748481630', '7980108587'];
+    const BLOCKED = new Set(['7980110273']);
+    const phonesRaw = Array.isArray(s.phones)
       ? s.phones
-      : String(s.phones || '').split(',').map((x) => x.trim()).filter(Boolean);
+      : String(s.phones || '').split(/[,|·]/).map((x) => x.trim()).filter(Boolean);
+    const phones = phonesRaw
+      .map((p) => String(p).replace(/\D/g, ''))
+      .filter((d) => d && !BLOCKED.has(d) && OFFICIAL_PHONES.includes(d));
+    const displayPhones = phones.length ? [...new Set(phones)] : OFFICIAL_PHONES;
+    const phoneHtml = displayPhones
+      .map((p) => `<a href="tel:${p}">${p}</a>`)
+      .join(' <span class="phone-sep" aria-hidden="true">·</span> ');
     qsa('[data-footer-phones]').forEach((el) => {
-      el.innerHTML = phones.map((p) => `<a href="tel:${String(p).replace(/\D/g, '')}">${p}</a>`).join('');
+      el.innerHTML = phoneHtml;
+      el.classList.add('phones-inline');
     });
     qsa('[data-footer-phones-list]').forEach((el) => {
-      el.innerHTML = phones.map((p) => `<i class="fa-solid fa-phone"></i> <a href="tel:${String(p).replace(/\D/g, '')}">${p}</a>`).join('<br>');
+      el.innerHTML = displayPhones.map((p) => `<i class="fa-solid fa-phone"></i> <a href="tel:${p}">${p}</a>`).join('<br>');
     });
     qsa('[data-phones]').forEach((el) => {
-      el.innerHTML = phones.map((p) => `<a href="tel:${String(p).replace(/\D/g, '')}">${p}</a>`).join('<br>');
+      el.innerHTML = phoneHtml;
+      el.classList.add('phones-inline');
     });
-    if (phones[0]) {
+    if (displayPhones[0]) {
       qsa('[data-call-primary]').forEach((el) => {
-        el.href = `tel:${String(phones[0]).replace(/\D/g, '')}`;
+        el.href = `tel:${displayPhones[0]}`;
       });
     }
     qsa('[data-setting="workingHours"]').forEach((el) => { el.textContent = s.workingHours || el.textContent; });

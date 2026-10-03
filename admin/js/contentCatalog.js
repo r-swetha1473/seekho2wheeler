@@ -180,7 +180,7 @@ export const CMS_PAGES = [
           ]),
           tf('label_google_reviews', [text('title', 'Google reviews label')]),
           tf('label_facebook_reviews', [text('title', 'Facebook reviews label')]),
-          tf('label_happy_students', [text('title', 'Happy students label')])
+          tf('label_candidates_trained', [text('title', 'Candidates trained label')])
         ],
         extraHref: '#testimonials',
         extraHrefLabel: 'Open Testimonials'
@@ -545,7 +545,7 @@ export const CMS_PAGES = [
         slots: [
           tf('label_google', [text('title', 'Google reviews label')]),
           tf('label_facebook', [text('title', 'Facebook reviews label')]),
-          tf('label_students', [text('title', 'Happy students label')])
+          tf('label_candidates_trained', [text('title', 'Candidates trained label')])
         ]
       },
       {

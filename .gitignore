@@ -12,3 +12,4 @@ scripts/album-urls.json
 credentials/service-account.json
 **/service-account.json
 !credentials/service-account.example.json
+seekho2wheeler/

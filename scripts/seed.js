@@ -150,7 +150,7 @@ async function seed() {
   await write('branches', [
     { id: 'branch-1', name: 'Tollygunge Branch', area: 'Tollygunge', address: 'Near Metro Station, Tollygunge, Kolkata', mapsLink: 'https://maps.google.com/?q=Tollygunge+Kolkata', latitude: '', longitude: '', phone: '9748481630', whatsapp: '9748481630', availableCourses: ['Scooty Training', 'Bike Training', 'Ladies Training', 'Road Practice'], trainerCount: 6, image: br(1), active: true, createdAt: now, updatedAt: now },
     { id: 'branch-2', name: 'New Town Branch', area: 'New Town', address: 'Action Area, New Town, Kolkata', mapsLink: 'https://maps.google.com/?q=New+Town+Kolkata', latitude: '', longitude: '', phone: '7980108587', whatsapp: '7980108587', availableCourses: ['Scooty Training', 'Bike Training', 'Electric Vehicle Training', 'RTO Practice'], trainerCount: 5, image: br(2), active: true, createdAt: now, updatedAt: now },
-    { id: 'branch-3', name: 'Barasat Branch', area: 'Barasat', address: 'Barasat, North 24 Parganas, Kolkata', mapsLink: 'https://maps.google.com/?q=Barasat+Kolkata', latitude: '', longitude: '', phone: '7980110273', whatsapp: '7980110273', availableCourses: ['Scooty Training', 'Ladies Training', 'Bike Training'], trainerCount: 4, image: br(3), active: true, createdAt: now, updatedAt: now },
+    { id: 'branch-3', name: 'Barasat Branch', area: 'Barasat', address: 'Barasat, North 24 Parganas, Kolkata', mapsLink: 'https://maps.google.com/?q=Barasat+Kolkata', latitude: '', longitude: '', phone: '7980108587', whatsapp: '7980108587', availableCourses: ['Scooty Training', 'Ladies Training', 'Bike Training'], trainerCount: 4, image: br(3), active: true, createdAt: now, updatedAt: now },
     { id: 'branch-4', name: 'Sodepur Branch', area: 'Sodepur', address: 'Sodepur, Kolkata', mapsLink: 'https://maps.google.com/?q=Sodepur+Kolkata', latitude: '', longitude: '', phone: '9748481630', whatsapp: '9748481630', availableCourses: ['Scooty Training', 'Bike Training', 'Road Practice', 'RTO Practice'], trainerCount: 4, image: br(5), active: true, createdAt: now, updatedAt: now }
   ]);
 
@@ -192,7 +192,7 @@ async function seed() {
     id: 'settings-1',
     siteName: 'Seekho Two Wheeler Academy',
     tagline: 'Empowering Independence Through Safe Riding',
-    phones: ['9748481630', '7980108587', '7980110273'],
+    phones: ['9748481630', '7980108587'],
     whatsapp: '9748481630',
     email: 'info@seekhoacademy.com',
     address: 'Multiple Branches Across Kolkata',

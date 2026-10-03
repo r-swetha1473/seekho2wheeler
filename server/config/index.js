@@ -61,7 +61,8 @@ module.exports = {
     notifyEmail: process.env.NOTIFY_EMAIL || ''
   },
   contact: {
-    phones: ['9748481630', '7980108587', '7980110273'],
+    /** Official public phones only — never expose 7980110273 */
+    phones: ['9748481630', '7980108587'],
     whatsapp: process.env.WHATSAPP_NUMBER || '9748481630'
   },
   uploads: {

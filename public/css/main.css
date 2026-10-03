@@ -3107,3 +3107,125 @@ ol.rich-html li { margin: 0.2em 0; }
   padding-left: 0.85rem;
   color: var(--text-muted);
 }
+
+/* =========================================================
+   PHASE 1 FIXES (requirements brief) — append-only overrides
+   ========================================================= */
+
+/* Phones: never wrap digits mid-number */
+.phones-inline,
+[data-phones].phones-inline,
+[data-footer-phones].phones-inline {
+  white-space: nowrap;
+  overflow-wrap: normal;
+  word-break: keep-all;
+  display: inline-block;
+  max-width: 100%;
+}
+.phones-inline a { white-space: nowrap; }
+.phone-sep { margin: 0 0.15em; opacity: 0.7; }
+
+/* Hero overlay: subtle even wash + readable text lower-middle */
+.hero__overlay {
+  background: linear-gradient(
+    180deg,
+    rgba(20, 20, 20, 0.10) 0%,
+    rgba(20, 20, 20, 0.22) 45%,
+    rgba(20, 20, 20, 0.34) 100%
+  ) !important;
+}
+.hero__content {
+  align-self: flex-end;
+  padding-bottom: clamp(3.25rem, 10vh, 5.5rem) !important;
+  padding-top: 1rem !important;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.45), 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+.hero__brand,
+.hero__title,
+.hero__subtitle {
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.5);
+}
+@media (max-width: 900px) {
+  .hero__content {
+    padding-bottom: clamp(3.5rem, 12vh, 5rem) !important;
+  }
+}
+
+/* Stats / rating badges — no overlap on iPhone */
+.reviews-summary {
+  align-items: stretch;
+}
+.rating-badge {
+  min-width: 0 !important;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+@media (max-width: 720px) {
+  .reviews-summary {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 0.5rem !important;
+  }
+  .rating-badge {
+    padding: 0.65rem 0.4rem !important;
+    min-width: 0 !important;
+  }
+  .rating-badge__score {
+    font-size: clamp(1rem, 4.2vw, 1.35rem) !important;
+    line-height: 1.15;
+  }
+  .rating-badge__label {
+    font-size: clamp(0.62rem, 2.6vw, 0.75rem) !important;
+    line-height: 1.25;
+  }
+  .rating-badge__stars { font-size: 0.7rem; letter-spacing: 1px; }
+}
+@media (max-width: 360px) {
+  .reviews-summary {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Women Empowerment: duplicate .empower-grid below media previously won.
+   Force single column + full-width image on phones. */
+@media (max-width: 600px) {
+  .empower-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 1.25rem !important;
+  }
+  .empower-media,
+  .empower-grid .empower-media,
+  .empower-grid .media-frame {
+    width: 100% !important;
+    max-width: 100% !important;
+    aspect-ratio: 4 / 3 !important;
+    order: 2;
+  }
+  .empower-copy { order: 1; }
+  .empower-media img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+  }
+}
+@media (min-width: 601px) and (max-width: 900px) {
+  .empower-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 1.5rem !important;
+  }
+}
+
+/* Mobile: keep CTAs clear of sticky bar; no horizontal overflow */
+@media (max-width: 900px) {
+  html, body { overflow-x: hidden; }
+  .hero__actions .btn,
+  .sticky-cta__btn,
+  .filter-btn { min-height: 44px; }
+  .section .btn--lg { margin-bottom: 0.25rem; }
+}

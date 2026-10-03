@@ -148,7 +148,7 @@ const COPY_SEED = [
   }, 59.6),
   slot('home', 'label_google_reviews', { title: 'Google Reviews' }, 59.7),
   slot('home', 'label_facebook_reviews', { title: 'Facebook Reviews' }, 59.8),
-  slot('home', 'label_happy_students', { title: 'Happy Students' }, 59.9),
+  slot('home', 'label_candidates_trained', { title: 'Candidates Trained' }, 59.9),
   slot('home', 'label_academy_location', { title: 'Academy location' }, 59.91),
   slot('home', 'branches_view', { title: 'View All', cta_link: '/pages/branches.html' }, 59.92),
 
@@ -224,7 +224,7 @@ const COPY_SEED = [
   }, 96),
   slot('reviews', 'label_google', { title: 'Google Reviews' }, 96.1),
   slot('reviews', 'label_facebook', { title: 'Facebook Reviews' }, 96.2),
-  slot('reviews', 'label_students', { title: 'Happy Students' }, 96.3),
+  slot('reviews', 'label_candidates_trained', { title: 'Candidates Trained' }, 96.3),
   slot('booking', 'hero', {
     title: 'Register & Book Training',
     subtitle: 'Complete the 5-step wizard to book your scooty or bike training session.'

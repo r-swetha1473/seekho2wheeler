@@ -12,6 +12,9 @@ const DOORSTEP_SEED = {
   out_of_range_message: 'Doorstep service is available up to 10 km'
 };
 
+const CONFIG_CACHE_TTL_MS = 10 * 60 * 1000;
+let configCache = { data: null, ts: 0 };
+
 function toNumber(value) {
   const n = Number(value);
   return Number.isFinite(n) ? n : null;
@@ -67,16 +70,45 @@ function calculateDoorstepPrice(km, config) {
   return { ok: true, km: kmNum, price, currency: 'INR' };
 }
 
-async function getDoorstepConfig() {
+function bustDoorstepConfigCache() {
+  configCache = { data: null, ts: 0 };
+}
+
+async function fetchDoorstepConfigFromStore() {
   if (!(db.allowRuntimeSeed && !db.allowRuntimeSeed()) && typeof db.ensureSheetTab === 'function') {
     await db.ensureSheetTab('doorstep_pricing');
   }
   let rows = await db.getAll('doorstep_pricing');
   if (!rows.length && !(db.allowRuntimeSeed && !db.allowRuntimeSeed())) {
-    const created = await db.create('doorstep_pricing', { ...DOORSTEP_SEED, created_at: new Date().toISOString(), updated_at: new Date().toISOString() });
+    const created = await db.create('doorstep_pricing', {
+      ...DOORSTEP_SEED,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    });
     return normalizeConfig(created);
   }
   return normalizeConfig(rows[0]);
+}
+
+/**
+ * In-memory cache (~10 min). On Sheets failure, return last good value or seed defaults
+ * so the public calculator never hard-fails.
+ */
+async function getDoorstepConfig() {
+  const fresh = configCache.data && Date.now() - configCache.ts < CONFIG_CACHE_TTL_MS;
+  if (fresh) return configCache.data;
+
+  try {
+    const config = await fetchDoorstepConfigFromStore();
+    configCache = { data: config, ts: Date.now() };
+    return config;
+  } catch (err) {
+    console.warn('[doorstep] config fetch failed, using cache/defaults:', err.message);
+    if (configCache.data) return configCache.data;
+    const fallback = normalizeConfig(DOORSTEP_SEED);
+    configCache = { data: fallback, ts: Date.now() };
+    return fallback;
+  }
 }
 
 async function saveDoorstepConfig(payload) {
@@ -115,7 +147,10 @@ async function saveDoorstepConfig(payload) {
   } else {
     saved = await db.create('doorstep_pricing', { ...row, created_at: new Date().toISOString() });
   }
-  return { ok: true, data: normalizeConfig(saved) };
+  bustDoorstepConfigCache();
+  const normalized = normalizeConfig(saved);
+  configCache = { data: normalized, ts: Date.now() };
+  return { ok: true, data: normalized };
 }
 
 module.exports = {
@@ -123,5 +158,6 @@ module.exports = {
   normalizeConfig,
   calculateDoorstepPrice,
   getDoorstepConfig,
-  saveDoorstepConfig
+  saveDoorstepConfig,
+  bustDoorstepConfigCache
 };
