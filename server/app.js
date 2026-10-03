@@ -107,7 +107,7 @@ app.get('/p/:slug', (req, res) => {
 });
 
 app.get('/robots.txt', (req, res) => {
-  const base = process.env.BASE_URL || `${req.protocol}://${req.get('host')}`;
+  const base = config.baseUrl;
   res.type('text/plain').send(`User-agent: *
 Allow: /
 Disallow: /admin/
@@ -124,7 +124,7 @@ app.get('/sitemap.xml', async (req, res) => {
     const { listPages } = require('./services/detailPages');
     const pages = (await listPages()).filter((p) => p.is_active !== false);
     const courses = (await db.getAll('pricing')).filter((p) => p.is_active !== false && p.active !== false);
-    const base = process.env.BASE_URL || `${req.protocol}://${req.get('host')}`;
+    const base = config.baseUrl;
     const staticPages = [
       '',
       '/pages/about.html',
@@ -135,11 +135,25 @@ app.get('/sitemap.xml', async (req, res) => {
       '/pages/reviews.html',
       '/pages/contact.html',
       '/pages/booking.html',
-      '/pages/faq.html'
+      '/pages/faq.html',
+      '/women-training'
+    ];
+    // Planned location SEO paths (pages land in Phase 3+; keep in sitemap for indexing readiness).
+    const locationPages = [
+      '/locations/tollygunge',
+      '/locations/barasat',
+      '/locations/new-town',
+      '/locations/sodepur',
+      '/locations/rabindra-sarobar',
+      '/locations/howrah',
+      '/locations/patuli'
     ];
     const urls = [
       ...staticPages.map(
         (p) => `  <url><loc>${base}${p || '/'}</loc><changefreq>weekly</changefreq><priority>${p ? '0.8' : '1.0'}</priority></url>`
+      ),
+      ...locationPages.map(
+        (p) => `  <url><loc>${base}${p}</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>`
       ),
       ...blogs.map(
         (b) => `  <url><loc>${base}/blog/${b.slug}</loc><lastmod>${String(b.updatedAt || b.publishedAt || '').slice(0, 10)}</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>`

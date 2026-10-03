@@ -437,6 +437,7 @@ const Seekho = (() => {
   }
 
   function applyLocalBusinessSchema(s) {
+    const mb = s && s.mainBranch;
     qsa('script[type="application/ld+json"]').forEach((el) => {
       let data;
       try { data = JSON.parse(el.textContent); } catch { return; }
@@ -445,28 +446,33 @@ const Seekho = (() => {
       list.forEach((node) => {
         if (!node || node['@type'] !== 'LocalBusiness') return;
         changed = true;
-        if (s.address) {
-          node.address = node.address && typeof node.address === 'object'
-            ? node.address
-            : { '@type': 'PostalAddress', addressCountry: 'IN' };
-          node.address['@type'] = node.address['@type'] || 'PostalAddress';
-          node.address.streetAddress = s.address;
+        // Main Branch structured address is authoritative — never flatten to a free-text streetAddress.
+        if (mb && mb.address) {
+          node.name = mb.name || node.name;
+          if (mb.alternateName) node.alternateName = mb.alternateName;
+          node.address = { ...mb.address, '@type': 'PostalAddress' };
+          if (mb.mapsUrl && isHttpsUrl(mb.mapsUrl)) node.hasMap = mb.mapsUrl;
+        } else if (node.address && typeof node.address === 'object' && node.address.streetAddress) {
+          // Keep existing structured address from static HTML; do not overwrite with s.address.
+        } else if (s.address) {
+          node.address = {
+            '@type': 'PostalAddress',
+            addressCountry: 'IN',
+            streetAddress: s.address
+          };
         }
         const same = new Set((Array.isArray(node.sameAs) ? node.sameAs : []).filter(Boolean));
-        [s.facebookUrl, s.instagramUrl, s.youtubeUrl, s.gmb_url].forEach((u) => {
+        [s.facebookUrl, s.instagramUrl, s.youtubeUrl, mb && mb.mapsUrl, s.gmb_url].forEach((u) => {
           if (u && isHttpsUrl(u)) same.add(u);
         });
         node.sameAs = [...same];
-        if (s.gmb_url && isHttpsUrl(s.gmb_url)) node.hasMap = s.gmb_url;
-        else delete node.hasMap;
+        if (!node.hasMap && s.gmb_url && isHttpsUrl(s.gmb_url)) node.hasMap = s.gmb_url;
         if (hasLatLng(s.latitude, s.longitude)) {
           node.geo = {
             '@type': 'GeoCoordinates',
             latitude: Number(s.latitude),
             longitude: Number(s.longitude)
           };
-        } else {
-          delete node.geo;
         }
       });
       if (changed) el.textContent = JSON.stringify(Array.isArray(data) ? list : list[0]);
@@ -474,9 +480,13 @@ const Seekho = (() => {
   }
 
   function fillAcademyLocation(s) {
+    const mb = s && s.mainBranch;
+    const mapsUrl = (mb && mb.mapsUrl && isHttpsUrl(mb.mapsUrl))
+      ? mb.mapsUrl
+      : (s.gmb_url && isHttpsUrl(s.gmb_url) ? s.gmb_url : '');
     const bits = [];
-    if (s.gmb_url && isHttpsUrl(s.gmb_url)) {
-      bits.push(`<a class="btn btn--primary btn--sm" href="${escapeAttr(s.gmb_url)}" target="_blank" rel="noopener">Find us on Google</a>`);
+    if (mapsUrl) {
+      bits.push(`<a class="btn btn--primary btn--sm" href="${escapeAttr(mapsUrl)}" target="_blank" rel="noopener">Find us on Google</a>`);
     }
     const dir = mapsDirectionsUrl(s.latitude, s.longitude);
     if (dir) {
@@ -490,20 +500,21 @@ const Seekho = (() => {
     }
 
     let embedSrc = '';
-    if (s.map_embed_url && isHttpsUrl(s.map_embed_url)) embedSrc = s.map_embed_url;
+    if (mb && mb.embedUrl && isHttpsUrl(mb.embedUrl)) embedSrc = mb.embedUrl;
+    else if (s.map_embed_url && isHttpsUrl(s.map_embed_url)) embedSrc = s.map_embed_url;
     else embedSrc = mapsEmbedUrl(s.latitude, s.longitude);
     const wrap = qs('#academyMapWrap');
     if (wrap) {
       if (embedSrc) {
         wrap.hidden = false;
-        wrap.innerHTML = `<iframe title="Academy location map" src="${escapeAttr(embedSrc)}" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`;
+        wrap.innerHTML = `<iframe title="Main branch location map" src="${escapeAttr(embedSrc)}" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>`;
       } else {
         wrap.hidden = true;
         wrap.innerHTML = '';
       }
     }
 
-    const ext = (s.gmb_url && isHttpsUrl(s.gmb_url)) ? s.gmb_url : dir;
+    const ext = mapsUrl || dir;
     qsa('[data-gmb-link]').forEach((el) => {
       if (ext) {
         el.href = ext;
@@ -515,10 +526,30 @@ const Seekho = (() => {
         el.removeAttribute('rel');
       }
     });
+
+    qsa('[data-main-branch-address]').forEach((el) => {
+      el.textContent = (mb && mb.formattedAddress) || s.address || el.textContent;
+    });
+    qsa('[data-main-branch-name]').forEach((el) => {
+      el.textContent = (mb && mb.name) || el.textContent;
+    });
   }
 
   function applySettings(s) {
     if (!s) return;
+    if (s.baseUrl) {
+      const base = String(s.baseUrl).replace(/\/$/, '');
+      const canonical = document.querySelector('link[rel="canonical"]');
+      if (canonical) {
+        const path = location.pathname.replace(/\/$/, '') || '/';
+        canonical.href = path === '/' ? `${base}/` : `${base}${path}`;
+      }
+      const ogUrl = document.querySelector('meta[property="og:url"]');
+      if (ogUrl) {
+        const path = location.pathname.replace(/\/$/, '') || '/';
+        ogUrl.setAttribute('content', path === '/' ? `${base}/` : `${base}${path}`);
+      }
+    }
     qsa('[data-whatsapp]').forEach((el) => {
       const num = s.whatsapp || '9748481630';
       if (el.tagName === 'A') el.href = `https://wa.me/91${String(num).replace(/\D/g, '').slice(-10)}`;
@@ -526,9 +557,15 @@ const Seekho = (() => {
     qsa('[data-whatsapp-number]').forEach((el) => {
       el.textContent = s.whatsapp || '9748481630';
     });
-    qsa('[data-social="facebook"]').forEach((el) => { if (s.facebookUrl) el.href = s.facebookUrl; });
-    qsa('[data-social="instagram"]').forEach((el) => { if (s.instagramUrl) el.href = s.instagramUrl; });
-    qsa('[data-social="youtube"]').forEach((el) => { if (s.youtubeUrl) el.href = s.youtubeUrl; });
+    qsa('[data-social="facebook"]').forEach((el) => {
+      if (s.facebookUrl) { el.href = s.facebookUrl; el.target = '_blank'; el.rel = 'noopener'; }
+    });
+    qsa('[data-social="instagram"]').forEach((el) => {
+      if (s.instagramUrl) { el.href = s.instagramUrl; el.target = '_blank'; el.rel = 'noopener'; }
+    });
+    qsa('[data-social="youtube"]').forEach((el) => {
+      if (s.youtubeUrl) { el.href = s.youtubeUrl; el.target = '_blank'; el.rel = 'noopener'; }
+    });
     qsa('[data-setting="trainedCandidates"]').forEach((el) => { el.textContent = s.trainedCandidates || '5000+'; });
     qsa('[data-setting="foundedYear"]').forEach((el) => { el.textContent = s.foundedYear || '2018'; });
     qsa('[data-setting="googleRating"]').forEach((el) => { el.textContent = s.googleRating || '4.9'; });

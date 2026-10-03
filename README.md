@@ -188,4 +188,4 @@ For durable bookings/enquiries, enable Google Sheets (`GOOGLE_SHEETS_ENABLED=tru
 - Primary: `#F5B700`
 - Dark: `#222222`
 - WhatsApp: `9748481630`
-- Phones: `9748481630` · `7980108587` · `7980110273`
+- Phones: `9748481630` · `7980108587`

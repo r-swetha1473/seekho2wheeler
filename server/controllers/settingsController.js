@@ -2,6 +2,14 @@ const db = require('../services/db');
 const config = require('../config');
 const { parseBool } = require('../utils/sanitizeHtml');
 const { applyLocationFields } = require('../utils/geo');
+const {
+  MAIN_BRANCH,
+  OFFICIAL_SOCIAL,
+  publicMainBranchPayload,
+  resolveSocial,
+  mapsSearchUrl,
+  mapsEmbedUrl
+} = require('../config/mainBranch');
 
 /** Phones allowed on the public site / schema (filter stale Sheet values). */
 const OFFICIAL_PHONES = ['9748481630', '7980108587'];
@@ -23,29 +31,20 @@ function normalizePhones(raw) {
   return unique.length ? unique : [...OFFICIAL_PHONES];
 }
 
-function publicizeSettings(row) {
-  const settings = { ...DEFAULT_SETTINGS, ...(row || {}) };
-  settings.phones = normalizePhones(settings.phones);
-  if (settings.whatsapp && BLOCKED_PHONES.has(String(settings.whatsapp).replace(/\D/g, ''))) {
-    settings.whatsapp = OFFICIAL_PHONES[0];
-  }
-  return settings;
-}
-
 const DEFAULT_SETTINGS = {
-  siteName: 'Seekho Two Wheeler Academy',
+  siteName: MAIN_BRANCH.alternateName,
   tagline: 'Empowering Independence Through Safe Riding',
   phones: [...OFFICIAL_PHONES],
   whatsapp: config.contact.whatsapp,
   email: 'info@seekhoacademy.com',
-  address: 'Kolkata, West Bengal',
-  gmb_url: '',
+  address: MAIN_BRANCH.formattedAddress,
+  gmb_url: mapsSearchUrl(MAIN_BRANCH),
   latitude: '',
   longitude: '',
-  map_embed_url: '',
-  facebookUrl: process.env.FACEBOOK_URL || '',
-  instagramUrl: process.env.INSTAGRAM_URL || '',
-  youtubeUrl: process.env.YOUTUBE_URL || '',
+  map_embed_url: mapsEmbedUrl(MAIN_BRANCH),
+  facebookUrl: OFFICIAL_SOCIAL.facebookUrl,
+  instagramUrl: OFFICIAL_SOCIAL.instagramUrl,
+  youtubeUrl: OFFICIAL_SOCIAL.youtubeUrl,
   googleRating: 4.9,
   facebookRating: 4.8,
   reviewCount: 500,
@@ -61,6 +60,34 @@ const DEFAULT_SETTINGS = {
   logo_subline: 'ACADEMY · KOLKATA'
 };
 
+/**
+ * Always expose Main Branch identity + official socials when Sheet values are
+ * missing/placeholder. Never let stale Sheet address overwrite the Place ID HQ.
+ */
+function publicizeSettings(row) {
+  const settings = { ...DEFAULT_SETTINGS, ...(row || {}) };
+  settings.phones = normalizePhones(settings.phones);
+  if (settings.whatsapp && BLOCKED_PHONES.has(String(settings.whatsapp).replace(/\D/g, ''))) {
+    settings.whatsapp = OFFICIAL_PHONES[0];
+  }
+
+  const social = resolveSocial(settings);
+  settings.facebookUrl = social.facebookUrl;
+  settings.instagramUrl = social.instagramUrl;
+  settings.youtubeUrl = social.youtubeUrl;
+
+  // Main Branch is authoritative for public address / maps (Tollygunge HQ).
+  settings.businessName = MAIN_BRANCH.name;
+  settings.alternateName = MAIN_BRANCH.alternateName;
+  settings.address = MAIN_BRANCH.formattedAddress;
+  settings.gmb_url = mapsSearchUrl(MAIN_BRANCH);
+  settings.map_embed_url = mapsEmbedUrl(MAIN_BRANCH);
+  settings.mainBranch = publicMainBranchPayload();
+  settings.baseUrl = config.baseUrl;
+
+  return settings;
+}
+
 exports.getPublic = async (req, res, next) => {
   try {
     const rows = await db.getAll('settings');
@@ -74,6 +101,7 @@ exports.getPublic = async (req, res, next) => {
 exports.getAdmin = async (req, res, next) => {
   try {
     const rows = await db.getAll('settings');
+    // Admin sees editable social fields; still filter phones / apply social resolve for display defaults
     const settings = publicizeSettings(rows[0] || {});
     res.json({ success: true, data: settings });
   } catch (err) {
@@ -87,6 +115,11 @@ exports.update = async (req, res, next) => {
     const payload = { ...req.body };
     if (payload.phones !== undefined) payload.phones = normalizePhones(payload.phones);
     if (payload.tagline_bold !== undefined) payload.tagline_bold = parseBool(payload.tagline_bold);
+    // Never persist client-only keys
+    delete payload.mainBranch;
+    delete payload.baseUrl;
+    delete payload.businessName;
+    delete payload.alternateName;
     const loc = applyLocationFields(payload, { includeEmbed: true });
     if (!loc.ok) return res.status(400).json({ success: false, message: loc.message });
     let settings;

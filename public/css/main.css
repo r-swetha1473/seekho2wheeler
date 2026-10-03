@@ -3229,3 +3229,43 @@ ol.rich-html li { margin: 0.2em 0; }
   .filter-btn { min-height: 44px; }
   .section .btn--lg { margin-bottom: 0.25rem; }
 }
+
+/* ===== Phase 2 — Main Branch identity / social / maps ===== */
+.academy-findus__address,
+.footer__address {
+  margin: 0.35rem 0 0.65rem;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--text-muted, #5a5a5a);
+  max-width: 36rem;
+}
+.academy-findus {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 1rem 0 1.25rem;
+}
+.academy-findus[hidden] { display: none !important; }
+.map-embed {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+}
+.map-embed iframe {
+  display: block;
+  width: 100%;
+  min-height: 280px;
+  border: 0;
+}
+@media (max-width: 390px) {
+  .social-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .footer__address,
+  .academy-findus__address {
+    font-size: 0.85rem;
+  }
+}
+

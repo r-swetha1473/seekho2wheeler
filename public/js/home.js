@@ -432,18 +432,21 @@
     const grid = qs('#socialGrid');
     if (!grid) return;
     const s = window.SEEKHO_SETTINGS || {};
+    const fb = s.facebookUrl || 'https://www.facebook.com/kolkatascootybiketraining';
+    const ig = s.instagramUrl || 'https://www.instagram.com/scooty_bike_training_centre';
+    const yt = s.youtubeUrl || 'https://youtube.com/@kolkatascootybiketrainingcentr';
     grid.innerHTML = `
-      <a class="social-card" href="${s.facebookUrl || '#'}" target="_blank" rel="noopener" data-social="facebook">
+      <a class="social-card" href="${fb}" target="_blank" rel="noopener" data-social="facebook">
         <div><div class="social-card__platform fb"><i class="fa-brands fa-facebook"></i> Facebook</div>
         <p>See latest student stories and updates from our Facebook page.</p></div>
         <span class="btn btn--sm btn--outline">View Posts</span>
       </a>
-      <a class="social-card" href="${s.instagramUrl || '#'}" target="_blank" rel="noopener" data-social="instagram">
+      <a class="social-card" href="${ig}" target="_blank" rel="noopener" data-social="instagram">
         <div><div class="social-card__platform ig"><i class="fa-brands fa-instagram"></i> Instagram</div>
         <p>Follow reels and training moments from Seekho riders across Kolkata.</p></div>
         <span class="btn btn--sm btn--outline">View Reels</span>
       </a>
-      <a class="social-card" href="${s.youtubeUrl || '#'}" target="_blank" rel="noopener" data-social="youtube">
+      <a class="social-card" href="${yt}" target="_blank" rel="noopener" data-social="youtube">
         <div><div class="social-card__platform yt"><i class="fa-brands fa-youtube"></i> YouTube</div>
         <p>Watch real student feedback and training tips on our YouTube channel.</p></div>
         <span class="btn btn--sm btn--outline">Watch Videos</span>

@@ -60,11 +60,12 @@
         </a>
         <p class="footer__tagline" data-setting="tagline">Empowering Independence Through Safe Riding since 2018.</p>
         <div class="socials" aria-label="Social links">
-          <a href="#" data-social="facebook" aria-label="Facebook" target="_blank" rel="noopener"><i class="fa-brands fa-facebook-f"></i></a>
-          <a href="#" data-social="instagram" aria-label="Instagram" target="_blank" rel="noopener"><i class="fa-brands fa-instagram"></i></a>
-          <a href="#" data-social="youtube" aria-label="YouTube" target="_blank" rel="noopener"><i class="fa-brands fa-youtube"></i></a>
+          <a href="https://www.facebook.com/kolkatascootybiketraining" data-social="facebook" aria-label="Facebook" target="_blank" rel="noopener"><i class="fa-brands fa-facebook-f"></i></a>
+          <a href="https://www.instagram.com/scooty_bike_training_centre" data-social="instagram" aria-label="Instagram" target="_blank" rel="noopener"><i class="fa-brands fa-instagram"></i></a>
+          <a href="https://youtube.com/@kolkatascootybiketrainingcentr" data-social="youtube" aria-label="YouTube" target="_blank" rel="noopener"><i class="fa-brands fa-youtube"></i></a>
           <a href="https://wa.me/919748481630" data-whatsapp aria-label="WhatsApp" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i></a>
         </div>
+        <p class="footer__address" data-main-branch-address>1, 78, Banerjee Para Rd, Haridevpur, Paschim Putiary, Kolkata, West Bengal 700041, India</p>
         <ul class="footer__compact-contact" aria-label="Contact">
           <li data-footer-phones-list></li>
           <li><a href="https://wa.me/919748481630" data-whatsapp target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i> <span data-copy="layout.link_whatsapp" data-copy-field="title">WhatsApp</span></a></li>

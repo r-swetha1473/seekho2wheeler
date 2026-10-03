@@ -17,3 +17,12 @@ Key ambiguities to confirm before Phase 3:
 - Rating badges: `min-width:0`, stretch, single column ≤360px
 - Empower grid: single column ≤600px (override duplicate CSS)
 - Hero overlay: subtle 0.10→0.34 vertical wash + text-shadow + lower-middle content
+
+## Phase 2 status (implemented in code)
+
+- Main Branch SSOT: `server/config/mainBranch.js` (name, Place ID, address, maps search/embed, social defaults)
+- Public settings API forces Main Branch address/maps + resolves placeholder socials
+- Client schema updater never flattens structured Main Branch address
+- Footer + Stay Connected social links (icons, new tab); Admin Settings editable
+- `robots.txt` + `sitemap.xml` use `BASE_URL` / `config.baseUrl`; location + women-training paths listed
+- `scripts/sync-content.js` idempotent Sheets upsert for settings (never deletes)

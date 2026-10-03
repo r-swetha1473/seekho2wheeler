@@ -1,7 +1,7 @@
 require('dotenv').config();
 
-const path = require('path');
 const { normalizePrivateKey, credentialsAvailable, findKeyFile } = require('../services/googleAuth');
+const mainBranch = require('./mainBranch');
 
 /**
  * Normalize spreadsheet ID from URL or raw ID.
@@ -32,10 +32,12 @@ if (sheetsEnabled && (!spreadsheetId || !hasCreds)) {
   );
 }
 
+const baseUrl = String(process.env.BASE_URL || 'https://seekho2wheeler.vercel.app').replace(/\/$/, '');
+
 module.exports = {
   port: process.env.PORT || 3000,
   nodeEnv: process.env.NODE_ENV || 'development',
-  baseUrl: process.env.BASE_URL || 'http://localhost:3000',
+  baseUrl,
   jwt: {
     secret: process.env.JWT_SECRET || 'seekho_dev_secret',
     expiresIn: process.env.JWT_EXPIRES_IN || '8h'
@@ -50,7 +52,6 @@ module.exports = {
     clientEmail,
     privateKey,
     keyFile,
-    /** True when Sheets is fully usable as primary DB */
     ready: Boolean(sheetsEnabled && spreadsheetId && hasCreds)
   },
   smtp: {
@@ -61,10 +62,16 @@ module.exports = {
     notifyEmail: process.env.NOTIFY_EMAIL || ''
   },
   contact: {
-    /** Official public phones only — never expose 7980110273 */
     phones: ['9748481630', '7980108587'],
     whatsapp: process.env.WHATSAPP_NUMBER || '9748481630'
   },
+  mainBranch: mainBranch.MAIN_BRANCH,
+  officialSocial: mainBranch.OFFICIAL_SOCIAL,
+  mapsSearchUrl: mainBranch.mapsSearchUrl,
+  mapsEmbedUrl: mainBranch.mapsEmbedUrl,
+  publicMainBranchPayload: mainBranch.publicMainBranchPayload,
+  resolveSocial: mainBranch.resolveSocial,
+  localBusinessJsonLd: mainBranch.localBusinessJsonLd,
   uploads: {
     maxSize: 5 * 1024 * 1024,
     allowedTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
