@@ -52,14 +52,16 @@
           wrap.innerHTML = '<p class="empty-state">Reviews will appear here when published.</p>';
           return;
         }
-        wrap.innerHTML = `<div class="testimonial-grid">${list
+        wrap.innerHTML = `<div class="testimonial-grid loc-reviews-grid">${list
           .map(
             (t) => `
-          <article class="testimonial-card">
-            <div class="rating-badge__stars" style="color:var(--primary)">${stars(t.rating)}</div>
-            <h3>${formatTitle(t.headline || t.name, t.title_bold)}</h3>
-            <p>${(t.review || '').slice(0, 180)}${(t.review || '').length > 180 ? '…' : ''}</p>
-            <p><strong>${t.name || ''}</strong></p>
+          <article class="testimonial-card loc-review-card">
+            <div class="testimonial-card__body">
+              <div class="rating-badge__stars" style="color:var(--primary)">${stars(t.rating)}</div>
+              <h3 class="testimonial-card__headline">${formatTitle(t.headline || t.name, t.title_bold)}</h3>
+              <p class="testimonial-card__text">${(t.review || '').slice(0, 180)}${(t.review || '').length > 180 ? '…' : ''}</p>
+              <p class="testimonial-card__author"><strong>${t.name || ''}</strong></p>
+            </div>
           </article>`
           )
           .join('')}</div>`;

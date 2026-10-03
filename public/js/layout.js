@@ -3,19 +3,20 @@
   const home = '/';
   const p = (file) => `/pages/${file}`;
 
-  const WORDMARK = '/images/brand/seekho-wordmark.webp';
-  const WORDMARK_FALLBACK = '/images/brand/seekho-wordmark.png';
-  const MARK = '/images/brand/seekho-master.webp';
-  const MARK_FALLBACK = '/images/brand/seekho-master.png';
+  // Transparent brand assets (new filenames bust stale immutable browser cache)
+  const WORDMARK = '/images/brand/seekho-wordmark-clear.png';
+  const WORDMARK_FALLBACK = '/images/brand/seekho-wordmark-clear.webp';
+  const MARK = '/images/brand/seekho-master-clear.png';
+  const MARK_FALLBACK = '/images/brand/seekho-master-clear.webp';
 
   function brandLogo(opts) {
     const extra = opts.className || '';
     const label = opts.label || 'Seekho 2 Wheeler Home';
     return `
-      <a class="logo logo--responsive ${extra}" href="${home}" aria-label="${label}">
-        <img class="logo__img logo__img--mark" src="${MARK}" alt="" width="42" height="42" decoding="async"
+      <a class="logo logo--brand ${extra}" href="${home}" aria-label="${label}">
+        <img class="logo__img logo__img--mark" src="${MARK}" alt="" width="48" height="48" decoding="async"
           onerror="this.onerror=null;this.src='${MARK_FALLBACK}'">
-        <img class="logo__img logo__img--wordmark" src="${WORDMARK}" alt="Seekho 2 Wheeler" width="220" height="40" decoding="async"
+        <img class="logo__img logo__img--wordmark" src="${WORDMARK}" alt="Seekho 2 Wheeler" width="220" height="55" decoding="async"
           onerror="this.onerror=null;this.src='${WORDMARK_FALLBACK}'">
       </a>`;
   }
@@ -60,7 +61,7 @@
           <div class="nav__dropdown-menu">
             <a href="${p('courses.html')}#scooty" data-copy="layout.nav_scooty" data-copy-field="title">Scooty Training</a>
             <a href="${p('courses.html')}#bike" data-copy="layout.nav_bike" data-copy-field="title">Bike Training</a>
-            <a href="${p('courses.html')}#ladies" data-copy="layout.nav_ladies" data-copy-field="title">Ladies Training</a>
+            <a href="/women-training" data-copy="layout.nav_ladies" data-copy-field="title">Ladies Training</a>
             <a href="${p('courses.html')}#ev" data-copy="layout.nav_ev" data-copy-field="title">Electric Vehicle</a>
             <a href="${p('courses.html')}#road" data-copy="layout.nav_road" data-copy-field="title">Road Practice</a>
             <a href="${p('courses.html')}#rto" data-copy="layout.nav_rto" data-copy-field="title">RTO Practice</a>
@@ -130,7 +131,7 @@
           <div class="footer__acc-panel" hidden>
             <a href="${p('courses.html')}#scooty" data-copy="layout.nav_scooty" data-copy-field="title">Scooty Training</a>
             <a href="${p('courses.html')}#bike" data-copy="layout.nav_bike" data-copy-field="title">Bike Training</a>
-            <a href="${p('courses.html')}#ladies" data-copy="layout.nav_ladies" data-copy-field="title">Ladies Training</a>
+            <a href="/women-training" data-copy="layout.nav_ladies" data-copy-field="title">Ladies Training</a>
             <a href="${p('courses.html')}#ev" data-copy="layout.nav_ev" data-copy-field="title">Electric Vehicle</a>
             <a href="${p('courses.html')}#road" data-copy="layout.nav_road" data-copy-field="title">Road Practice</a>
             <a href="${p('courses.html')}#rto" data-copy="layout.nav_rto" data-copy-field="title">RTO Practice</a>
@@ -178,7 +179,7 @@
         <h4 data-copy="layout.col_courses" data-copy-field="title">Courses</h4>
         <a href="${p('courses.html')}#scooty" data-copy="layout.nav_scooty" data-copy-field="title">Scooty Training</a>
         <a href="${p('courses.html')}#bike" data-copy="layout.nav_bike" data-copy-field="title">Bike Training</a>
-        <a href="${p('courses.html')}#ladies" data-copy="layout.nav_ladies" data-copy-field="title">Ladies Training</a>
+        <a href="/women-training" data-copy="layout.nav_ladies" data-copy-field="title">Ladies Training</a>
         <a href="${p('courses.html')}#ev" data-copy="layout.nav_ev" data-copy-field="title">Electric Vehicle</a>
         <a href="${p('courses.html')}#road" data-copy="layout.nav_road" data-copy-field="title">Road Practice</a>
         <a href="${p('courses.html')}#rto" data-copy="layout.nav_rto" data-copy-field="title">RTO Practice</a>
