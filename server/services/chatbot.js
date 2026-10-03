@@ -1,7 +1,6 @@
 const db = require('./db');
 const { sanitizeHtml, parseBool } = require('../utils/sanitizeHtml');
 const { pickBest, parseKeywords, composeMatchText } = require('./chatbotMatch');
-const { normalizeCourse } = require('./courses');
 const { getDoorstepConfig } = require('./doorstep');
 const {
   chatbotBranchList,
@@ -9,12 +8,28 @@ const {
   listPublicCards,
   getLocation
 } = require('../content/locations');
+const {
+  chatbotCourseList,
+  chatbotCourseDetail,
+  getCourse,
+  resolveSlug
+} = require('../content/courses');
 
 const COURSE_SLUG_ALIASES = {
-  'scooty-basic': 'scooty-training',
-  scooty: 'scooty-training',
+  'scooty-basic': 'basic-scooty',
+  scooty: 'basic-scooty',
+  'scooty-training': 'basic-scooty',
+  'basic-scooty-training': 'basic-scooty',
+  'advanced-scooty-training': 'advanced-scooty',
+  'advance-scooty': 'advanced-scooty',
   bike: 'bike-training',
-  ladies: 'ladies-training'
+  doorstep: 'doorstep-training',
+  'doorstep-scooty-and-bike-training': 'doorstep-training',
+  rto: 'rto-preparation',
+  'rto-practice': 'rto-preparation',
+  'rto-license-and-exam-assistance': 'rto-preparation',
+  ladies: 'basic-scooty',
+  'ladies-training': 'basic-scooty'
 };
 
 const DEFAULT_QUICK = [
@@ -39,7 +54,7 @@ const QA_SEED = [
     id: 'qa-scooty-price',
     question: 'What is the price of scooty training?',
     keywords: 'scooty, price, fees, cost, charges, scooty training, course fees, scooty course',
-    answer: 'Scooty training is {{course:scooty-training.price}} for {{course:scooty-training.classes}} classes.',
+    answer: 'Scooty training (Basic Scooty) is {{course:basic-scooty.price}} for {{course:basic-scooty.classes}} classes. Details: /courses/basic-scooty',
     category: 'Pricing',
     is_active: true,
     sort_order: 1
@@ -48,7 +63,7 @@ const QA_SEED = [
     id: 'qa-courses',
     question: 'What courses do you offer?',
     keywords: 'courses, programs, course list, training programs, what courses',
-    answer: 'We currently offer: {{courses.names}}. Ask about a course name for its fee and class count.',
+    answer: 'We currently offer: {{courses.names}}. Ask about Basic Scooty, Advanced Scooty, Bike Training, Doorstep Training or RTO Preparation.',
     category: 'Courses',
     is_active: true,
     sort_order: 2
@@ -75,7 +90,7 @@ const QA_SEED = [
     id: 'qa-bike-price',
     question: 'What is the price of bike training?',
     keywords: 'bike, motorcycle, price, fees, cost, bike training, bike course',
-    answer: 'Bike training is {{course:bike-training.price}} for {{course:bike-training.classes}} classes.',
+    answer: 'Bike training is {{course:bike-training.price}} for {{course:bike-training.classes}} classes. Details: /courses/bike-training',
     category: 'Pricing',
     is_active: true,
     sort_order: 7
@@ -84,10 +99,28 @@ const QA_SEED = [
     id: 'qa-ladies-price',
     question: 'What is the price of ladies training?',
     keywords: 'ladies, women, ladies training, ladies batch, women training, price, fees',
-    answer: 'Ladies training is {{course:ladies-training.price}} for {{course:ladies-training.classes}} classes.',
+    answer: 'Women can join our regular courses such as Basic Scooty ({{course:basic-scooty.price}}, {{course:basic-scooty.classes}} classes). See /women-training for the women learning page.',
     category: 'Pricing',
     is_active: true,
     sort_order: 8
+  },
+  {
+    id: 'qa-advanced-scooty',
+    question: 'What is Advanced Scooty?',
+    keywords: 'advanced scooty, advance scooty, advanced course, busy road',
+    answer: '{{course:advanced-scooty.detail}}',
+    category: 'Courses',
+    is_active: true,
+    sort_order: 12
+  },
+  {
+    id: 'qa-rto-prep',
+    question: 'What is RTO Preparation?',
+    keywords: 'rto, rto preparation, rto practice, license, driving test',
+    answer: '{{course:rto-preparation.detail}}',
+    category: 'Courses',
+    is_active: true,
+    sort_order: 13
   },
   {
     id: 'qa-booking',
@@ -209,7 +242,8 @@ async function loadContext() {
     getAll('settings'),
     getAll('branches')
   ]);
-  const courses = courseRows.map(normalizeCourse).filter((c) => c && c.is_active !== false);
+  const { listPublicCards: listCourses } = require('../content/courses');
+  const courses = listCourses(courseRows);
   const settings = settingRows[0] || {};
   const branches = listPublicCards();
   let doorstep = {};
@@ -222,14 +256,19 @@ async function loadContext() {
 }
 
 function lookupCourse(courses, slug) {
-  const key = COURSE_SLUG_ALIASES[slug] || slug;
-  return courses.find((c) => c.slug === key) || courses.find((c) => (c.slug || '').includes(slug));
+  const key = COURSE_SLUG_ALIASES[slug] || resolveSlug(slug) || slug;
+  return (
+    courses.find((c) => c.slug === key) ||
+    courses.find((c) => (c.slug || '') === slug) ||
+    courses.find((c) => (c.slug || '').includes(slug)) ||
+    null
+  );
 }
 
 function resolvePlaceholder(path, ctx) {
   const parts = String(path || '').trim().split('.');
   if (parts[0] === 'courses' && parts[1] === 'names') {
-    return ctx.courses.map((c) => c.name).filter(Boolean).join(', ') || 'our training programmes';
+    return chatbotCourseList() || ctx.courses.map((c) => c.name).filter(Boolean).join(', ') || 'our training programmes';
   }
   if (parts[0] === 'course' || (parts[0] && parts[0].startsWith('course:'))) {
     let slug;
@@ -242,10 +281,16 @@ function resolvePlaceholder(path, ctx) {
       slug = parts[1];
       field = parts[2];
     }
-    const course = lookupCourse(ctx.courses, slug);
+    if (field === 'detail') {
+      return chatbotCourseDetail(slug) || '';
+    }
+    const course = lookupCourse(ctx.courses, slug) || getCourse(slug);
     if (!course) return '';
-    if (field === 'price') return formatInr(course.price);
-    if (field === 'classes') return String(course.classes);
+    if (field === 'price') {
+      if (course.isDoorstep) return 'distance-based (doorstep calculator)';
+      return formatInr(course.price != null ? course.price : course.priceFrom);
+    }
+    if (field === 'classes') return String(course.classesLabel || course.classes_label || course.classes || '');
     if (field === 'name') return course.name || '';
     return course[field] != null ? String(course[field]) : '';
   }

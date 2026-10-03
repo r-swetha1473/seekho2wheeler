@@ -66,6 +66,42 @@ app.get('/api/locations/:slug', (req, res) => {
   res.json({ success: true, data: { ...publicCard(loc), faqs: loc.faqs, trainingAvailable: loc.trainingAvailable, howToReach: loc.howToReach, landmark: loc.landmark } });
 });
 
+/* Course catalog SSOT (Phase 4) */
+app.get('/api/courses', async (req, res, next) => {
+  try {
+    const db = require('./services/db');
+    const { listPublicCards } = require('./content/courses');
+    const pricing = await db.getAll('pricing');
+    res.json({ success: true, data: listPublicCards(pricing) });
+  } catch (err) {
+    next(err);
+  }
+});
+app.get('/api/courses/:slug', async (req, res, next) => {
+  try {
+    const db = require('./services/db');
+    const { getPublicCourse, publicCard } = require('./content/courses');
+    const pricing = await db.getAll('pricing');
+    const course = getPublicCourse(req.params.slug, pricing);
+    if (!course) return res.status(404).json({ success: false, message: 'Course not found' });
+    res.json({
+      success: true,
+      data: {
+        ...publicCard(course),
+        phase: course.phase,
+        classesTiming: course.classesTiming,
+        whatYouLearn: course.whatYouLearn,
+        goal: course.goal,
+        steps: course.steps || [],
+        seo: course.seo,
+        cta: course.cta
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 /* Health check for Vercel / uptime monitors */
 app.get('/api/health', (req, res) => {
   const config = require('./config');
@@ -130,6 +166,29 @@ app.get('/locations/:slug', (req, res) => {
   res.type('html').send(html);
 });
 
+app.get('/courses', (req, res) => {
+  res.redirect(302, '/pages/courses.html');
+});
+
+app.get('/courses/:slug', async (req, res, next) => {
+  try {
+    const db = require('./services/db');
+    const { renderCourseHtml } = require('./services/courseRender');
+    const { resolveSlug } = require('./content/courses');
+    const canonicalSlug = resolveSlug(req.params.slug);
+    if (!canonicalSlug) return res.status(404).sendFile(path.join(publicDir, 'pages/404.html'));
+    if (canonicalSlug !== req.params.slug) {
+      return res.redirect(301, `/courses/${canonicalSlug}`);
+    }
+    const pricing = await db.getAll('pricing');
+    const html = renderCourseHtml(canonicalSlug, pricing);
+    if (!html) return res.status(404).sendFile(path.join(publicDir, 'pages/404.html'));
+    res.type('html').send(html);
+  } catch (err) {
+    next(err);
+  }
+});
+
 app.get('/robots.txt', (req, res) => {
   const base = config.baseUrl;
   res.type('text/plain').send(`User-agent: *
@@ -149,6 +208,7 @@ app.get('/sitemap.xml', async (req, res) => {
     const pages = (await listPages()).filter((p) => p.is_active !== false);
     const courses = (await db.getAll('pricing')).filter((p) => p.is_active !== false && p.active !== false);
     const { locationPaths } = require('./content/locations');
+    const { coursePaths } = require('./content/courses');
     const base = config.baseUrl;
     const staticPages = [
       '',
@@ -168,6 +228,9 @@ app.get('/sitemap.xml', async (req, res) => {
         (p) => `  <url><loc>${base}${p || '/'}</loc><changefreq>weekly</changefreq><priority>${p ? '0.8' : '1.0'}</priority></url>`
       ),
       ...locationPaths().map(
+        (p) => `  <url><loc>${base}${p}</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>`
+      ),
+      ...coursePaths().map(
         (p) => `  <url><loc>${base}${p}</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>`
       ),
       ...blogs.map(

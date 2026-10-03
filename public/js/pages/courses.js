@@ -1,14 +1,21 @@
-/* Courses page — swipe carousel (mobile) / multi-card (desktop) */
+/* Courses page — five-course catalog from /api/courses (Phase 4 SSOT) */
 (function () {
   const { api, qs, formatPrice, safeImg, sanitizeHtml, formatTitle, courseDetailHref, classesLabel } = Seekho;
 
   const HASH_ALIASES = {
-    scooty: 'scooty-training',
+    scooty: 'basic-scooty',
+    'basic-scooty': 'basic-scooty',
+    'advanced-scooty': 'advanced-scooty',
+    advanced: 'advanced-scooty',
     bike: 'bike-training',
-    ladies: 'ladies-training',
-    ev: 'electric-vehicle-training',
-    road: 'road-practice',
-    rto: 'rto-practice'
+    doorstep: 'doorstep-training',
+    rto: 'rto-preparation',
+    ladies: 'basic-scooty',
+    ev: 'basic-scooty',
+    road: 'advanced-scooty',
+    'scooty-training': 'basic-scooty',
+    'bike-training': 'bike-training',
+    'rto-practice': 'rto-preparation'
   };
 
   function escapeHtml(str) {
@@ -19,12 +26,22 @@
       .replace(/"/g, '&quot;');
   }
 
+  function priceHtml(c) {
+    if (c.isDoorstep || c.showPrice === false) {
+      return `<span class="course-card__price">${escapeHtml(c.priceLabel || 'Distance-based')}</span>`;
+    }
+    if (c.price != null && c.price !== '') {
+      return `<span class="course-card__price">${c.priceLabel ? escapeHtml(c.priceLabel) : formatPrice(c.price)}</span>`;
+    }
+    return `<span class="course-card__price">Price on request</span>`;
+  }
+
   async function init() {
     const wrap = qs('#coursesPageGrid') || qs('#courseCards');
     if (!wrap) return;
 
     try {
-      const { data } = await api('/pricing');
+      const { data } = await api('/courses');
       wrap.className = 'swiper course-swiper';
       wrap.setAttribute('aria-label', 'Training courses');
       wrap.innerHTML = `
@@ -34,20 +51,23 @@
             const img = c.image_url || c.image || `/images/courses/seekho-0${(i % 7) + 1}.webp`;
             return `
               <div class="swiper-slide">
-                <a class="course-card course-anchor" id="${escapeHtml(c.slug || c.id)}" href="${courseDetailHref(c)}" aria-label="${escapeHtml(name)} details">
-                    <div class="course-card__media media-frame media-frame--43">
-                      ${c.badge ? `<span class="course-card__badge">${escapeHtml(c.badge)}</span>` : ''}
-                      ${safeImg(img, name, { w: 1200, h: 900 })}
-                    </div>
-                    <div class="course-card__body">
-                      <h2 class="course-card__title">${formatTitle(name, c.title_bold)}</h2>
-                      <div class="course-card__desc rich-html">${sanitizeHtml(c.description || '')}</div>
-                      <div class="course-card__meta">
-                        <span class="course-card__price">${formatPrice(c.price)}</span>
-                        <span class="course-card__duration"><i class="fa-regular fa-clock"></i> ${escapeHtml(classesLabel(c))}</span>
+                <article class="course-card course-anchor" id="${escapeHtml(c.slug || c.id)}">
+                    <a class="course-card__hit" href="${courseDetailHref(c)}" aria-label="${escapeHtml(name)} details">
+                      <div class="course-card__media media-frame media-frame--43">
+                        ${c.badge ? `<span class="course-card__badge">${escapeHtml(c.badge)}</span>` : ''}
+                        ${safeImg(img, name, { w: 1200, h: 900 })}
                       </div>
-                    </div>
-                </a>
+                      <div class="course-card__body">
+                        <h2 class="course-card__title">${formatTitle(name, c.title_bold)}</h2>
+                        <div class="course-card__desc rich-html">${sanitizeHtml(c.shortDescription || c.description || '')}</div>
+                        <div class="course-card__meta">
+                          ${priceHtml(c)}
+                          <span class="course-card__duration"><i class="fa-regular fa-clock"></i> ${escapeHtml(classesLabel(c))}</span>
+                        </div>
+                        <span class="btn btn--primary btn--sm course-card__cta">View Course Details</span>
+                      </div>
+                    </a>
+                </article>
               </div>`;
           }).join('')}
         </div>

@@ -56,17 +56,21 @@ const Seekho = (() => {
   }
 
   function courseDetailHref(c) {
-    const slug = encodeURIComponent(c && (c.slug || '') || '');
-    return `/pages/detail.html?type=course&slug=${slug}`;
+    if (c && c.detailPath) return c.detailPath;
+    const slug = String((c && (c.slug || c.bookingSlug || '')) || '').trim();
+    if (!slug) return '/pages/courses.html';
+    return `/courses/${encodeURIComponent(slug)}`;
   }
 
   function sectionCardHref(section) {
     const slug = (section && section.link_slug) || '';
     if (!slug) return '/pages/detail.html';
+    if (String(slug).toLowerCase() === 'doorstep-training') return '/courses/doorstep-training';
     return `/p/${encodeURIComponent(slug)}`;
   }
 
   function classesLabel(c) {
+    if (c && (c.classes_label || c.classesLabel)) return c.classes_label || c.classesLabel;
     const n = Number(c && c.classes);
     const count = Number.isFinite(n) && n >= 1 ? n : 1;
     return `${count} classes`;

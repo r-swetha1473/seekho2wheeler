@@ -72,14 +72,7 @@ async function seed() {
     { id: 'banner-5', title: 'Thousands Trained Successfully.', subtitle: "Join Kolkata's trusted two-wheeler academy since 2018.", ctaText: 'Join Today', ctaLink: '/pages/booking.html', image: b(5), displayOrder: 5, active: true, createdAt: now, updatedAt: now }
   ]);
 
-  await write('pricing', [
-    courseRow('price-1', 'Scooty Training', 2500.00, 15, 'Perfect for beginners — balance, control, traffic basics and confident city riding.', c(1), ['Non-cyclists welcome', 'Female-friendly trainers', 'Flexible timing', 'Certificate guidance'], 1),
-    courseRow('price-2', 'Bike Training', 3000.00, 15, 'Gear shifting, clutch control, balance and real-road motorcycle practice.', c(3), ['Clutch mastery', 'Gear practice', 'Road confidence', 'Patient trainers'], 2),
-    courseRow('price-3', 'Ladies Training', 2500.00, 15, 'Specially designed sessions for women — safe, supportive and empowering.', c(7), ['Women-first batches', 'Safe environment', 'Confidence building', 'Scooty & bike options'], 3),
-    courseRow('price-4', 'Electric Vehicle Training', 2800.00, 12, 'Learn to ride electric scooties with modern controls and city practice.', c(4), ['EV basics', 'Throttle control', 'Battery awareness', 'City routes'], 4),
-    courseRow('price-5', 'Road Practice', 2000.00, 8, 'Real traffic exposure with trainer guidance for everyday independence.', c(5), ['Live traffic', 'Signal practice', 'Lane discipline', 'Defensive riding'], 5),
-    courseRow('price-6', 'RTO Practice', 1500.00, 5, 'Focused practice for RTO driving test routes and requirements.', c(6), ['Test track drills', 'Figure-8 practice', 'Document guidance', 'Mock tests'], 6)
-  ]);
+  await write('pricing', require('../server/content/courses').pricingSeedRows(now));
 
   await write('home_sections', [{
     id: 'home-doorstep',

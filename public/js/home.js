@@ -78,9 +78,9 @@
   async function renderCourses() {
     const wrap = qs('#courseCards');
     if (!wrap) return;
-    wrap.innerHTML = skeletonCards(6, 420);
+    wrap.innerHTML = skeletonCards(5, 420);
     try {
-      const { data } = await api('/pricing');
+      const { data } = await api('/courses');
       wrap.className = 'swiper course-swiper';
       wrap.setAttribute('aria-label', 'Training courses');
       wrap.innerHTML = `
@@ -94,9 +94,9 @@
                   </div>
                   <div class="course-card__body">
                     <h3 class="course-card__title">${formatTitle(c.name || c.courseName, c.title_bold)}</h3>
-                    <div class="course-card__desc rich-html">${sanitizeHtml(c.description || '')}</div>
+                    <div class="course-card__desc rich-html">${sanitizeHtml(c.shortDescription || c.description || '')}</div>
                     <div class="course-card__meta">
-                      <span class="course-card__price">${formatPrice(c.price)}</span>
+                      <span class="course-card__price">${c.isDoorstep || c.showPrice === false ? escapeHtml(c.priceLabel || 'Distance-based') : (c.priceLabel ? escapeHtml(c.priceLabel) : formatPrice(c.price))}</span>
                       <span class="course-card__duration"><i class="fa-regular fa-clock"></i> ${escapeHtml(classesLabel(c))}</span>
                     </div>
                   </div>

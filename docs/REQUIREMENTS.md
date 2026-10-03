@@ -27,12 +27,11 @@ Key ambiguities (RESOLVED for Phase 3):
 - `robots.txt` + `sitemap.xml` use `BASE_URL` / `config.baseUrl`; location + women-training paths listed
 - `scripts/sync-content.js` idempotent Sheets upsert for settings (never deletes)
 
-## Phase 3 status (implemented in code)
+## Phase 4 status (implemented in code)
 
-- Location SSOT: `server/content/locations.js` (7 centres)
-- Server-rendered `/locations/:slug` pages with unique SEO + LocalBusiness/FAQPage/BreadcrumbList
-- Gallery categories `Branch: <Name>` in Admin Gallery
-- Homepage / branches / footer / contact / about copy updated to seven locations
-- Chatbot `{{branches.list}}` + branch detail placeholders use location SSOT
-- Sitemap location URLs derived from SSOT
-- Patuli course list not invented (confirm on book/call)
+- Course SSOT: `server/content/courses.js` (exactly 5 courses)
+- Server-rendered `/courses/:slug` with Phase → Classes/Timing → What You Learn → Goal (+ Doorstep Steps 1–6)
+- Listing via `/api/courses`; homepage/courses page use catalog (not legacy 6-course set)
+- Booking preselect via `?course=` using catalog slugs; doorstep calculator unchanged
+- Chatbot course answers from course SSOT
+- Sitemap includes `/courses/*`

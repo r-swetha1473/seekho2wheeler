@@ -80,7 +80,7 @@ const COPY_SEED = [
   slot('home', 'courses_head', {
     subtitle: 'Training Programs & Pricing',
     title: 'Choose Perfect Training',
-    body_html: '<p>Transparent pricing. Equal card design. From first scooty lesson to RTO practice.</p>'
+    body_html: '<p>Five courses. Starting from ₹2,500. From Basic Scooty to RTO Preparation.</p>'
   }, 50),
   slot('home', 'branches_head', {
     subtitle: 'Our Branches',
@@ -195,7 +195,7 @@ const COPY_SEED = [
 
   slot('courses', 'hero', {
     title: 'Our Training Programs',
-    subtitle: 'Six specialized courses designed for beginners, women, and road-ready riders across Kolkata.'
+    subtitle: 'Five focused courses — Basic Scooty, Advanced Scooty, Bike Training, Doorstep Training and RTO Preparation. Starting from ₹2,500.'
   }, 90),
   slot('branches', 'hero', {
     title: 'Find A Branch Near You',

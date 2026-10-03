@@ -197,62 +197,21 @@
 
   async function loadCourse() {
     const slug = route.slug;
-    const canonical = `${siteUrl()}/pages/detail.html?type=course&slug=${encodeURIComponent(slug)}`;
     if (!slug) {
       comingSoon('Details', `${siteUrl()}/pages/detail.html`);
       return;
     }
+    /* Phase 4: course details live at /courses/:slug */
     try {
-      const { data } = await api('/pricing');
-      const needle = String(slug || '').toLowerCase();
-      const courseSlug = (c) => {
-        const own = String(c.slug || '').trim().toLowerCase();
-        if (own) return own;
-        return String(c.name || c.courseName || '')
-          .trim()
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, '-')
-          .replace(/^-+|-+$/g, '');
-      };
-      const course = (data || []).find((c) => courseSlug(c) === needle);
-      if (!course) {
-        comingSoon('Details', canonical);
+      const { data } = await api(`/courses/${encodeURIComponent(slug)}`);
+      if (data && data.slug) {
+        location.replace(`/courses/${encodeURIComponent(data.slug)}`);
         return;
       }
-      const name = course.name || course.courseName || 'Course';
-      applySeo({
-        title: `${name} | Seekho Two Wheeler Academy`,
-        description: stripHtml(course.description || name).slice(0, 160),
-        canonical
-      });
-      if (heroTitle) heroTitle.textContent = name;
-      if (crumb) crumb.textContent = name;
-      setCrumbParent('/pages/courses.html', 'Courses');
-      const features = Array.isArray(course.features) ? course.features.filter(Boolean) : [];
-      showArticle(`
-        <div class="course-detail">
-          <div class="course-detail__media media-frame media-frame--43" data-aos="fade-up">
-            ${course.badge ? `<span class="course-card__badge">${escapeHtml(course.badge)}</span>` : ''}
-            ${safeImg(course.image_url || course.image, name, { w: 1200, h: 900, priority: true })}
-          </div>
-          <aside class="course-detail__aside" data-aos="fade-up">
-            <p class="course-detail__aside-label">This programme</p>
-            <p class="course-detail__price">${formatPrice(course.price)}</p>
-            <p class="course-detail__classes"><i class="fa-regular fa-clock" aria-hidden="true"></i> ${escapeHtml(classesLabel(course))}</p>
-            <a href="/pages/booking.html?course=${encodeURIComponent(course.slug || name)}" class="btn btn--primary btn--lg course-detail__book">Book Training Now</a>
-          </aside>
-          <div class="course-detail__main" data-aos="fade-up">
-            <div class="blog-detail__content rich-html">${sanitizeHtml(course.description || '')}</div>
-            ${features.length ? `
-              <h2 class="course-detail__list-title">What's included</h2>
-              <ul class="course-detail__features">
-                ${features.map((f) => `<li><i class="fa-solid fa-check" aria-hidden="true"></i><span>${escapeHtml(f)}</span></li>`).join('')}
-              </ul>` : ''}
-          </div>
-        </div>`);
     } catch {
-      comingSoon('Details', canonical);
+      /* fall through */
     }
+    location.replace(`/courses/${encodeURIComponent(slug)}`);
   }
 
   async function loadGeneric() {

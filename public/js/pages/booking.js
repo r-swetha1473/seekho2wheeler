@@ -71,11 +71,11 @@
     const params = new URLSearchParams(location.search);
     const preselect = params.get('course');
     if (preselect) {
+      const q = preselect.toLowerCase();
       const match = courses.find((c) => {
         const name = (c.name || c.courseName || '').toLowerCase();
         const slug = (c.slug || '').toLowerCase();
-        const q = preselect.toLowerCase();
-        return name === q || slug === q;
+        return name === q || slug === q || name.includes(q) || slug.includes(q);
       });
       if (match) {
         const card = courseGrid.querySelector(`[data-id="${match.id}"]`);
@@ -247,12 +247,36 @@
 
   async function init() {
     try {
-      const [pricingRes, branchRes, slotsRes] = await Promise.all([
+      const [pricingRes, catalogRes, branchRes, slotsRes] = await Promise.all([
         api('/pricing'),
+        api('/courses').catch(() => ({ data: [] })),
         api('/branches'),
         api('/bookings/slots')
       ]);
-      courses = pricingRes.data;
+      const catalog = catalogRes.data || [];
+      const pricing = pricingRes.data || [];
+      /* Prefer the five-course catalog; fall back to pricing if catalog empty */
+      if (catalog.length) {
+        courses = catalog.map((c) => {
+          const match = pricing.find((p) => {
+            const ps = String(p.slug || '').toLowerCase();
+            const pid = String(p.id || '');
+            return pid === String(c.id) || ps === c.slug || ps === c.bookingSlug;
+          });
+          return {
+            id: (match && match.id) || c.id,
+            name: c.name,
+            courseName: c.name,
+            slug: c.bookingSlug || c.slug,
+            price: c.isDoorstep ? (match && match.price) || 4500 : c.price != null ? c.price : (match && match.price) || 0,
+            classes: c.classes,
+            classes_label: c.classesLabel || c.classes_label,
+            isDoorstep: !!c.isDoorstep
+          };
+        });
+      } else {
+        courses = pricing;
+      }
       branches = branchRes.data;
       slots = slotsRes.data;
       renderCourses();
