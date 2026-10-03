@@ -478,6 +478,14 @@ const Seekho = (() => {
             longitude: Number(s.longitude)
           };
         }
+        // Keep JSON-LD telephones on the two official numbers only (never stale Sheet/HTML values).
+        const OFFICIAL = ['9748481630', '7980108587'];
+        const BLOCKED = new Set(['7980110273']);
+        const fromSettings = (Array.isArray(s.phones) ? s.phones : String(s.phones || '').split(/[,|·]/))
+          .map((p) => String(p).replace(/\D/g, ''))
+          .filter((d) => d && !BLOCKED.has(d) && OFFICIAL.includes(d));
+        const phones = fromSettings.length ? [...new Set(fromSettings)] : OFFICIAL;
+        node.telephone = phones.map((p) => (p.startsWith('+') ? p : `+91${p}`));
       });
       if (changed) el.textContent = JSON.stringify(Array.isArray(data) ? list : list[0]);
     });

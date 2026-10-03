@@ -72,3 +72,12 @@ Key ambiguities (RESOLVED for Phase 3):
 - Courses / branches / women / phones / booking from existing SSOTs; official phones only (blocks 7980110273)
 - Fallback includes Call + WhatsApp action buttons; never promises Scooty → Bike auto-progression
 - `sync-content.js` upserts `chatbot_config` + `chatbot_qa` by id (never deletes unrelated rows)
+
+## Phase 8 status (go-live)
+
+- Production redeployed to https://seekho2wheeler.vercel.app (Vercel project `seekho2wheeler`)
+- `npm run sync-content` executed against production Sheets (blogs 6 updated; chatbot_config 1; chatbot_qa 14; settings unchanged)
+- JSON-LD telephone forced to official phones only (blocks `7980110273`)
+- `.env.example` Phase 8 production checklist added
+- Full report: `docs/PHASE-8-GO-LIVE-REPORT.md`
+- Manual remaining: Search Console sitemap submit; push local commits to GitHub `swetha/main`
