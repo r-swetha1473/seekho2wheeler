@@ -26,6 +26,8 @@
  *      for non-placeholder socials)
  *   - blogs: upsert the six Riding Tips articles by slug (never deletes
  *     unrelated Sheet rows)
+ *   - chatbot_config + chatbot_qa: upsert Phase 7 bot settings and FAQ seeds
+ *     by id (never deletes unrelated Sheet rows)
  */
 require('dotenv').config();
 
@@ -38,6 +40,7 @@ const {
   isPlaceholderSocial
 } = require('../server/config/mainBranch');
 const { blogSeedRows } = require('../server/content/blogs');
+const { chatbotConfigSeedRow, chatbotQaSeedRows } = require('../server/services/chatbot');
 
 function log(msg) {
   console.log(`[sync-content] ${msg}`);
@@ -174,6 +177,7 @@ async function main() {
 
   await syncSettings();
   await syncBlogs();
+  await syncChatbot();
 
   log('done (idempotent; unrelated Sheet rows untouched)');
 }
@@ -182,6 +186,16 @@ async function syncBlogs() {
   const rows = blogSeedRows();
   const result = await upsertByKey('blogs', 'slug', rows);
   log(`blogs: created=${result.created} updated=${result.updated} existingTotal=${result.total}`);
+}
+
+async function syncChatbot() {
+  const cfg = chatbotConfigSeedRow();
+  const cfgResult = await upsertByKey('chatbot_config', 'id', [cfg]);
+  log(`chatbot_config: created=${cfgResult.created} updated=${cfgResult.updated} existingTotal=${cfgResult.total}`);
+
+  const qa = chatbotQaSeedRows();
+  const qaResult = await upsertByKey('chatbot_qa', 'id', qa);
+  log(`chatbot_qa: created=${qaResult.created} updated=${qaResult.updated} existingTotal=${qaResult.total}`);
 }
 
 main().catch((err) => {

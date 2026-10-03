@@ -3709,3 +3709,67 @@ ol.rich-html li { margin: 0.2em 0; }
   .article-accordion__icon { transition: none; }
   .blog-card:hover { transform: none; }
 }
+
+/* ---------- Phase 7 chatbot actions / welcome ---------- */
+.seekho-chat__brand-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 0.1rem;
+}
+.seekho-chat__welcome {
+  font-size: 0.72rem;
+  font-weight: 500;
+  opacity: 0.9;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+.seekho-chat__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.65rem;
+}
+.seekho-chat__action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+  border: 1px solid transparent;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.seekho-chat__action--cta {
+  background: var(--primary, #F5B700);
+  color: var(--dark, #12233A);
+}
+.seekho-chat__action--call {
+  background: #0B3D91;
+  color: #fff;
+}
+.seekho-chat__action--wa {
+  background: #25D366;
+  color: #fff;
+}
+.seekho-chat__bubble {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+.seekho-chat__input {
+  min-width: 0;
+}
+@media (max-width: 900px) {
+  .seekho-chat {
+    right: 0.75rem;
+    left: auto;
+    max-width: min(22.5rem, calc(100vw - 1.25rem));
+  }
+  .seekho-chat__panel {
+    width: min(360px, calc(100vw - 1.25rem));
+  }
+}

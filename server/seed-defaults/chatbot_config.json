@@ -1,18 +1,40 @@
 [
   {
     "id": "default",
-    "fallback_message": "I don't have verified information about that. I can help you with Seekho's training, branches, timings, booking, and other available website information.",
+    "bot_name": "Seekho 2 Wheeler AI",
+    "greeting": "How can we help you?",
+    "welcome_heading": "How can we help you?",
+    "fallback_message": "I don't have verified information about that yet. I can help with Seekho's courses, seven training centres, women's training, timings, booking, and official contact details. Prefer to speak with us? Use Call or WhatsApp below.",
     "match_threshold": 3,
-    "greeting": "Hi! Ask about courses, fees, doorstep training, timings or location.",
+    "phone": "",
+    "whatsapp": "",
     "quick_replies_json": [
-      { "label": "Courses", "prompt": "What courses do you offer?" },
-      { "label": "Pricing", "prompt": "What is the price of scooty training?" },
-      { "label": "Doorstep", "prompt": "How does doorstep training pricing work?" },
-      { "label": "Timings", "prompt": "What are your timings?" },
-      { "label": "Location", "prompt": "Where are you located?" },
-      { "label": "Contact", "prompt": "How can I contact you?" }
+      {
+        "label": "Courses",
+        "prompt": "What courses do you offer?"
+      },
+      {
+        "label": "Centres",
+        "prompt": "Where are your training centres?"
+      },
+      {
+        "label": "Women",
+        "prompt": "Do you provide training for women?"
+      },
+      {
+        "label": "Beginners",
+        "prompt": "Can a complete beginner learn?"
+      },
+      {
+        "label": "Booking",
+        "prompt": "How do I book a training slot?"
+      },
+      {
+        "label": "Contact",
+        "prompt": "How can I contact you?"
+      }
     ],
-    "created_at": "2026-09-30T00:00:00.000Z",
-    "updated_at": "2026-09-30T00:00:00.000Z"
+    "created_at": "2026-10-03T11:40:31.548Z",
+    "updated_at": "2026-10-03T11:40:31.548Z"
   }
 ]

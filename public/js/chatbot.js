@@ -1,4 +1,4 @@
-/* Seekho deterministic chat widget */
+/* Seekho 2 Wheeler AI — customer chat widget (Phase 7 extension) */
 (function () {
   function boot() {
     if (!window.Seekho) {
@@ -12,11 +12,14 @@
     wrap.id = 'seekhoChat';
     wrap.className = 'seekho-chat';
     wrap.innerHTML = `
-      <div class="seekho-chat__panel" id="seekhoChatPanel" hidden role="dialog" aria-label="Seekho chat" aria-modal="true">
+      <div class="seekho-chat__panel" id="seekhoChatPanel" hidden role="dialog" aria-label="Seekho 2 Wheeler AI" aria-modal="true">
         <div class="seekho-chat__head">
           <div class="seekho-chat__brand">
             <img src="/images/brand/seekho-master.png" alt="" width="28" height="28" decoding="async">
-            <strong>Seekho 2 Wheeler AI</strong>
+            <div class="seekho-chat__brand-text">
+              <strong id="seekhoChatName">Seekho 2 Wheeler AI</strong>
+              <span class="seekho-chat__welcome" id="seekhoChatWelcome">How can we help you?</span>
+            </div>
           </div>
           <button type="button" class="seekho-chat__close" id="seekhoChatClose" aria-label="Close chat">&times;</button>
         </div>
@@ -43,7 +46,10 @@
     const form = document.getElementById('seekhoChatForm');
     const input = document.getElementById('seekhoChatInput');
     const sendBtn = form.querySelector('.seekho-chat__send');
-    let greeting = 'Hi! How can we help?';
+    const nameEl = document.getElementById('seekhoChatName');
+    const welcomeEl = document.getElementById('seekhoChatWelcome');
+    let botName = 'Seekho 2 Wheeler AI';
+    let greeting = 'How can we help you?';
     let replies = [];
     let openState = false;
     let sending = false;
@@ -74,15 +80,11 @@
       return el;
     }
 
-    function contactsHtml(c) {
-      if (!c) return '';
-      const bits = [];
-      if (c.phone) bits.push(`<a href="tel:${encodeURIComponent(c.phone)}">${c.phone}</a>`);
-      if (c.whatsapp) {
-        const n = String(c.whatsapp).replace(/\D/g, '');
-        bits.push(`<a href="https://wa.me/91${n.slice(-10)}" target="_blank" rel="noopener">WhatsApp</a>`);
-      }
-      return bits.length ? `<p class="seekho-chat__contacts">${bits.join(' · ')}</p>` : '';
+    function escapeAttr(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;');
     }
 
     function escapeChip(str) {
@@ -92,10 +94,50 @@
         .replace(/"/g, '&quot;');
     }
 
+    function actionsHtml(res) {
+      const actions = Array.isArray(res && res.actions) ? res.actions : [];
+      const bits = [];
+      actions.forEach((a) => {
+        if (!a || !a.href || !a.label) return;
+        const cls =
+          a.type === 'whatsapp'
+            ? 'seekho-chat__action seekho-chat__action--wa'
+            : a.type === 'call'
+              ? 'seekho-chat__action seekho-chat__action--call'
+              : 'seekho-chat__action seekho-chat__action--cta';
+        const target = a.href.startsWith('http') || a.href.startsWith('tel:') ? ' target="_blank" rel="noopener noreferrer"' : '';
+        const safeTarget = a.href.startsWith('tel:') ? '' : target;
+        bits.push(
+          `<a class="${cls}" href="${escapeAttr(a.href)}"${a.href.startsWith('http') ? ' target="_blank" rel="noopener noreferrer"' : ''}>${escapeChip(a.label)}</a>`
+        );
+      });
+      if (!bits.length && res && res.cta && res.cta.href && res.cta.label) {
+        bits.push(
+          `<a class="seekho-chat__action seekho-chat__action--cta" href="${escapeAttr(res.cta.href)}">${escapeChip(res.cta.label)}</a>`
+        );
+      }
+      if (!bits.length && res && !res.matched && res.contacts) {
+        if (res.contacts.call_href) {
+          bits.push(
+            `<a class="seekho-chat__action seekho-chat__action--call" href="${escapeAttr(res.contacts.call_href)}">Call</a>`
+          );
+        }
+        if (res.contacts.whatsapp_href) {
+          bits.push(
+            `<a class="seekho-chat__action seekho-chat__action--wa" href="${escapeAttr(res.contacts.whatsapp_href)}" target="_blank" rel="noopener noreferrer">WhatsApp</a>`
+          );
+        }
+      }
+      return bits.length ? `<div class="seekho-chat__actions">${bits.join('')}</div>` : '';
+    }
+
     function renderChips(list) {
-      chips.innerHTML = (list || []).map((r) =>
-        `<button type="button" class="seekho-chat__chip" data-prompt="${encodeURIComponent(r.prompt)}">${escapeChip(r.label)}</button>`
-      ).join('');
+      chips.innerHTML = (list || [])
+        .map(
+          (r) =>
+            `<button type="button" class="seekho-chat__chip" data-prompt="${encodeURIComponent(r.prompt)}">${escapeChip(r.label)}</button>`
+        )
+        .join('');
     }
 
     function readAnswer(res) {
@@ -118,7 +160,7 @@
       input.disabled = true;
       bubble(q, 'user');
       transcript.push({ role: 'user', text: q });
-      const typing = bubble('Seekho Bot is typing…', 'typing');
+      const typing = bubble(`${botName} is typing…`, 'typing');
       try {
         const history = transcript.slice(0, -1).slice(-8);
         const res = await api('/chatbot/ask', {
@@ -128,10 +170,16 @@
         });
         typing.remove();
         const ans = sanitizeHtml(readAnswer(res));
-        const html = ans || 'I\'m sorry, I don\'t have that information right now. Please contact Seekho 2 Wheeler Academy for assistance.';
-        const extra = res && res.matched ? '' : contactsHtml(res && res.contacts);
-        bubble(`${html}${extra}`, 'bot');
-        transcript.push({ role: 'bot', text: String(res && res.answer || '').replace(/<[^>]+>/g, ' ').trim() });
+        const html =
+          ans ||
+          "I don't have verified information about that yet. Please Call or WhatsApp Seekho 2 Wheeler Academy.";
+        bubble(`${html}${actionsHtml(res)}`, 'bot');
+        transcript.push({
+          role: 'bot',
+          text: String((res && res.answer) || '')
+            .replace(/<[^>]+>/g, ' ')
+            .trim()
+        });
         if (res && res.quick_replies) renderChips(res.quick_replies);
       } catch (err) {
         typing.remove();
@@ -144,20 +192,26 @@
       }
     }
 
-    api('/chatbot/config').then(({ data }) => {
-      greeting = data.greeting || greeting;
-      replies = data.quick_replies || [];
-      if (!greeted) {
-        bubble(sanitizeHtml(greeting), 'bot');
-        greeted = true;
-      }
-      renderChips(replies);
-    }).catch(() => {
-      if (!greeted) {
-        bubble(greeting, 'bot');
-        greeted = true;
-      }
-    });
+    api('/chatbot/config')
+      .then(({ data }) => {
+        botName = data.bot_name || botName;
+        greeting = data.greeting || data.welcome_heading || greeting;
+        replies = data.quick_replies || [];
+        if (nameEl) nameEl.textContent = botName;
+        if (welcomeEl) welcomeEl.textContent = greeting;
+        panel.setAttribute('aria-label', botName);
+        if (!greeted) {
+          bubble(sanitizeHtml(greeting), 'bot');
+          greeted = true;
+        }
+        renderChips(replies);
+      })
+      .catch(() => {
+        if (!greeted) {
+          bubble(greeting, 'bot');
+          greeted = true;
+        }
+      });
 
     launch.addEventListener('click', (e) => {
       e.preventDefault();

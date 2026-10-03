@@ -63,3 +63,12 @@ Key ambiguities (RESOLVED for Phase 3):
 - Articles 4–5 restate approved course SSOT facts (doorstep steps; bike training) — full prose bodies were not present in this REQUIREMENTS file
 - Reusable detail template: featured image, category, intro, numbered `<details>` accordion, Key Takeaways, gallery, CTA
 - SEO: meta + canonical via `BASE_URL`, BlogPosting + BreadcrumbList; sitemap includes published `/blog/:slug`
+
+## Phase 7 status (implemented in code)
+
+- Chatbot name: **Seekho 2 Wheeler AI**; welcome: **How can we help you?**
+- Extends existing widget (`public/js/chatbot.js`) + service (`server/services/chatbot.js`) — not rebuilt
+- 10 Phase 7 FAQ seeds (+ course helpers) with CTA label/href; Admin CRUD/reorder/enable + CTA edit
+- Courses / branches / women / phones / booking from existing SSOTs; official phones only (blocks 7980110273)
+- Fallback includes Call + WhatsApp action buttons; never promises Scooty → Bike auto-progression
+- `sync-content.js` upserts `chatbot_config` + `chatbot_qa` by id (never deletes unrelated rows)

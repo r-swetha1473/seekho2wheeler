@@ -66,9 +66,9 @@ const SHEET_HEADERS = {
   home_sections: ['id', 'key', 'title', 'subtitle', 'description', 'image_url', 'features_json', 'link_slug', 'is_active', 'sort_order', 'title_bold', 'created_at', 'updated_at'],
   detail_pages: ['id', 'slug', 'title', 'hero_image_url', 'body_html', 'seo_title', 'seo_description', 'is_active', 'created_at', 'updated_at'],
   why_choose: ['id', 'title', 'description', 'icon', 'is_active', 'sort_order', 'title_bold', 'link_slug', 'created_at', 'updated_at'],
-  chatbot_qa: ['id', 'question', 'keywords', 'answer', 'category', 'is_active', 'sort_order', 'created_at', 'updated_at'],
+  chatbot_qa: ['id', 'question', 'keywords', 'answer', 'category', 'is_active', 'sort_order', 'cta_label', 'cta_href', 'created_at', 'updated_at'],
   chatbot_unanswered: ['id', 'message', 'created_at'],
-  chatbot_config: ['id', 'fallback_message', 'match_threshold', 'greeting', 'quick_replies_json', 'created_at', 'updated_at'],
+  chatbot_config: ['id', 'bot_name', 'greeting', 'welcome_heading', 'fallback_message', 'match_threshold', 'phone', 'whatsapp', 'quick_replies_json', 'created_at', 'updated_at'],
   updates: ['id', 'title', 'message', 'link_url', 'image_url', 'start_date', 'end_date', 'is_active', 'sort_order', 'created_at', 'updated_at'],
   page_copy: ['id', 'page', 'slot', 'title', 'subtitle', 'body_html', 'cta_text', 'cta_link', 'is_active', 'sort_order', 'created_at', 'updated_at']
 };

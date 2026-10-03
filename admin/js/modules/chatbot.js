@@ -21,24 +21,36 @@ function paint(container, config, items, unanswered) {
     <div class="page-header">
       <div>
         <h2 class="page-header__title">Chatbot</h2>
-        <p class="page-header__subtitle">Deterministic Q&amp;A from Sheets — same question always gets the same answer</p>
+        <p class="page-header__subtitle">Seekho 2 Wheeler AI — deterministic Q&amp;A from Sheets / SSOT placeholders</p>
       </div>
       ${addBtn('Add Q&A', 'addChatQaBtn')}
     </div>
 
     <div class="card" style="margin-bottom:1.25rem">
-      <div class="card__header"><h3 class="card__title">Fallback & matching</h3></div>
+      <div class="card__header"><h3 class="card__title">Chatbot settings</h3></div>
       <div class="card__body">
         <form id="chatConfigForm">
           <div class="form-grid">
-            <div class="form-group form-group--full">
-              <label>Greeting</label>
-              <input class="form-control" name="greeting" value="${escapeHtml(config.greeting || '')}">
+            <div class="form-group">
+              <label>Bot name</label>
+              <input class="form-control" name="bot_name" value="${escapeHtml(config.bot_name || 'Seekho 2 Wheeler AI')}">
+            </div>
+            <div class="form-group">
+              <label>Welcome message</label>
+              <input class="form-control" name="greeting" value="${escapeHtml(config.greeting || config.welcome_heading || '')}" placeholder="How can we help you?">
+            </div>
+            <div class="form-group">
+              <label>Display phone (official only)</label>
+              <input class="form-control" name="phone" value="${escapeHtml(config.phone || '')}" placeholder="Uses site settings if blank">
+            </div>
+            <div class="form-group">
+              <label>WhatsApp (official only)</label>
+              <input class="form-control" name="whatsapp" value="${escapeHtml(config.whatsapp || '')}" placeholder="Uses site settings if blank">
             </div>
             <div class="form-group form-group--full">
               <label>Fallback message</label>
               ${richTextField({ name: 'fallback_message', value: config.fallback_message || '', required: true, minHeight: '80px' })}
-              <p class="form-hint">Shown when no Q&amp;A scores at or above the threshold. Use {{settings.phone}} if needed.</p>
+              <p class="form-hint">Shown when no Q&amp;A matches. Call / WhatsApp action buttons are added automatically. Placeholders: {{settings.phone}}, {{settings.whatsapp}}, {{courses.names}}, {{branches.list}}</p>
             </div>
             <div class="form-group">
               <label>Match threshold</label>
@@ -60,7 +72,7 @@ function paint(container, config, items, unanswered) {
       <div class="card__body">
         <div class="form-group">
           <label for="chatTestInput">Type a question</label>
-          <input class="form-control" id="chatTestInput" placeholder="e.g. scooty course fees">
+          <input class="form-control" id="chatTestInput" placeholder="e.g. where are your centres">
         </div>
         <button type="button" class="btn btn--outline" id="chatTestBtn" style="margin-top:0.5rem">Match</button>
         <pre id="chatTestOut" class="form-hint" style="margin-top:0.75rem;white-space:pre-wrap"></pre>
@@ -99,6 +111,7 @@ function qaTable(items) {
             <th>Order</th>
             <th>Category</th>
             <th>Question</th>
+            <th>CTA</th>
             <th>Keywords</th>
             <th>Status</th>
             <th>Actions</th>
@@ -110,7 +123,8 @@ function qaTable(items) {
               <td>${item.sort_order}</td>
               <td>${escapeHtml(item.category || '—')}</td>
               <td><strong>${escapeHtml(item.question)}</strong></td>
-              <td style="max-width:220px;font-size:0.8rem">${escapeHtml((item.keywords || '').slice(0, 80))}</td>
+              <td style="font-size:0.8rem">${item.cta_label ? `${escapeHtml(item.cta_label)} → ${escapeHtml(item.cta_href || '')}` : '—'}</td>
+              <td style="max-width:180px;font-size:0.8rem">${escapeHtml((item.keywords || '').slice(0, 80))}</td>
               <td>${item.is_active !== false ? statusBadge('active') : statusBadge('inactive')}</td>
               <td>
                 <div class="table-actions">
@@ -143,7 +157,11 @@ function bindConfig(container) {
       await api('/admin/chatbot/config', {
         method: 'PUT',
         json: {
+          bot_name: form.bot_name.value.trim(),
           greeting: form.greeting.value.trim(),
+          welcome_heading: form.greeting.value.trim(),
+          phone: form.phone.value.trim(),
+          whatsapp: form.whatsapp.value.trim(),
           fallback_message: form.fallback_message.value,
           match_threshold: Number(form.match_threshold.value),
           quick_replies: quick
@@ -169,7 +187,10 @@ function bindTest() {
         score: res.score,
         question: res.question,
         category: res.category,
-        answer: res.answer
+        answer: res.answer,
+        cta: res.cta,
+        actions: res.actions,
+        contacts: res.contacts
       }, null, 2);
     } catch (err) {
       out.textContent = err.message;
@@ -226,7 +247,7 @@ function showQaForm(item, container, items) {
           </div>
           <div class="form-group">
             <label>Category</label>
-            <input class="form-control" name="category" value="${escapeHtml(item?.category || '')}" placeholder="Pricing">
+            <input class="form-control" name="category" value="${escapeHtml(item?.category || '')}" placeholder="Courses">
           </div>
           <div class="form-group">
             <label>Display order</label>
@@ -239,7 +260,15 @@ function showQaForm(item, container, items) {
           <div class="form-group form-group--full">
             <label>Answer <span class="required">*</span></label>
             ${richTextField({ name: 'answer', value: item?.answer || '', required: true, minHeight: '120px' })}
-            <p class="form-hint">Placeholders: {{course:scooty-training.price}}, {{course:scooty-training.classes}}, {{doorstep.base_price}}, {{settings.phone}}, {{courses.names}}</p>
+            <p class="form-hint">Placeholders: {{course:basic-scooty.price}}, {{course:basic-scooty.classes}}, {{course:advanced-scooty.detail}}, {{doorstep.base_price}}, {{settings.phone}}, {{courses.names}}, {{branches.list}}, {{women.detail}}</p>
+          </div>
+          <div class="form-group">
+            <label>CTA text</label>
+            <input class="form-control" name="cta_label" value="${escapeHtml(item?.cta_label || '')}" placeholder="View Courses">
+          </div>
+          <div class="form-group">
+            <label>CTA destination</label>
+            <input class="form-control" name="cta_href" value="${escapeHtml(item?.cta_href || '')}" placeholder="/pages/courses.html">
           </div>
           <div class="form-group">
             <label class="form-check"><input type="checkbox" name="is_active" ${item?.is_active !== false ? 'checked' : ''}> Active</label>
@@ -266,6 +295,8 @@ function showQaForm(item, container, items) {
       answer: form.answer.value,
       category: form.category.value.trim(),
       sort_order: Number(form.sort_order.value || 0),
+      cta_label: form.cta_label.value.trim(),
+      cta_href: form.cta_href.value.trim(),
       is_active: form.querySelector('[name="is_active"]').checked
     };
     try {

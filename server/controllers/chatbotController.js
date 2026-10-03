@@ -15,7 +15,9 @@ exports.getPublicConfig = async (req, res, next) => {
     res.json({
       success: true,
       data: {
+        bot_name: config.bot_name,
         greeting: config.greeting,
+        welcome_heading: config.welcome_heading,
         quick_replies: config.quick_replies
       }
     });
