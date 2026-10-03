@@ -53,7 +53,7 @@ const SHEET_HEADERS = {
   enquiries: ['id', 'name', 'phone', 'email', 'message', 'status', 'createdAt', 'updatedAt'],
   branches: ['id', 'name', 'area', 'address', 'mapsLink', 'latitude', 'longitude', 'phone', 'whatsapp', 'availableCourses', 'trainerCount', 'image', 'active', 'createdAt', 'updatedAt'],
   pricing: ['id', 'name', 'slug', 'description', 'price', 'classes', 'image_url', 'badge', 'is_active', 'sort_order', 'title_bold', 'features', 'courseName', 'duration', 'image', 'displayOrder', 'active', 'created_at', 'updated_at', 'createdAt', 'updatedAt'],
-  blogs: ['id', 'title', 'slug', 'featuredImage', 'metaTitle', 'metaDescription', 'content', 'status', 'scheduledAt', 'publishedAt', 'title_bold', 'createdAt', 'updatedAt'],
+  blogs: ['id', 'title', 'slug', 'featuredImage', 'metaTitle', 'metaDescription', 'content', 'shortDescription', 'category', 'galleryCategory', 'status', 'scheduledAt', 'publishedAt', 'title_bold', 'createdAt', 'updatedAt'],
   testimonials: ['id', 'name', 'headline', 'review', 'rating', 'photo', 'videoUrl', 'type', 'displayOrder', 'active', 'title_bold', 'createdAt', 'updatedAt'],
   banners: ['id', 'title', 'subtitle', 'ctaText', 'ctaLink', 'image', 'displayOrder', 'active', 'title_bold', 'createdAt', 'updatedAt'],
   gallery: ['id', 'title', 'category', 'image', 'displayOrder', 'active', 'title_bold', 'createdAt', 'updatedAt'],

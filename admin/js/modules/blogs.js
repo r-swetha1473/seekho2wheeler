@@ -132,6 +132,18 @@ function showForm(blog, container) {
             <label>Schedule Date</label>
             <input class="form-control" type="datetime-local" name="scheduledAt" value="${scheduledVal}">
           </div>
+          <div class="form-group">
+            <label>Category</label>
+            <input class="form-control" name="category" value="${escapeHtml(blog?.category || '')}" placeholder="e.g. Beginner Tips">
+          </div>
+          <div class="form-group">
+            <label>Gallery Category</label>
+            <input class="form-control" name="galleryCategory" value="${escapeHtml(blog?.galleryCategory || '')}" placeholder="e.g. Scooty Training">
+          </div>
+          <div class="form-group form-group--full">
+            <label>Short Description</label>
+            <textarea class="form-control" name="shortDescription" rows="2" placeholder="Shown on homepage and blog cards">${escapeHtml(blog?.shortDescription || '')}</textarea>
+          </div>
           <div class="form-group form-group--full">
             <label>Meta Title</label>
             <input class="form-control" name="metaTitle" value="${escapeHtml(blog?.metaTitle || '')}">

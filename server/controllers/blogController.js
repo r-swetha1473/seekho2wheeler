@@ -2,23 +2,37 @@ const slugify = require('slugify');
 const db = require('../services/db');
 const { processAndSave, deleteUpload } = require('../services/upload');
 const { sanitizeHtml, parseBool } = require('../utils/sanitizeHtml');
+const { mergeArticle, mergePublicList, getArticle } = require('../content/blogs');
 
 function makeSlug(title, existingSlug) {
   return existingSlug || slugify(title, { lower: true, strict: true });
 }
 
+function isPublicBlog(b) {
+  if (!b) return false;
+  if (b.status === 'draft' || b.status === 'archived') return false;
+  if (b.scheduledAt && new Date(b.scheduledAt) > new Date()) return false;
+  return true;
+}
+
 exports.listPublic = async (req, res, next) => {
   try {
-    const now = new Date();
     let blogs = await db.getAll('blogs');
-    blogs = blogs.filter((b) => {
-      if (b.status === 'draft') return false;
-      if (b.scheduledAt && new Date(b.scheduledAt) > now) return false;
-      return b.status !== 'archived';
+    blogs = blogs.filter(isPublicBlog);
+    let merged = mergePublicList(blogs).filter(isPublicBlog);
+    merged.sort((a, b) => {
+      const ao = a.sortOrder || 99;
+      const bo = b.sortOrder || 99;
+      if (ao !== bo) return ao - bo;
+      return new Date(b.publishedAt || b.createdAt) - new Date(a.publishedAt || a.createdAt);
     });
-    blogs.sort((a, b) => new Date(b.publishedAt || b.createdAt) - new Date(a.publishedAt || a.createdAt));
-    if (req.query.limit) blogs = blogs.slice(0, Number(req.query.limit));
-    res.json({ success: true, data: blogs });
+    if (req.query.limit) merged = merged.slice(0, Number(req.query.limit));
+    // List cards: omit heavy branch payloads
+    const data = merged.map((b) => {
+      const { branches, sections, takeaways, intro, ...card } = b;
+      return card;
+    });
+    res.json({ success: true, data });
   } catch (err) {
     next(err);
   }
@@ -27,11 +41,22 @@ exports.listPublic = async (req, res, next) => {
 exports.getBySlug = async (req, res, next) => {
   try {
     const blogs = await db.getAll('blogs');
-    const found = blogs.find((b) => b.slug === req.params.slug);
-    if (!found || found.status === 'draft') {
+    let found = blogs.find((b) => b.slug === req.params.slug);
+    if (!found) {
+      const ssot = getArticle(req.params.slug);
+      if (ssot) found = ssot;
+    }
+    if (!found || !isPublicBlog({ ...found, status: found.status || 'published' })) {
       return res.status(404).json({ success: false, message: 'Blog not found' });
     }
-    res.json({ success: true, data: { ...found, content: sanitizeHtml(found.content) } });
+    const merged = mergeArticle(found);
+    res.json({
+      success: true,
+      data: {
+        ...merged,
+        content: sanitizeHtml(merged.content || '')
+      }
+    });
   } catch (err) {
     next(err);
   }
@@ -49,7 +74,7 @@ exports.listAdmin = async (req, res, next) => {
 
 exports.create = async (req, res, next) => {
   try {
-    const { title, content, metaTitle, metaDescription, status, scheduledAt } = req.body;
+    const { title, content, metaTitle, metaDescription, status, scheduledAt, category, shortDescription, galleryCategory } = req.body;
     if (!title || !content) {
       return res.status(400).json({ success: false, message: 'Title and content are required' });
     }
@@ -70,6 +95,9 @@ exports.create = async (req, res, next) => {
       featuredImage,
       metaTitle: metaTitle || title,
       metaDescription: metaDescription || '',
+      category: category || '',
+      shortDescription: shortDescription || metaDescription || '',
+      galleryCategory: galleryCategory || '',
       status: status || 'published',
       scheduledAt: scheduledAt || null,
       publishedAt: status === 'scheduled' ? null : new Date().toISOString(),

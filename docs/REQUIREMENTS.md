@@ -54,3 +54,12 @@ Key ambiguities (RESOLVED for Phase 3):
 - Gallery category: `Women Riders` via existing Admin Gallery API
 - Only statistic: "Around 70% of our candidates are women"
 - Final CTA: "Ready to Start Your First Ride?" / "Book Ladies Training" → existing booking
+
+## Phase 6 status (implemented in code)
+
+- Blog SSOT: `server/content/blogs.js` (exactly 6 articles; upsert by slug via `sync-content.js`)
+- Homepage "Riding Tips & Insights" shows 6 cards (3+3 desktop) via `/api/blogs?limit=6`
+- Articles 1–3 preserve existing slugs; Article 6 `our-training-centres-across-kolkata` branches from `locations.js`
+- Articles 4–5 restate approved course SSOT facts (doorstep steps; bike training) — full prose bodies were not present in this REQUIREMENTS file
+- Reusable detail template: featured image, category, intro, numbered `<details>` accordion, Key Takeaways, gallery, CTA
+- SEO: meta + canonical via `BASE_URL`, BlogPosting + BreadcrumbList; sitemap includes published `/blog/:slug`

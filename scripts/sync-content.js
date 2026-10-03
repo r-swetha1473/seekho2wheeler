@@ -20,10 +20,12 @@
  *   BASE_URL=https://seekho2wheeler.vercel.app
  *   GOOGLE_MAPS_EMBED_KEY=<Maps Embed API key for place-mode embeds>
  *
- * What this syncs (Phase 2):
+ * What this syncs:
  *   - settings: official social URLs, Main Branch address, GMB maps URL
  *     (only fills placeholders / missing fields; keeps custom Admin edits
  *      for non-placeholder socials)
+ *   - blogs: upsert the six Riding Tips articles by slug (never deletes
+ *     unrelated Sheet rows)
  */
 require('dotenv').config();
 
@@ -35,6 +37,7 @@ const {
   mapsSearchUrl,
   isPlaceholderSocial
 } = require('../server/config/mainBranch');
+const { blogSeedRows } = require('../server/content/blogs');
 
 function log(msg) {
   console.log(`[sync-content] ${msg}`);
@@ -170,11 +173,15 @@ async function main() {
   }
 
   await syncSettings();
-
-  // Reserved helpers for later phases (blogs/locations by slug) — no-op payload today.
-  await upsertByKey('blogs', 'slug', []);
+  await syncBlogs();
 
   log('done (idempotent; unrelated Sheet rows untouched)');
+}
+
+async function syncBlogs() {
+  const rows = blogSeedRows();
+  const result = await upsertByKey('blogs', 'slug', rows);
+  log(`blogs: created=${result.created} updated=${result.updated} existingTotal=${result.total}`);
 }
 
 main().catch((err) => {
