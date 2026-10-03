@@ -1,15 +1,57 @@
-/* Shared header + footer injection */
+/* Shared header + footer injection — Seekho customer chrome */
 (function () {
   const home = '/';
   const p = (file) => `/pages/${file}`;
 
+  const WORDMARK = '/images/brand/seekho-wordmark.webp';
+  const WORDMARK_FALLBACK = '/images/brand/seekho-wordmark.png';
+  const MARK = '/images/brand/seekho-master.webp';
+  const MARK_FALLBACK = '/images/brand/seekho-master.png';
+
+  function brandLogo(opts) {
+    const extra = opts.className || '';
+    const label = opts.label || 'Seekho 2 Wheeler Home';
+    return `
+      <a class="logo logo--responsive ${extra}" href="${home}" aria-label="${label}">
+        <img class="logo__img logo__img--mark" src="${MARK}" alt="" width="42" height="42" decoding="async"
+          onerror="this.onerror=null;this.src='${MARK_FALLBACK}'">
+        <img class="logo__img logo__img--wordmark" src="${WORDMARK}" alt="Seekho 2 Wheeler" width="220" height="40" decoding="async"
+          onerror="this.onerror=null;this.src='${WORDMARK_FALLBACK}'">
+      </a>`;
+  }
+
+  function ensureCustomerTheme() {
+    document.documentElement.classList.add('customer-site');
+    if (document.body) document.body.classList.add('customer-site');
+    else document.addEventListener('DOMContentLoaded', () => document.body.classList.add('customer-site'));
+
+    if (!document.querySelector('link[data-customer-theme]')) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = '/css/customer-theme.css';
+      link.setAttribute('data-customer-theme', '1');
+      document.head.appendChild(link);
+    }
+
+    const icons = [
+      { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/images/brand/favicon-32.png' },
+      { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/images/brand/favicon-16.png' },
+      { rel: 'apple-touch-icon', href: '/images/brand/apple-touch-icon.png' },
+      { rel: 'shortcut icon', href: '/images/brand/favicon-32.png' }
+    ];
+    icons.forEach((spec) => {
+      const sel = `link[rel="${spec.rel}"]${spec.sizes ? `[sizes="${spec.sizes}"]` : ''}`;
+      if (document.querySelector(sel)) return;
+      const el = document.createElement('link');
+      Object.entries(spec).forEach(([k, v]) => el.setAttribute(k, v));
+      document.head.appendChild(el);
+    });
+  }
+
   const headerHTML = `
   <header class="site-header">
     <div class="header__inner">
-      <a class="logo" href="${home}" aria-label="Seekho Two Wheeler Academy Home">
-        <div class="logo__mark"><i class="fa-solid fa-motorcycle"></i></div>
-        <div class="logo__text">SEEKHO TWO WHEELER<span data-setting="logo_subline">ACADEMY · KOLKATA</span></div>
-      </a>
+      ${brandLogo({ label: 'Seekho 2 Wheeler Home' })}
       <nav class="nav" id="mainNav" aria-label="Primary">
         <a href="${home}" data-copy="layout.nav_home" data-copy-field="title">Home</a>
         <a href="${p('about.html')}" data-copy="layout.nav_about" data-copy-field="title">About Us</a>
@@ -43,7 +85,7 @@
       <div class="final-cta__icon"><i class="fa-solid fa-calendar-check"></i></div>
       <h2 data-setting="footer_cta_title">Ready To Start Your Riding Journey?</h2>
       <p data-setting="footer_cta_text">Join thousands of confident riders trained at Seekho Two Wheeler Academy.</p>
-      <a href="${p('booking.html')}" class="btn btn--dark btn--lg" data-href-setting="header_cta_link"><span data-setting="footer_cta_button">Register & Book Now</span></a>
+      <a href="${p('booking.html')}" class="btn btn--primary btn--lg" data-href-setting="header_cta_link"><span data-setting="footer_cta_button">Register & Book Now</span></a>
       <div class="final-cta__trust">
         <span><i class="fa-solid fa-check"></i> <span data-copy="layout.footer_trust" data-copy-field="title">Easy Registration</span></span>
         <span><i class="fa-solid fa-bolt"></i> <span data-copy="layout.footer_trust" data-copy-field="subtitle">Quick Booking</span></span>
@@ -54,10 +96,7 @@
   <footer class="site-footer">
     <div class="container footer__grid">
       <div class="footer__brand">
-        <a class="logo" href="${home}">
-          <div class="logo__mark"><i class="fa-solid fa-motorcycle"></i></div>
-          <div class="logo__text">SEEKHO TWO WHEELER<span data-setting="logo_subline">ACADEMY</span></div>
-        </a>
+        ${brandLogo({ label: 'Seekho 2 Wheeler Home', className: 'logo--footer' })}
         <p class="footer__tagline" data-setting="tagline">Empowering Independence Through Safe Riding since 2018.</p>
         <div class="socials" aria-label="Social links">
           <a href="https://www.facebook.com/kolkatascootybiketraining" data-social="facebook" aria-label="Facebook" target="_blank" rel="noopener"><i class="fa-brands fa-facebook-f"></i></a>
@@ -196,6 +235,7 @@
   }
 
   function inject() {
+    ensureCustomerTheme();
     const headerMount = document.getElementById('site-header-mount');
     const footerMount = document.getElementById('site-footer-mount');
     if (headerMount) headerMount.innerHTML = headerHTML;
@@ -210,6 +250,8 @@
       document.body.appendChild(sc);
     }
   }
+
+  ensureCustomerTheme();
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', inject);

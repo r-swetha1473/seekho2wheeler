@@ -14,7 +14,10 @@
     wrap.innerHTML = `
       <div class="seekho-chat__panel" id="seekhoChatPanel" hidden role="dialog" aria-label="Seekho chat" aria-modal="true">
         <div class="seekho-chat__head">
-          <strong>Seekho Assistant</strong>
+          <div class="seekho-chat__brand">
+            <img src="/images/brand/seekho-master.png" alt="" width="28" height="28" decoding="async">
+            <strong>Seekho 2 Wheeler AI</strong>
+          </div>
           <button type="button" class="seekho-chat__close" id="seekhoChatClose" aria-label="Close chat">&times;</button>
         </div>
         <div class="seekho-chat__msgs" id="seekhoChatMsgs"></div>
