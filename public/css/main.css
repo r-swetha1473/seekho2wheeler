@@ -3401,3 +3401,83 @@ ol.rich-html li { margin: 0.2em 0; }
   }
 }
 
+
+/* ===== Phase 5: Women's Training ===== */
+.empower-usp-grid,
+.women-usp-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 1.25rem 0 1.5rem;
+}
+.empower-usp,
+.women-usp {
+  background: var(--white, #fff);
+  border: 1px solid var(--border, #e8e8e8);
+  border-radius: var(--radius-lg, 12px);
+  padding: 1rem 1.05rem;
+  min-width: 0;
+}
+.empower-usp__icon,
+.women-usp__icon {
+  width: 2.25rem;
+  height: 2.25rem;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(245, 183, 0, 0.14);
+  color: var(--primary-dark, #1a3a6b);
+  margin-bottom: 0.65rem;
+}
+.empower-usp__title,
+.women-usp__title {
+  font-family: var(--font-display, Outfit, sans-serif);
+  font-size: 1rem;
+  margin: 0 0 0.35rem;
+  color: var(--dark, #222);
+  overflow-wrap: anywhere;
+}
+.empower-usp__text,
+.women-usp__text {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text-muted, #555);
+}
+.empower-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+.women-intro-grid {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 2rem;
+  align-items: center;
+}
+.women-stat {
+  text-align: center;
+  padding: 1.5rem 1rem;
+  border-radius: var(--radius-lg, 12px);
+  background: linear-gradient(135deg, rgba(26, 58, 107, 0.08), rgba(245, 183, 0, 0.12));
+}
+.women-stat__value {
+  margin: 0;
+  font-family: var(--font-display, Outfit, sans-serif);
+  font-size: clamp(1.25rem, 3vw, 1.75rem);
+  font-weight: 700;
+  color: var(--dark, #222);
+  overflow-wrap: anywhere;
+}
+@media (max-width: 1024px) {
+  .empower-usp-grid,
+  .women-usp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 720px) {
+  .empower-usp-grid,
+  .women-usp-grid,
+  .women-intro-grid { grid-template-columns: 1fr; }
+  .empower-actions { width: 100%; }
+  .empower-actions .btn { width: 100%; justify-content: center; }
+}

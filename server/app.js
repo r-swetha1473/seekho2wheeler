@@ -150,13 +150,19 @@ app.get('/blog/:slug', (req, res) => {
   res.sendFile(path.join(publicDir, 'pages/blog-detail.html'));
 });
 
+/* Phase 5: preserve legacy women URL without duplicate content */
+app.get('/p/women-empowerment', (req, res) => {
+  res.redirect(301, '/women-training');
+});
+
 app.get('/p/:slug', (req, res) => {
   res.sendFile(path.join(publicDir, 'pages/detail.html'));
 });
 
-/* Phase 2 sitemap lists /women-training — serve approved women content */
+/* Phase 5: canonical Women's Training page */
 app.get('/women-training', (req, res) => {
-  res.redirect(302, '/p/women-empowerment');
+  const { renderWomenTrainingHtml } = require('./services/womenRender');
+  res.type('html').send(renderWomenTrainingHtml());
 });
 
 app.get('/locations/:slug', (req, res) => {

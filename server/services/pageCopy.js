@@ -127,10 +127,31 @@ const COPY_SEED = [
     cta_text: 'Book Ladies Training',
     cta_link: '/pages/booking.html'
   }, 58),
-  slot('home', 'women_l1', { title: 'Female-friendly batches & patient trainers' }, 58.1),
-  slot('home', 'women_l2', { title: 'Non-cyclists learn from absolute zero' }, 58.2),
-  slot('home', 'women_l3', { title: 'Guided road practice for real confidence' }, 58.3),
-  slot('home', 'women_l4', { title: 'Flexible morning & evening slots' }, 58.4),
+  slot('home', 'women_view', { title: 'View Details', cta_link: '/women-training' }, 58.05),
+  slot('home', 'women_l1', {
+    title: 'Female-friendly batches',
+    subtitle: 'Female-friendly batches with patient trainers in a supportive environment.'
+  }, 58.1),
+  slot('home', 'women_l2', {
+    title: 'Learn from absolute zero',
+    subtitle: 'Non-cyclists learn from absolute zero — no prior riding experience required.'
+  }, 58.2),
+  slot('home', 'women_l3', {
+    title: 'Guided road practice',
+    subtitle: 'Guided road practice for real confidence on Kolkata roads.'
+  }, 58.3),
+  slot('home', 'women_l4', {
+    title: 'Flexible training slots',
+    subtitle: 'Flexible morning and evening slots to fit around your day.'
+  }, 58.4),
+  slot('home', 'women_l5', {
+    title: 'Supportive environment',
+    subtitle: 'Dedicated ladies batches in a safe, supportive environment.'
+  }, 58.5),
+  slot('home', 'women_l6', {
+    title: 'Built for independence',
+    subtitle: 'Made for women who want independence — to commute, drop kids to school, and move through the city without waiting on anyone.'
+  }, 58.6),
   slot('home', 'contact_head', {
     subtitle: 'Contact',
     title: 'Get In Touch',

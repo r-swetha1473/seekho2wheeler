@@ -14,6 +14,7 @@ const {
   getCourse,
   resolveSlug
 } = require('../content/courses');
+const { chatbotWomenBlurb, WOMEN_TRAINING } = require('../content/womenTraining');
 
 const COURSE_SLUG_ALIASES = {
   'scooty-basic': 'basic-scooty',
@@ -99,7 +100,7 @@ const QA_SEED = [
     id: 'qa-ladies-price',
     question: 'What is the price of ladies training?',
     keywords: 'ladies, women, ladies training, ladies batch, women training, price, fees',
-    answer: 'Women can join our regular courses such as Basic Scooty ({{course:basic-scooty.price}}, {{course:basic-scooty.classes}} classes). See /women-training for the women learning page.',
+    answer: 'Women can join our regular courses such as Basic Scooty ({{course:basic-scooty.price}}, {{course:basic-scooty.classes}}). See /women-training for Women\'s Training at Seekho 2 Wheeler.',
     category: 'Pricing',
     is_active: true,
     sort_order: 8
@@ -121,6 +122,15 @@ const QA_SEED = [
     category: 'Courses',
     is_active: true,
     sort_order: 13
+  },
+  {
+    id: 'qa-women',
+    question: 'Do you offer training for women?',
+    keywords: 'women, ladies, ladies training, women training, female, empowerment',
+    answer: '{{women.detail}} Book via {{women.book}}.',
+    category: 'Women',
+    is_active: true,
+    sort_order: 14
   },
   {
     id: 'qa-booking',
@@ -311,6 +321,12 @@ function resolvePlaceholder(path, ctx) {
     if (parts[1] === 'detail' && parts[2]) return chatbotBranchDetail(parts[2]);
     if (parts[1] && getLocation(parts[1])) return chatbotBranchDetail(parts[1]);
     return '';
+  }
+  if (parts[0] === 'women') {
+    if (parts[1] === 'detail') return chatbotWomenBlurb();
+    if (parts[1] === 'book') return WOMEN_TRAINING.bookCta.href;
+    if (parts[1] === 'page') return '/women-training';
+    return chatbotWomenBlurb();
   }
   return '';
 }

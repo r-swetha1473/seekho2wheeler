@@ -23,6 +23,7 @@
     { "src": "/locations/(.*)", "dest": "/api/index.js" },
     { "src": "/courses", "dest": "/api/index.js" },
     { "src": "/courses/(.*)", "dest": "/api/index.js" },
+    { "src": "/women-training", "dest": "/api/index.js" },
     { "src": "/admin", "dest": "/admin/index.html" },
     { "src": "/admin/(.*)", "dest": "/admin/$1" },
     { "src": "/(.*)", "dest": "/public/$1" }
