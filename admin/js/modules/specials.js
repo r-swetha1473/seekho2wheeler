@@ -1,4 +1,5 @@
 import { api, toast, confirm, escapeHtml, addBtn, uiIcon, ICONS } from '../admin.js';
+import { imageFieldHtml, bindImageFields } from '../imageField.js';
 
 const TYPES = [
   ['hero', 'Hero'],
@@ -100,7 +101,7 @@ function editor(container, row) {
         ${field('Heading', 'heroHeading', page.heroHeading)}
         ${field('Subheading', 'heroSubheading', page.heroSubheading)}
         <div class="form-group form-group--full"><label>Description</label><textarea class="form-control" name="heroDescription" rows="3">${escapeHtml(page.heroDescription || '')}</textarea></div>
-        ${field('Image link', 'heroImage', page.heroImage)}
+        ${imageFieldHtml({ name: 'heroImage', label: 'Hero image', value: page.heroImage, category: 'pages' })}
       `)}
       ${block('tag', 'Offer and pricing', 'The price visitors see on this page.', `
         ${field('Offer price', 'price', page.price)}
@@ -126,7 +127,7 @@ function editor(container, row) {
         <div class="form-group form-group--full"><label>Search description</label><textarea class="form-control" name="seoDescription" rows="2">${escapeHtml(page.seoDescription || '')}</textarea></div>
         ${field('Share title', 'ogTitle', page.ogTitle)}
         ${field('Share description', 'ogDescription', page.ogDescription)}
-        ${field('Share image link', 'ogImage', page.ogImage)}
+        ${imageFieldHtml({ name: 'ogImage', label: 'Share image', value: page.ogImage, category: 'pages' })}
       `)}
       ${block('check', 'Publishing', 'A published page is public and can appear in the menu.', `
         <div class="form-group"><label class="form-check"><input type="checkbox" name="active" ${page.active !== false ? 'checked' : ''}> Visible</label></div>
@@ -145,6 +146,7 @@ function editor(container, row) {
   mount.addEventListener('click', (event) => {
     if (event.target.matches('[data-remove]')) event.target.closest('.card')?.remove();
   });
+  bindImageFields(container);
   document.getElementById('backSpecials').addEventListener('click', () => load(container));
   document.getElementById('cancelSpecial').addEventListener('click', () => load(container));
   document.getElementById('saveSpecial').addEventListener('click', () => save(container, page));

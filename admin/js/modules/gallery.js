@@ -1,10 +1,11 @@
 import {
   api, toast, confirm, openModal, closeModal,
-  escapeHtml, statusBadge, setupImagePreview, setupMultiImagePreview, imagePreview,
+  escapeHtml, statusBadge, setupMultiImagePreview, imagePreview,
   prepareImageFiles, renderUploadProgress, clearUploadProgress,
   iconBtn, addBtn
 } from '../admin.js';
 import { titleBoldToggle } from '../richtext.js';
+import { imageFieldHtml, bindImageFields } from '../imageField.js';
 
 const CATEGORIES = [
   'Scooty Training',
@@ -236,12 +237,7 @@ function showEditForm(item, container) {
         <div class="form-group">
           <label class="form-check"><input type="checkbox" name="active" ${item.active !== false ? 'checked' : ''}> Active</label>
         </div>
-        <div class="form-group">
-          <label>Replace Image</label>
-          <input class="form-control" type="file" name="image" accept="image/jpeg,image/png,image/webp,image/gif">
-          <p class="form-hint">Max 5MB · Cloudinary URL stored in Sheets</p>
-          <div id="editPreview">${item.image ? imagePreview(item.image) : ''}</div>
-        </div>
+        ${imageFieldHtml({ name: 'image', label: 'Image', value: item.image, category: 'gallery' })}
       </form>
     `,
     footer: `
@@ -250,7 +246,7 @@ function showEditForm(item, container) {
     `
   });
 
-  setupImagePreview(document.querySelector('#editGalleryForm input[name="image"]'), document.getElementById('editPreview'));
+  bindImageFields(document.getElementById('editGalleryForm'));
   document.getElementById('cancelEdit').addEventListener('click', closeModal);
 
   document.getElementById('saveEdit').addEventListener('click', async () => {
@@ -258,22 +254,14 @@ function showEditForm(item, container) {
     const fd = new FormData(form);
     fd.set('active', form.querySelector('[name="active"]').checked ? 'true' : 'false');
     fd.set('title_bold', form.querySelector('[name="title_bold"]').checked ? 'true' : 'false');
-    const progressEl = document.getElementById('uploadProgressSlot') || document.getElementById('editPreview');
     const saveBtn = document.getElementById('saveEdit');
     saveBtn.disabled = true;
 
     try {
-      const fileInput = form.querySelector('[name="image"]');
-      if (fileInput?.files?.[0]) {
-        const [compressed] = await prepareImageFiles(fileInput.files, { maxWidth: 1600, maxHeight: 1600 });
-        fd.set('image', compressed, compressed.name);
-      }
       await api(`/admin/gallery/${item.id}`, {
         method: 'PUT',
-        formData: fd,
-        onProgress: (pct) => renderUploadProgress(progressEl, pct)
+        formData: fd
       });
-      clearUploadProgress(progressEl);
       toast('Gallery item updated', 'success');
       closeModal();
       const cat = document.getElementById('categoryFilter')?.value || 'all';

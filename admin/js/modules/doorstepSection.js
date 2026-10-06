@@ -1,9 +1,9 @@
 import {
   api, toast,
-  escapeHtml, setupImagePreview, imagePreview,
-  prepareImageFiles, renderUploadProgress, clearUploadProgress
+  escapeHtml
 } from '../admin.js';
 import { richTextField, titleBoldToggle, syncRichText, validateRichText, bindRichText } from '../richtext.js';
+import { imageFieldHtml, bindImageFields } from '../imageField.js';
 
 function strip(html) {
   return (window.SeekhoSanitize && window.SeekhoSanitize.stripHtml)
@@ -62,10 +62,7 @@ function paint(container, section, limits) {
               <label class="form-check"><input type="checkbox" name="is_active" ${section.is_active !== false ? 'checked' : ''}> Active on home page</label>
             </div>
             <div class="form-group form-group--full">
-              <label>Image</label>
-              <input class="form-control" type="file" name="image" accept="image/jpeg,image/png,image/webp,image/gif">
-              <p class="form-hint">Max 5MB · Cloudinary URL stored in Sheets</p>
-              <div id="doorstepSectionPreview">${section.image_url ? imagePreview(section.image_url) : ''}</div>
+              ${imageFieldHtml({ name: 'image_url', label: 'Image', value: section.image_url, category: 'home' })}
             </div>
             <div class="form-group form-group--full">
               <label>Services</label>
@@ -81,7 +78,7 @@ function paint(container, section, limits) {
   `;
 
   bindRichText(container);
-  setupImagePreview(container.querySelector('[name="image"]'), document.getElementById('doorstepSectionPreview'));
+  bindImageFields(container);
 
   const listEl = document.getElementById('featureRows');
 
@@ -213,22 +210,16 @@ function paint(container, section, limits) {
     fd.set('is_active', form.querySelector('[name="is_active"]').checked ? 'true' : 'false');
     fd.set('title_bold', form.querySelector('[name="title_bold"]').checked ? 'true' : 'false');
     fd.set('features_json', JSON.stringify(feats));
+    const imageValue = form.querySelector('[name="image_url"]');
+    fd.set('image_url', imageValue ? imageValue.value : '');
 
     const btn = form.querySelector('[type="submit"]');
     btn.disabled = true;
-    const progressEl = document.getElementById('doorstepSectionPreview');
     try {
-      const fileInput = form.querySelector('[name="image"]');
-      if (fileInput?.files?.[0]) {
-        const [compressed] = await prepareImageFiles(fileInput.files, { maxWidth: 1200, maxHeight: 900 });
-        fd.set('image', compressed, compressed.name);
-      }
       await api('/admin/home-sections/doorstep', {
         method: 'PUT',
-        formData: fd,
-        onProgress: (pct) => renderUploadProgress(progressEl, pct)
+        formData: fd
       });
-      clearUploadProgress(progressEl);
       toast('Doorstep section saved', 'success');
       await render(container);
     } catch (err) {

@@ -1,10 +1,10 @@
 import {
   api, toast, confirm, openModal, closeModal,
-  escapeHtml, statusBadge, setupImagePreview, imagePreview,
-  prepareImageFiles, renderUploadProgress, clearUploadProgress,
+  escapeHtml, statusBadge,
   iconBtn, addBtn
 } from '../admin.js';
 import { richTextField, syncRichText } from '../richtext.js';
+import { imageFieldHtml, bindImageFields } from '../imageField.js';
 
 let pages = [];
 
@@ -155,12 +155,7 @@ function showForm(item, container) {
             <label>Body (leave empty for “Details coming soon”)</label>
             ${richTextField({ name: 'body_html', value: item?.body_html || '', minHeight: '180px' })}
           </div>
-          <div class="form-group form-group--full">
-            <label>Hero image</label>
-            <input class="form-control" type="file" name="image" accept="image/jpeg,image/png,image/webp,image/gif">
-            <p class="form-hint">Max 5MB · Cloudinary URL stored in Sheets</p>
-            <div id="detailPagePreview">${item?.hero_image_url ? imagePreview(item.hero_image_url) : ''}</div>
-          </div>
+          ${imageFieldHtml({ name: 'hero_image_url', label: 'Hero image', value: item?.hero_image_url, category: 'pages' })}
         </div>
       </form>
     `,
@@ -178,7 +173,7 @@ function showForm(item, container) {
   });
   form.slug.addEventListener('input', () => { slugManual = true; });
 
-  setupImagePreview(form.querySelector('[name="image"]'), document.getElementById('detailPagePreview'));
+  bindImageFields(form);
   document.getElementById('cancelDetailPage').addEventListener('click', closeModal);
 
   document.getElementById('saveDetailPage').addEventListener('click', async () => {
@@ -194,24 +189,17 @@ function showForm(item, container) {
     fd.set('seo_description', form.seo_description.value.trim());
     fd.set('body_html', form.body_html.value);
     fd.set('is_active', form.querySelector('[name="is_active"]').checked ? 'true' : 'false');
+    fd.set('hero_image_url', form.hero_image_url ? form.hero_image_url.value : '');
 
     const btn = document.getElementById('saveDetailPage');
     btn.disabled = true;
-    const progressEl = document.getElementById('detailPagePreview');
     try {
-      const fileInput = form.querySelector('[name="image"]');
-      if (fileInput?.files?.[0]) {
-        const [compressed] = await prepareImageFiles(fileInput.files, { maxWidth: 1600, maxHeight: 900 });
-        fd.set('image', compressed, compressed.name);
-      }
       const opts = {
         method: isEdit ? 'PUT' : 'POST',
-        formData: fd,
-        onProgress: (pct) => renderUploadProgress(progressEl, pct)
+        formData: fd
       };
       if (isEdit) await api(`/admin/detail-pages/${item.id}`, opts);
       else await api('/admin/detail-pages', opts);
-      clearUploadProgress(progressEl);
       toast(isEdit ? 'Page updated' : 'Page created', 'success');
       closeModal();
       await loadPages(container);

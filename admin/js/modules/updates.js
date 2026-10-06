@@ -1,9 +1,9 @@
 import {
   api, toast, confirm, openModal, closeModal,
-  escapeHtml, statusBadge, setupImagePreview, imagePreview,
-  prepareImageFiles, renderUploadProgress, clearUploadProgress,
+  escapeHtml, statusBadge,
   iconBtn, addBtn
 } from '../admin.js';
+import { imageFieldHtml, bindImageFields } from '../imageField.js';
 
 export default async function render(container) {
   container.innerHTML = '<div class="loading"><div class="loading__spinner"></div> Loading updates…</div>';
@@ -196,12 +196,7 @@ function showForm(item, container, items) {
           <div class="form-group">
             <label class="form-check"><input type="checkbox" name="is_active" ${item?.is_active !== false ? 'checked' : ''}> Active</label>
           </div>
-          <div class="form-group form-group--full">
-            <label>Flyer / image (optional)</label>
-            <input class="form-control" type="file" name="image" accept="image/jpeg,image/png,image/webp,image/gif">
-            <p class="form-hint">Optional poster. Client wrote “fly”; this field covers a flyer image.</p>
-            <div id="updatePreview">${item?.image_url ? imagePreview(item.image_url) : ''}</div>
-          </div>
+          ${imageFieldHtml({ name: 'image_url', label: 'Flyer image', value: item?.image_url, category: 'updates' })}
         </div>
       </form>
     `,
@@ -211,7 +206,7 @@ function showForm(item, container, items) {
     `
   });
 
-  setupImagePreview(document.querySelector('#updateForm input[name="image"]'), document.getElementById('updatePreview'));
+  bindImageFields(document.getElementById('updateForm'));
   document.getElementById('cancelUpdate').addEventListener('click', closeModal);
   document.getElementById('saveUpdate').addEventListener('click', async () => {
     const form = document.getElementById('updateForm');
@@ -220,21 +215,13 @@ function showForm(item, container, items) {
     fd.set('is_active', form.querySelector('[name="is_active"]').checked ? 'true' : 'false');
     const btn = document.getElementById('saveUpdate');
     btn.disabled = true;
-    const progressEl = document.getElementById('uploadProgressSlot') || document.getElementById('updatePreview');
     try {
-      const fileInput = form.querySelector('[name="image"]');
-      if (fileInput?.files?.[0]) {
-        const [compressed] = await prepareImageFiles(fileInput.files, { maxWidth: 1200, maxHeight: 900 });
-        fd.set('image', compressed, compressed.name);
-      }
       const opts = {
         method: isEdit ? 'PUT' : 'POST',
-        formData: fd,
-        onProgress: (pct) => renderUploadProgress(progressEl, pct)
+        formData: fd
       };
       if (isEdit) await api(`/admin/updates/${item.id}`, opts);
       else await api('/admin/updates', opts);
-      clearUploadProgress(progressEl);
       toast(isEdit ? 'Update saved' : 'Update created', 'success');
       closeModal();
       await render(container);

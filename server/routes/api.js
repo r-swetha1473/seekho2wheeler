@@ -23,6 +23,7 @@ const pageCopy = require('../controllers/pageCopyController');
 const locations = require('../controllers/locationController');
 const menus = require('../controllers/menuController');
 const specials = require('../controllers/specialController');
+const mediaUploads = require('../controllers/uploadController');
 const dashboard = require('../controllers/dashboardController');
 
 const router = express.Router();
@@ -62,6 +63,8 @@ router.get('/auth/me', authRequired, auth.me);
 router.post('/auth/change-password', authRequired, auth.changePassword);
 
 /* ---------- Admin Dashboard ---------- */
+router.post('/admin/uploads', authRequired, upload.single('image'), mediaUploads.create);
+
 router.get('/admin/stats', authRequired, dashboard.stats);
 router.get('/admin/notifications', authRequired, dashboard.notifications);
 router.patch('/admin/notifications/:id/read', authRequired, dashboard.markRead);

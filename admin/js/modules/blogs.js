@@ -1,10 +1,10 @@
 import {
   api, toast, confirm, openModal, closeModal,
-  escapeHtml, formatDate, statusBadge, setupImagePreview, imagePreview,
-  prepareImageFiles, renderUploadProgress, clearUploadProgress,
+  escapeHtml, formatDate, statusBadge,
   iconBtn, addBtn
 } from '../admin.js';
 import { richTextField, titleBoldToggle, syncRichText, validateRichText } from '../richtext.js';
+import { imageFieldHtml, bindImageFields } from '../imageField.js';
 
 let blogs = [];
 
@@ -156,12 +156,7 @@ function showForm(blog, container) {
             <label>Content <span class="required">*</span></label>
             ${richTextField({ name: 'content', value: blog?.content || '', required: true, minHeight: '220px' })}
           </div>
-          <div class="form-group form-group--full">
-            <label>Featured Image</label>
-            <input class="form-control" type="file" name="featuredImage" accept="image/jpeg,image/png,image/webp,image/gif">
-            <p class="form-hint">Max 5MB · compressed · Cloudinary URL in Sheets</p>
-            <div id="blogPreview">${blog?.featuredImage ? imagePreview(blog.featuredImage) : ''}</div>
-          </div>
+          ${imageFieldHtml({ name: 'featuredImage', label: 'Featured image', value: blog?.featuredImage, category: 'blogs' })}
         </div>
       </form>
     `,
@@ -175,7 +170,7 @@ function showForm(blog, container) {
     document.getElementById('scheduleGroup').style.display = e.target.value === 'scheduled' ? '' : 'none';
   });
 
-  setupImagePreview(document.querySelector('#blogForm input[name="featuredImage"]'), document.getElementById('blogPreview'));
+  bindImageFields(document.getElementById('blogForm'));
   document.getElementById('cancelBlog').addEventListener('click', closeModal);
 
   document.getElementById('saveBlog').addEventListener('click', async () => {
@@ -192,19 +187,11 @@ function showForm(blog, container) {
 
     const btn = document.getElementById('saveBlog');
     btn.disabled = true;
-    const progressEl = document.getElementById('uploadProgressSlot') || document.getElementById('blogPreview');
 
     try {
-      const fileInput = form.querySelector('[name="featuredImage"]');
-      if (fileInput?.files?.[0]) {
-        const [compressed] = await prepareImageFiles(fileInput.files, { maxWidth: 1200, maxHeight: 630 });
-        fd.set('featuredImage', compressed, compressed.name);
-      }
-
       const opts = {
         method: isEdit ? 'PUT' : 'POST',
-        formData: fd,
-        onProgress: (pct) => renderUploadProgress(progressEl, pct)
+        formData: fd
       };
       if (isEdit) {
         await api(`/admin/blogs/${blog.id}`, opts);
@@ -213,7 +200,6 @@ function showForm(blog, container) {
         await api('/admin/blogs', opts);
         toast('Blog created', 'success');
       }
-      clearUploadProgress(progressEl);
       closeModal();
       await loadBlogs(container);
     } catch (err) {

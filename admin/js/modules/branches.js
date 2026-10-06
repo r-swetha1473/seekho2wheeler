@@ -1,4 +1,5 @@
 import { api, toast, confirm, escapeHtml, addBtn, uiIcon, ICONS } from '../admin.js';
+import { imageFieldHtml, bindImageFields } from '../imageField.js';
 
 const TABS = [
   ['basic', 'Location', 'pin'],
@@ -244,11 +245,12 @@ function showEditor(container, row) {
         ${section('link', 'Link preview', 'Title, description, and image when the page is shared.', `
           ${field('Share title', 'ogTitle', row.ogTitle)}
           <div class="form-group form-group--full"><label>Share description</label><textarea class="form-control" name="ogDescription" rows="2">${escapeHtml(row.ogDescription || '')}</textarea></div>
-          ${field('Share image link', 'ogImage', row.ogImage)}
+          ${imageFieldHtml({ name: 'ogImage', label: 'Share image', value: row.ogImage, category: 'branches' })}
         `)}
       </div>
       <div class="editor-panel" data-panel="settings" hidden>
         ${section('image', 'Gallery', 'Photos for this branch come from the matching gallery album.', `
+          ${imageFieldHtml({ name: 'image', label: 'Branch image', value: row.image, category: 'branches' })}
           ${field('Gallery album', 'galleryCategory', row.galleryCategory)}
           ${field('Google Place ID', 'placeId', row.placeId)}
         `)}
@@ -265,6 +267,7 @@ function showEditor(container, row) {
   paintPrices(row.pricing || []);
   paintFaqs(row.faqs || []);
   paintSections(row.sections || []);
+  bindImageFields(container);
   document.getElementById('addPrice').addEventListener('click', () => {
     document.getElementById('priceRows').insertAdjacentHTML('beforeend', priceRow({}));
   });
@@ -416,6 +419,7 @@ async function save(container, row) {
     ogTitle: val('ogTitle'),
     ogDescription: val('ogDescription'),
     ogImage: val('ogImage'),
+    image: val('image'),
     galleryCategory: val('galleryCategory'),
     placeId: val('placeId'),
     sections: readRepeat('sectionRows', ['key', 'heading', 'subheading', 'order', 'enabled']).map((item) => ({

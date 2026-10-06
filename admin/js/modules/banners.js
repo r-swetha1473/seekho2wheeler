@@ -1,10 +1,10 @@
 import {
   api, toast, confirm, openModal, closeModal,
-  escapeHtml, statusBadge, setupImagePreview, imagePreview,
-  prepareImageFiles, renderUploadProgress, clearUploadProgress,
+  escapeHtml, statusBadge,
   iconBtn, addBtn
 } from '../admin.js';
 import { richTextField, titleBoldToggle, syncRichText } from '../richtext.js';
+import { imageFieldHtml, bindImageFields } from '../imageField.js';
 
 let banners = [];
 
@@ -175,12 +175,7 @@ function showForm(banner = null) {
           <div class="form-group">
             <label class="form-check"><input type="checkbox" name="active" ${banner?.active !== false ? 'checked' : ''}> Active</label>
           </div>
-          <div class="form-group form-group--full">
-            <label>Image ${isEdit ? '' : '<span class="required">*</span>'}</label>
-            <input class="form-control" type="file" name="image" accept="image/jpeg,image/png,image/webp,image/gif" ${isEdit ? '' : 'required'}>
-            <p class="form-hint">Max 5MB · large images are compressed before upload · stored on Cloudinary</p>
-            <div id="bannerPreview">${banner?.image ? imagePreview(banner.image) : ''}</div>
-          </div>
+          ${imageFieldHtml({ name: 'image', label: isEdit ? 'Image' : 'Image', value: banner?.image, category: 'banners' })}
         </div>
       </form>
     `,
@@ -190,7 +185,7 @@ function showForm(banner = null) {
     `
   });
 
-  setupImagePreview(document.querySelector('#bannerForm input[name="image"]'), document.getElementById('bannerPreview'));
+  bindImageFields(document.getElementById('modalBody') || document);
   document.getElementById('cancelBanner').addEventListener('click', closeModal);
 
   document.getElementById('saveBanner').addEventListener('click', async () => {
@@ -200,23 +195,20 @@ function showForm(banner = null) {
 
     const saveBtn = document.getElementById('saveBanner');
     saveBtn.disabled = true;
-    const progressEl = document.getElementById('uploadProgressSlot') || document.getElementById('bannerPreview');
 
     try {
       const fd = new FormData(form);
       fd.set('active', form.querySelector('[name="active"]').checked ? 'true' : 'false');
       fd.set('title_bold', form.querySelector('[name="title_bold"]').checked ? 'true' : 'false');
-
-      const fileInput = form.querySelector('[name="image"]');
-      if (fileInput?.files?.[0]) {
-        const [compressed] = await prepareImageFiles(fileInput.files, { maxWidth: 1920, maxHeight: 1080 });
-        fd.set('image', compressed, compressed.name);
+      if (!isEdit && !String(fd.get('image') || '').trim()) {
+        toast('Please add a banner image.', 'error');
+        saveBtn.disabled = false;
+        return;
       }
 
       const opts = {
         method: isEdit ? 'PUT' : 'POST',
-        formData: fd,
-        onProgress: (pct) => renderUploadProgress(progressEl, pct)
+        formData: fd
       };
 
       if (isEdit) {
@@ -226,7 +218,6 @@ function showForm(banner = null) {
         await api('/admin/banners', opts);
         toast('Banner created', 'success');
       }
-      clearUploadProgress(progressEl);
       closeModal();
       const container = document.getElementById('adminContent');
       await loadBanners(container);

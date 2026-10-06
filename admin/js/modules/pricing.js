@@ -1,10 +1,10 @@
 import {
   api, toast, confirm, openModal, closeModal,
-  escapeHtml, formatCurrency, statusBadge, setupImagePreview, imagePreview,
-  prepareImageFiles, renderUploadProgress, clearUploadProgress,
+  escapeHtml, formatCurrency, statusBadge,
   iconBtn, addBtn
 } from '../admin.js';
 import { richTextField, titleBoldToggle, syncRichText, validateRichText } from '../richtext.js';
+import { imageFieldHtml, bindImageFields } from '../imageField.js';
 
 let items = [];
 
@@ -169,10 +169,7 @@ function showForm(item, container) {
             <textarea class="form-control" name="features" rows="4" placeholder="One feature per line">${escapeHtml(features)}</textarea>
           </div>
           <div class="form-group form-group--full">
-            <label>Image (optional)</label>
-            <input class="form-control" type="file" name="image" accept="image/jpeg,image/png,image/webp,image/gif">
-            <p class="form-hint">Max 5MB · Cloudinary URL stored in Sheets</p>
-            <div id="pricingPreview">${item?.image_url || item?.image ? imagePreview(item.image_url || item.image) : ''}</div>
+            ${imageFieldHtml({ name: 'image_url', label: 'Image', value: item?.image_url || item?.image, category: 'courses' })}
           </div>
         </div>
       </form>
@@ -183,7 +180,7 @@ function showForm(item, container) {
     `
   });
 
-  setupImagePreview(document.querySelector('#pricingForm input[name="image"]'), document.getElementById('pricingPreview'));
+  bindImageFields(document.getElementById('pricingForm'));
   document.getElementById('cancelPricing').addEventListener('click', closeModal);
 
   document.getElementById('savePricing').addEventListener('click', async () => {
@@ -216,22 +213,15 @@ function showForm(item, container) {
     fd.set('is_active', form.querySelector('[name="is_active"]').checked ? 'true' : 'false');
     fd.set('title_bold', form.querySelector('[name="title_bold"]').checked ? 'true' : 'false');
     fd.set('features', form.features.value);
+    fd.set('image_url', form.image_url ? form.image_url.value : '');
 
     const btn = document.getElementById('savePricing');
     btn.disabled = true;
-    const progressEl = document.getElementById('uploadProgressSlot') || document.getElementById('pricingPreview');
 
     try {
-      const fileInput = form.querySelector('[name="image"]');
-      if (fileInput?.files?.[0]) {
-        const [compressed] = await prepareImageFiles(fileInput.files, { maxWidth: 1200, maxHeight: 900 });
-        fd.set('image', compressed, compressed.name);
-      }
-
       const opts = {
         method: isEdit ? 'PUT' : 'POST',
-        formData: fd,
-        onProgress: (pct) => renderUploadProgress(progressEl, pct)
+        formData: fd
       };
       if (isEdit) {
         await api(`/admin/pricing/${item.id}`, opts);
@@ -240,7 +230,6 @@ function showForm(item, container) {
         await api('/admin/pricing', opts);
         toast('Course created', 'success');
       }
-      clearUploadProgress(progressEl);
       closeModal();
       await loadPricing(container);
     } catch (err) {

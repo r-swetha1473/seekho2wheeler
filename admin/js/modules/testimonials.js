@@ -1,10 +1,10 @@
 import {
   api, toast, confirm, openModal, closeModal,
-  escapeHtml, statusBadge, setupImagePreview, imagePreview,
-  prepareImageFiles, renderUploadProgress, clearUploadProgress,
+  escapeHtml, statusBadge,
   iconBtn, addBtn
 } from '../admin.js';
 import { richTextField, titleBoldToggle, syncRichText, validateRichText } from '../richtext.js';
+import { imageFieldHtml, bindImageFields } from '../imageField.js';
 
 let items = [];
 
@@ -154,12 +154,7 @@ function showForm(item, container) {
           <div class="form-group">
             <label class="form-check"><input type="checkbox" name="active" ${item?.active !== false ? 'checked' : ''}> Active</label>
           </div>
-          <div class="form-group form-group--full">
-            <label>Photo</label>
-            <input class="form-control" type="file" name="photo" accept="image/jpeg,image/png,image/webp,image/gif">
-            <p class="form-hint">Max 5MB · Cloudinary URL stored in Sheets</p>
-            <div id="testimonialPreview">${item?.photo ? imagePreview(item.photo, true) : ''}</div>
-          </div>
+          ${imageFieldHtml({ name: 'photo', label: 'Photo', value: item?.photo, category: 'testimonials' })}
         </div>
       </form>
     `,
@@ -173,7 +168,7 @@ function showForm(item, container) {
     document.getElementById('videoUrlGroup').style.display = e.target.value === 'video' ? '' : 'none';
   });
 
-  setupImagePreview(document.querySelector('#testimonialForm input[name="photo"]'), document.getElementById('testimonialPreview'));
+  bindImageFields(document.getElementById('testimonialForm'));
   document.getElementById('cancelTestimonial').addEventListener('click', closeModal);
 
   document.getElementById('saveTestimonial').addEventListener('click', async () => {
@@ -187,19 +182,11 @@ function showForm(item, container) {
 
     const btn = document.getElementById('saveTestimonial');
     btn.disabled = true;
-    const progressEl = document.getElementById('uploadProgressSlot') || document.getElementById('testimonialPreview');
 
     try {
-      const fileInput = form.querySelector('[name="photo"]');
-      if (fileInput?.files?.[0]) {
-        const [compressed] = await prepareImageFiles(fileInput.files, { maxWidth: 800, maxHeight: 800 });
-        fd.set('photo', compressed, compressed.name);
-      }
-
       const opts = {
         method: isEdit ? 'PUT' : 'POST',
-        formData: fd,
-        onProgress: (pct) => renderUploadProgress(progressEl, pct)
+        formData: fd
       };
       if (isEdit) {
         await api(`/admin/testimonials/${item.id}`, opts);
@@ -208,7 +195,6 @@ function showForm(item, container) {
         await api('/admin/testimonials', opts);
         toast('Testimonial created', 'success');
       }
-      clearUploadProgress(progressEl);
       closeModal();
       await loadTestimonials(container);
     } catch (err) {

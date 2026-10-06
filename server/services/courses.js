@@ -88,7 +88,9 @@ function toSheetRow(data) {
   const name = String(data.name || data.courseName || '').trim();
   const classes = data.classes;
   const price = data.price;
-  const image_url = data.image_url || data.image || '';
+  const image_url = data.image_url !== undefined && data.image_url !== null
+    ? String(data.image_url)
+    : String(data.image || '');
   const is_active = data.is_active !== undefined ? data.is_active : data.active !== false;
   const sort_order = data.sort_order !== undefined ? data.sort_order : data.displayOrder;
   const now = new Date().toISOString();

@@ -124,8 +124,10 @@ exports.update = async (req, res, next) => {
     if (req.file) {
       if (current.image_url) await deleteUpload(current.image_url);
       nextData.image_url = await processAndSave(req.file, 'courses');
-    } else if (req.body.image_url !== undefined || req.body.image !== undefined) {
-      nextData.image_url = req.body.image_url || req.body.image || current.image_url;
+    } else if (req.body.image_url !== undefined) {
+      nextData.image_url = req.body.image_url;
+    } else if (typeof req.body.image === 'string') {
+      nextData.image_url = req.body.image;
     }
 
     if (!nextData.name) {

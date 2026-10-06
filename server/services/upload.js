@@ -29,6 +29,10 @@ const FOLDERS = {
   branches: 'branches',
   testimonials: 'testimonials',
   trainers: 'trainers',
+  pages: 'pages',
+  courses: 'courses',
+  home: 'home',
+  updates: 'updates',
   general: 'general'
 };
 
@@ -39,6 +43,10 @@ const SIZE_PRESETS = {
   branches: { width: 1200, height: 900 },
   testimonials: { width: 800, height: 800 },
   trainers: { width: 800, height: 800 },
+  pages: { width: 1600, height: 900 },
+  courses: { width: 1200, height: 900 },
+  home: { width: 1200, height: 900 },
+  updates: { width: 1200, height: 900 },
   general: { width: 1200, height: 900 }
 };
 
@@ -77,7 +85,9 @@ const upload = multer({
     if (config.uploads.allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Only JPG, PNG, WebP, and GIF images are allowed'));
+      const err = new Error('Only JPG, PNG, WebP, and GIF images are allowed');
+      err.status = 400;
+      cb(err);
     }
   }
 });
