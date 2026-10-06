@@ -20,6 +20,9 @@ const whyChoose = require('../controllers/whyChooseController');
 const chatbot = require('../controllers/chatbotController');
 const updates = require('../controllers/updateController');
 const pageCopy = require('../controllers/pageCopyController');
+const locations = require('../controllers/locationController');
+const menus = require('../controllers/menuController');
+const specials = require('../controllers/specialController');
 const dashboard = require('../controllers/dashboardController');
 
 const router = express.Router();
@@ -46,6 +49,9 @@ router.get('/page-copy', pageCopy.listPublic);
 router.get('/faqs', faqs.listPublic);
 router.get('/testimonials', testimonials.listPublic);
 router.get('/settings', settings.getPublic);
+router.get('/frontend-menus', menus.listPublic);
+router.get('/special-pages', specials.listPublic);
+router.get('/special-pages/:slug', specials.getPublic);
 router.post('/visits', settings.trackVisit);
 router.get('/bookings/slots', bookings.getSlots);
 router.post('/bookings', bookings.create);
@@ -77,6 +83,21 @@ router.get('/admin/blogs', authRequired, blogs.listAdmin);
 router.post('/admin/blogs', authRequired, upload.single('featuredImage'), blogs.create);
 router.put('/admin/blogs/:id', authRequired, upload.single('featuredImage'), blogs.update);
 router.delete('/admin/blogs/:id', authRequired, blogs.remove);
+
+router.get('/admin/locations', authRequired, locations.listAdmin);
+router.post('/admin/locations', authRequired, upload.single('image'), locations.create);
+router.put('/admin/locations/:id', authRequired, upload.single('image'), locations.update);
+router.delete('/admin/locations/:id', authRequired, locations.remove);
+
+router.get('/admin/frontend-menus', authRequired, menus.listAdmin);
+router.post('/admin/frontend-menus', authRequired, menus.create);
+router.put('/admin/frontend-menus/:id', authRequired, menus.update);
+router.delete('/admin/frontend-menus/:id', authRequired, menus.remove);
+
+router.get('/admin/special-pages', authRequired, specials.listAdmin);
+router.post('/admin/special-pages', authRequired, upload.single('image'), specials.create);
+router.put('/admin/special-pages/:id', authRequired, upload.single('image'), specials.update);
+router.delete('/admin/special-pages/:id', authRequired, specials.remove);
 
 router.get('/admin/branches', authRequired, branches.listAdmin);
 router.post('/admin/branches', authRequired, upload.single('image'), branches.create);

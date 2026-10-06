@@ -209,6 +209,9 @@ async function seed() {
   const { COPY_SEED } = require('../server/services/pageCopy');
   await write('page_copy', COPY_SEED.map((r) => ({ ...r, created_at: now, updated_at: now })));
 
+  const { ensureSeeded } = require('../server/services/locationCms');
+  await ensureSeeded();
+
   console.log(config.sheets.ready
     ? '✓ Seed data written to Google Sheets'
     : '✓ Seed data written to local JSON (development)');

@@ -3832,3 +3832,12 @@ ol.rich-html li { margin: 0.2em 0; }
     width: min(360px, calc(100vw - 1.25rem));
   }
 }
+
+.special-price__now { font-size: 1.75rem; font-weight: 800; margin: 0.25rem 0; letter-spacing: -0.03em; line-height: 1.1; }
+.special-price__was { text-decoration: line-through; opacity: 0.65; margin: 0; font-size: 1rem; }
+.special-price { display: flex; flex-direction: column; align-items: flex-start; gap: 0.15rem; }
+.loc-address-card h3 .fa-solid,
+.loc-address-card h3 i {
+  margin-right: 0.4rem;
+  color: var(--primary-dark, #0B3D91);
+}

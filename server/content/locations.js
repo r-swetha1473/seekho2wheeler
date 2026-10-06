@@ -1,6 +1,7 @@
 /**
- * Location / branch pages — single source of truth (Phase 3).
- * Reused by: location HTML routes, sitemap, chatbot, homepage/branches cards, blog refs.
+ * Location / branch pages — seed and fallback for the location CMS.
+ * Public pages read Google Sheets (location_pages + branches) first.
+ * This file remains so a missing CMS row or a Sheets outage can still render the original pages.
  *
  * Rules:
  * - Only Tollygunge uses Main Branch Place ID.
@@ -693,9 +694,13 @@ function branchSeedRows(now = new Date().toISOString()) {
     image: '',
     active: true,
     locationSlug: loc.slug,
+    displayOrder: i + 1,
+    featured: !!loc.isMainBranch,
+    city: loc.addressLocality || 'Kolkata',
+    state: loc.addressRegion || 'West Bengal',
+    pincode: loc.postalCode || '',
     createdAt: now,
-    updatedAt: now,
-    displayOrder: i + 1
+    updatedAt: now
   }));
 }
 

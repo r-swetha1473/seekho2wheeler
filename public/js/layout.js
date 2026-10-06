@@ -140,6 +140,7 @@
         <div class="footer__acc">
           <button type="button" class="footer__acc-btn" aria-expanded="false"><span data-copy="layout.col_branches" data-copy-field="title">Branches</span> <i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button>
           <div class="footer__acc-panel" hidden>
+            <div data-footer-branches>
             <a href="/locations/tollygunge">Tollygunge</a>
             <a href="/locations/barasat">Barasat</a>
             <a href="/locations/new-town">New Town</a>
@@ -147,6 +148,7 @@
             <a href="/locations/rabindra-sarobar">Rabindra Sarobar</a>
             <a href="/locations/howrah">Howrah</a>
             <a href="/locations/patuli">Patuli</a>
+            </div>
             <a href="${p('branches.html')}">All Branches</a>
           </div>
         </div>
@@ -186,6 +188,7 @@
       </div>
       <div class="footer__col footer__col--desktop">
         <h4 data-copy="layout.col_branches" data-copy-field="title">Branches</h4>
+        <div data-footer-branches>
         <a href="/locations/tollygunge">Tollygunge</a>
         <a href="/locations/barasat">Barasat</a>
         <a href="/locations/new-town">New Town</a>
@@ -193,6 +196,7 @@
         <a href="/locations/rabindra-sarobar">Rabindra Sarobar</a>
         <a href="/locations/howrah">Howrah</a>
         <a href="/locations/patuli">Patuli</a>
+        </div>
         <a href="${p('branches.html')}"><i class="fa-solid fa-map-location-dot"></i> All Branches</a>
       </div>
       <div class="footer__col footer__contact footer__col--desktop">
@@ -256,6 +260,56 @@
       sc.defer = true;
       document.body.appendChild(sc);
     }
+    hydrateCms();
+  }
+
+  function esc(str) {
+    return String(str || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function menuAttrs(item) {
+    const blank = item.openNewTab || item.isExternal;
+    return blank ? ' target="_blank" rel="noopener"' : '';
+  }
+
+  function renderNav(header, dropdown) {
+    return header.map((item) => {
+      if (item.pageType === 'dropdown') {
+        const links = dropdown.map((child) => `<a href="${esc(child.href)}"${menuAttrs(child)}>${esc(child.label)}</a>`).join('');
+        return `<div class="nav__dropdown">
+          <a href="${esc(item.href)}"${menuAttrs(item)}><span>${esc(item.label)}</span> <i class="fa-solid fa-chevron-down" style="font-size:0.65rem"></i></a>
+          ${links ? `<div class="nav__dropdown-menu">${links}</div>` : ''}
+        </div>`;
+      }
+      return `<a href="${esc(item.href)}"${menuAttrs(item)}>${esc(item.label)}</a>`;
+    }).join('');
+  }
+
+  async function hydrateCms() {
+    try {
+      const res = await fetch('/api/frontend-menus', { cache: 'no-store' });
+      const json = await res.json();
+      const rows = json && json.success ? json.data || [] : [];
+      const header = rows.filter((row) => row.menuGroup === 'header' && row.active !== false);
+      const dropdown = rows.filter((row) => row.menuGroup === 'courses-dropdown' && row.active !== false);
+      const nav = document.getElementById('mainNav');
+      if (nav && header.length) nav.innerHTML = renderNav(header, dropdown);
+    } catch { /* keep the built-in menu */ }
+
+    try {
+      const res = await fetch('/api/locations', { cache: 'no-store' });
+      const json = await res.json();
+      const rows = json && json.success ? json.data || [] : [];
+      if (!rows.length) return;
+      const html = rows.map((row) => `<a href="/locations/${esc(row.slug)}">${esc(row.name)}</a>`).join('');
+      document.querySelectorAll('[data-footer-branches]').forEach((node) => {
+        node.innerHTML = html;
+      });
+    } catch { /* keep the built-in branch links */ }
   }
 
   ensureCustomerTheme();

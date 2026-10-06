@@ -19,7 +19,7 @@ const { google } = require('googleapis');
 const fs = require('fs');
 const path = require('path');
 const config = require('../server/config');
-const { SHEET_HEADERS } = require('../server/services/db');
+const { SHEET_HEADERS, sheetRange, columnLetter } = require('../server/services/db');
 const {
   createGoogleAuth,
   printAuthReport,
@@ -159,7 +159,7 @@ async function main() {
       const headers = SHEET_HEADERS[tab];
       const current = await api.spreadsheets.values.get({
         spreadsheetId: config.sheets.spreadsheetId,
-        range: `${tab}!A1:Z1`
+        range: `${tab}!A1:${columnLetter(Math.max(headers.length, 26))}1`
       });
       const existingHeaders = (current.data.values && current.data.values[0]) || [];
       const missingHeaders = headers.filter((h) => !existingHeaders.includes(h));
@@ -195,7 +195,7 @@ async function main() {
         const values = [headers, ...rows.map((r) => headers.map((h) => serialize(r[h])))];
         await api.spreadsheets.values.clear({
           spreadsheetId: config.sheets.spreadsheetId,
-          range: `${tab}!A:Z`
+          range: sheetRange(tab)
         });
         await api.spreadsheets.values.update({
           spreadsheetId: config.sheets.spreadsheetId,

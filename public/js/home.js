@@ -300,7 +300,7 @@
           ${b.phones?.[0] || b.phone ? `<a class="branch-card__phone" href="tel:${b.phones?.[0] || b.phone}"><i class="fa-solid fa-phone"></i> ${escapeHtml(b.phones?.[0] || b.phone)}</a>` : ''}
           <div class="branch-card__actions">
             <a href="${href}" class="btn btn--outline btn--sm">View Branch</a>
-            <a href="/pages/booking.html?branch=${encodeURIComponent(b.branchName || b.name)}" class="btn btn--primary btn--sm">Book</a>
+            <a href="/pages/booking.html?branchId=${encodeURIComponent(b.branchId || '')}&branch=${encodeURIComponent(b.slug || b.branchName || b.name)}" class="btn btn--primary btn--sm">Book</a>
           </div>
         </div>
       </article>`;

@@ -344,7 +344,8 @@ function activeBranches(rows) {
   return (rows || []).filter((b) => b && b.active !== false);
 }
 
-function formatBranchList(rows) {
+function formatBranchList(rows, cards) {
+  if (cards && cards.length) return cards.map((card) => card.name).filter(Boolean).join(', ');
   const fromSsot = chatbotBranchList();
   if (fromSsot) return fromSsot;
   return (
@@ -380,7 +381,13 @@ async function loadContext() {
     workingHours: rawSettings.workingHours || 'Mon – Sun: 7:00 AM – 7:00 PM',
     address: rawSettings.address || ''
   };
-  const branches = listPublicCards();
+  let locationCards = [];
+  try {
+    locationCards = await require('./locationCms').listPublic();
+  } catch {
+    locationCards = listPublicCards();
+  }
+  const branches = locationCards.length ? locationCards : listPublicCards();
   let doorstep = {};
   try {
     doorstep = await getDoorstepConfig();
@@ -392,9 +399,21 @@ async function loadContext() {
     settings,
     doorstep,
     branches,
+    locationCards: branches,
     branchRows: activeBranches(branchRows),
     women: WOMEN_TRAINING
   };
+}
+
+function branchDetailText(ctx, slug) {
+  const key = String(slug || '').toLowerCase();
+  const cards = (ctx && (ctx.locationCards || ctx.branches)) || [];
+  const loc = cards.find((card) => String(card.slug || '').toLowerCase() === key || String(card.name || '').toLowerCase() === key);
+  if (loc && loc.address) {
+    const courses = (loc.trainingAvailable || []).length ? loc.trainingAvailable.join(', ') : 'Confirm courses when booking';
+    return `${loc.name} (${loc.establishedLabel || ''}). Landmark/area: ${loc.landmark || loc.area || ''}. Address: ${loc.address}. Training: ${courses}. Page: /locations/${loc.slug}`;
+  }
+  return chatbotBranchDetail(slug);
 }
 
 function lookupCourse(courses, slug) {
@@ -453,9 +472,9 @@ function resolvePlaceholder(path, ctx) {
     return v != null && String(v).trim() !== '' ? String(v) : '';
   }
   if (parts[0] === 'branches') {
-    if (parts[1] === 'list' || parts[1] === 'names') return formatBranchList(ctx.branches);
-    if (parts[1] === 'detail' && parts[2]) return chatbotBranchDetail(parts[2]);
-    if (parts[1] && getLocation(parts[1])) return chatbotBranchDetail(parts[1]);
+    if (parts[1] === 'list' || parts[1] === 'names') return formatBranchList(ctx.branches, ctx.locationCards);
+    if (parts[1] === 'detail' && parts[2]) return branchDetailText(ctx, parts[2]);
+    if (parts[1]) return branchDetailText(ctx, parts[1]);
     return '';
   }
   if (parts[0] === 'women') {

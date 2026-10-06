@@ -103,6 +103,27 @@
         state.branch = { id: data.id, name: data.name };
       });
     });
+
+    const params = new URLSearchParams(location.search);
+    const branchId = params.get('branchId');
+    const branchQuery = (params.get('branch') || '').toLowerCase().trim();
+    if (branchId || branchQuery) {
+      const match = branches.find((b) => {
+        if (branchId && String(b.id) === branchId) return true;
+        if (!branchQuery) return false;
+        const name = String(b.name || '').toLowerCase();
+        const slug = String(b.locationSlug || '').toLowerCase();
+        return name === branchQuery || slug === branchQuery;
+      });
+      if (match) {
+        const card = branchGrid.querySelector(`[data-id="${match.id}"]`);
+        if (card) {
+          selectOption(branchGrid, card, (data) => {
+            state.branch = { id: data.id, name: data.name };
+          });
+        }
+      }
+    }
   }
 
   function renderSlots() {

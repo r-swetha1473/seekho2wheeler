@@ -30,7 +30,10 @@ const SHEETS = [
   'chatbot_unanswered',
   'chatbot_config',
   'updates',
-  'page_copy'
+  'page_copy',
+  'location_pages',
+  'frontend_menus',
+  'special_pages'
 ];
 
 const CONTENT_SHEETS = [
@@ -49,7 +52,10 @@ const CONTENT_SHEETS = [
   'chatbot_qa',
   'chatbot_config',
   'updates',
-  'page_copy'
+  'page_copy',
+  'location_pages',
+  'frontend_menus',
+  'special_pages'
 ];
 
 function copySeedIfNeeded(name) {

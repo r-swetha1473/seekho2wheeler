@@ -409,7 +409,30 @@ function mergeArticle(row) {
   };
 
   if (merged.articleType === 'branches') {
-    merged.branches = listLocations().map((loc) => ({
+    let source = listLocations();
+    try {
+      const cached = require('../services/locationCms').getCachedCards();
+      if (cached && cached.length) {
+        source = cached.map((card) => ({
+          slug: card.slug,
+          displayName: card.name,
+          name: card.name,
+          branchName: card.branchName,
+          area: card.area,
+          landmark: card.landmark,
+          address: card.address,
+          howToReach: card.howToReach || [],
+          trainingAvailable: card.trainingAvailable || [],
+          mapsLink: card.mapsLink,
+          phones: card.phones || [],
+          whatsapp: card.whatsapp,
+          galleryCategory: card.galleryCategory,
+          isMainBranch: card.isMainBranch,
+          establishedLabel: card.establishedLabel
+        }));
+      }
+    } catch { /* static locations.js */ }
+    merged.branches = source.map((loc) => ({
       slug: loc.slug,
       name: loc.displayName || loc.name,
       branchName: loc.branchName,

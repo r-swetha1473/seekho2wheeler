@@ -33,7 +33,7 @@
             ${b.trainingAvailable?.length ? `<p class="branch-card__courses">${escapeHtml(b.trainingAvailable.join(' · '))}</p>` : ''}
             <div class="branch-card__actions">
               <a href="${href}" class="btn btn--outline btn--sm">View Branch</a>
-              <a href="/pages/booking.html?branch=${encodeURIComponent(b.branchName || b.name)}" class="btn btn--primary btn--sm">Book</a>
+              <a href="/pages/booking.html?branchId=${encodeURIComponent(b.branchId || '')}&branch=${encodeURIComponent(b.slug || b.branchName || b.name)}" class="btn btn--primary btn--sm">Book</a>
             </div>
           </div>
         </article>`;

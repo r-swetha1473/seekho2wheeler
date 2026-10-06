@@ -44,14 +44,17 @@ const PERMANENT_SHEETS = new Set([
   'chatbot_unanswered',
   'chatbot_config',
   'updates',
-  'page_copy'
+  'page_copy',
+  'location_pages',
+  'frontend_menus',
+  'special_pages'
 ]);
 
 /** Canonical column order per sheet (first write / empty sheet) */
 const SHEET_HEADERS = {
   bookings: ['id', 'name', 'phone', 'email', 'courseId', 'courseName', 'branchId', 'branchName', 'date', 'timeSlot', 'message', 'status', 'createdAt', 'updatedAt'],
   enquiries: ['id', 'name', 'phone', 'email', 'message', 'status', 'createdAt', 'updatedAt'],
-  branches: ['id', 'name', 'area', 'address', 'mapsLink', 'latitude', 'longitude', 'phone', 'whatsapp', 'availableCourses', 'trainerCount', 'image', 'active', 'createdAt', 'updatedAt'],
+  branches: ['id', 'name', 'area', 'address', 'mapsLink', 'latitude', 'longitude', 'phone', 'whatsapp', 'availableCourses', 'trainerCount', 'image', 'active', 'createdAt', 'updatedAt', 'locationSlug', 'displayOrder', 'featured', 'city', 'state', 'pincode'],
   pricing: ['id', 'name', 'slug', 'description', 'price', 'classes', 'image_url', 'badge', 'is_active', 'sort_order', 'title_bold', 'features', 'courseName', 'duration', 'image', 'displayOrder', 'active', 'created_at', 'updated_at', 'createdAt', 'updatedAt'],
   blogs: ['id', 'title', 'slug', 'featuredImage', 'metaTitle', 'metaDescription', 'content', 'shortDescription', 'category', 'galleryCategory', 'status', 'scheduledAt', 'publishedAt', 'title_bold', 'createdAt', 'updatedAt'],
   testimonials: ['id', 'name', 'headline', 'review', 'rating', 'photo', 'videoUrl', 'type', 'displayOrder', 'active', 'title_bold', 'createdAt', 'updatedAt'],
@@ -70,8 +73,41 @@ const SHEET_HEADERS = {
   chatbot_unanswered: ['id', 'message', 'created_at'],
   chatbot_config: ['id', 'bot_name', 'greeting', 'welcome_heading', 'fallback_message', 'match_threshold', 'phone', 'whatsapp', 'quick_replies_json', 'created_at', 'updated_at'],
   updates: ['id', 'title', 'message', 'link_url', 'image_url', 'start_date', 'end_date', 'is_active', 'sort_order', 'created_at', 'updated_at'],
-  page_copy: ['id', 'page', 'slot', 'title', 'subtitle', 'body_html', 'cta_text', 'cta_link', 'is_active', 'sort_order', 'created_at', 'updated_at']
+  page_copy: ['id', 'page', 'slot', 'title', 'subtitle', 'body_html', 'cta_text', 'cta_link', 'is_active', 'sort_order', 'created_at', 'updated_at'],
+  location_pages: [
+    'id', 'branchId', 'slug', 'active', 'displayOrder', 'featured', 'shortName', 'landmark', 'establishedLabel',
+    'pageTitle', 'heroEyebrow', 'heroHeading', 'heroSubtitle', 'introHtml', 'whyTitle', 'whyBody',
+    'highlightsJson', 'trainingJson', 'whoCanLearnJson', 'howToReachJson', 'phonesJson',
+    'womenTitle', 'womenBody', 'faqsJson', 'pricingJson', 'timingJson',
+    'ctaText', 'ctaLink', 'seoTitle', 'seoDescription', 'seoKeywords', 'ogTitle', 'ogDescription', 'ogImage',
+    'galleryCategory', 'mapsLink', 'placeId', 'sectionsJson', 'createdAt', 'updatedAt'
+  ],
+  frontend_menus: ['id', 'label', 'href', 'menuGroup', 'isExternal', 'openNewTab', 'active', 'displayOrder', 'pageType', 'specialSlug', 'createdAt', 'updatedAt'],
+  special_pages: [
+    'id', 'name', 'menuLabel', 'slug', 'active', 'published', 'displayOrder',
+    'seoTitle', 'seoDescription', 'ogTitle', 'ogDescription', 'ogImage',
+    'heroHeading', 'heroSubheading', 'heroDescription', 'heroImage',
+    'ctaText', 'ctaLink', 'price', 'originalPrice', 'offerText', 'timingText', 'daysText',
+    'sectionsJson', 'createdAt', 'updatedAt'
+  ]
 };
+
+function columnLetter(n) {
+  let x = Math.max(1, Number(n) || 1);
+  let s = '';
+  while (x > 0) {
+    const m = (x - 1) % 26;
+    s = String.fromCharCode(65 + m) + s;
+    x = Math.floor((x - 1) / 26);
+  }
+  return s;
+}
+
+/** Column span covering every header. Existing sheets stay at least A:Z. */
+function sheetRange(sheet) {
+  const width = Math.max((SHEET_HEADERS[sheet] || []).length, 26);
+  return `${sheet}!A:${columnLetter(width)}`;
+}
 
 function cacheGet(key) {
   const hit = readCache.get(key);
@@ -218,7 +254,7 @@ function applyHeaderAliases(sheet, obj) {
 
 function coerceRow(sheet, obj) {
   applyHeaderAliases(sheet, obj);
-  const numeric = new Set(['price', 'displayOrder', 'rating', 'trainerCount', 'count', 'googleRating', 'facebookRating', 'reviewCount', 'classes', 'sort_order', 'base_km', 'base_price', 'max_km', 'max_price', 'per_km_extra', 'match_threshold', 'latitude', 'longitude']);
+  const numeric = new Set(['price', 'originalPrice', 'displayOrder', 'rating', 'trainerCount', 'count', 'googleRating', 'facebookRating', 'reviewCount', 'classes', 'sort_order', 'base_km', 'base_price', 'max_km', 'max_price', 'per_km_extra', 'match_threshold', 'latitude', 'longitude']);
   const bools = new Set(['active', 'title_bold', 'tagline_bold', 'is_active']);
   Object.keys(obj).forEach((k) => {
     if (numeric.has(k) && obj[k] !== '' && obj[k] != null && String(obj[k]).trim() !== '' && !Number.isNaN(Number(obj[k]))) {
@@ -425,7 +461,7 @@ function rowsFromValues(sheet, values) {
       obj[h] = deserialize(row[i] ?? '');
     });
     return coerceRow(sheet, obj);
-  }).filter((r) => r.id || r.email || r.courseName || r.name || r.title || r.question || r.base_km || r.key || r.slug || r.fallback_message || r.keywords || r.page);
+  }).filter((r) => r.id || r.email || r.courseName || r.name || r.title || r.label || r.question || r.base_km || r.key || r.slug || r.fallback_message || r.keywords || r.page);
 }
 
 async function readFromSheets(sheet) {
@@ -433,25 +469,47 @@ async function readFromSheets(sheet) {
   if (!api) throw new AppError('Google Sheets is not configured', 503, publicSheetsMessage({ message: 'Google Sheets is not configured' }));
 
   try {
-    const res = await sheetsValuesGet(api, `${sheet}!A:Z`);
+    const res = await sheetsValuesGet(api, sheetRange(sheet));
     return rowsFromValues(sheet, res.data.values || []);
   } catch (err) {
     if (isMissingTabError(err)) {
       await ensureSheetTab(sheet);
-      const res = await sheetsValuesGet(api, `${sheet}!A:Z`);
+      const res = await sheetsValuesGet(api, sheetRange(sheet));
       return rowsFromValues(sheet, res.data.values || []);
     }
     throw wrapSheetsError(err);
   }
 }
 
+/** Keep the live header order. New columns are appended, never inserted in front of existing ones. */
+async function resolveWriteHeaders(sheet) {
+  await ensureSheetTab(sheet);
+  const api = await getSheetsApi();
+  const canonical = SHEET_HEADERS[sheet] || ['id'];
+  if (!api) return canonical;
+  const res = await api.spreadsheets.values.get({
+    spreadsheetId: config.sheets.spreadsheetId,
+    range: `${sheet}!1:1`
+  });
+  const existing = ((res.data.values && res.data.values[0]) || []).map((cell) => String(cell || '').trim()).filter(Boolean);
+  if (!existing.length) return canonical;
+  const missing = canonical.filter((header) => !existing.includes(header));
+  if (!missing.length) return existing;
+  const merged = [...existing, ...missing];
+  await api.spreadsheets.values.update({
+    spreadsheetId: config.sheets.spreadsheetId,
+    range: `${sheet}!A1`,
+    valueInputOption: 'RAW',
+    requestBody: { values: [merged] }
+  });
+  return merged;
+}
+
 async function writeAllToSheets(sheet, rows) {
   const api = await getSheetsApi();
   if (!api) throw new AppError('Google Sheets is not configured', 503, publicSheetsMessage({ message: 'Google Sheets is not configured' }));
 
-  await ensureSheetTab(sheet);
-
-  const headers = SHEET_HEADERS[sheet] || (rows[0] ? Object.keys(rows[0]) : ['id']);
+  const headers = await resolveWriteHeaders(sheet);
   const values = [
     headers,
     ...rows.map((r) => headers.map((h) => serialize(r[h])))
@@ -459,7 +517,7 @@ async function writeAllToSheets(sheet, rows) {
 
   await api.spreadsheets.values.clear({
     spreadsheetId: config.sheets.spreadsheetId,
-    range: `${sheet}!A:Z`
+    range: sheetRange(sheet)
   });
 
   await api.spreadsheets.values.update({
@@ -485,7 +543,9 @@ async function appendToSheets(sheet, row) {
     existing = [];
   }
 
-  const headers = SHEET_HEADERS[sheet] || Object.keys(row);
+  const headers = existing.length === 0
+    ? (SHEET_HEADERS[sheet] || Object.keys(row))
+    : await resolveWriteHeaders(sheet);
   if (existing.length === 0) {
     await writeAllToSheets(sheet, [row]);
     return row;
@@ -493,7 +553,7 @@ async function appendToSheets(sheet, row) {
 
   await api.spreadsheets.values.append({
     spreadsheetId: config.sheets.spreadsheetId,
-    range: `${sheet}!A:Z`,
+    range: sheetRange(sheet),
     valueInputOption: 'RAW',
     insertDataOption: 'INSERT_ROWS',
     requestBody: { values: [headers.map((h) => serialize(row[h]))] }
@@ -634,3 +694,5 @@ module.exports.useLocalStore = useLocalStore;
 module.exports.allowRuntimeSeed = allowRuntimeSeed;
 module.exports.getSheetsAuthMeta = getSheetsAuthMeta;
 module.exports.ensureSheetTab = ensureSheetTab;
+module.exports.sheetRange = sheetRange;
+module.exports.columnLetter = columnLetter;

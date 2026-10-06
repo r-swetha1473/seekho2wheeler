@@ -17,6 +17,7 @@ function isPublicBlog(b) {
 
 exports.listPublic = async (req, res, next) => {
   try {
+    try { await require('../services/locationCms').listPublic(); } catch { /* blog branch facts fall back */ }
     let blogs = await db.getAll('blogs');
     blogs = blogs.filter(isPublicBlog);
     let merged = mergePublicList(blogs).filter(isPublicBlog);
@@ -40,6 +41,7 @@ exports.listPublic = async (req, res, next) => {
 
 exports.getBySlug = async (req, res, next) => {
   try {
+    try { await require('../services/locationCms').listPublic(); } catch { /* blog branch facts fall back */ }
     const blogs = await db.getAll('blogs');
     let found = blogs.find((b) => b.slug === req.params.slug);
     if (!found) {
